@@ -3,13 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Finance Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: accounts
+    description: Account management
+  - name: transactions
+    description: Transaction management
+  - name: categories
+    description: Category management
+  - name: summary
+    description: Dashboard summary data
 paths:
   /healthz:
     get:
@@ -24,6 +32,373 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /accounts:
+    get:
+      operationId: listAccounts
+      tags: [accounts]
+      summary: List all accounts
+      responses:
+        "200":
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+    post:
+      operationId: createAccount
+      tags: [accounts]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountInput"
+      responses:
+        "201":
+          description: Created account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+
+  /accounts/{id}:
+    get:
+      operationId: getAccount
+      tags: [accounts]
+      summary: Get account by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAccount
+      tags: [accounts]
+      summary: Update an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountUpdate"
+      responses:
+        "200":
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+    delete:
+      operationId: deleteAccount
+      tags: [accounts]
+      summary: Delete an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List all transactions
+      parameters:
+        - name: accountId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+            enum: [expense, income, null]
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Create a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /transactions/{id}:
+    get:
+      operationId: getTransaction
+      tags: [transactions]
+      summary: Get transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateTransaction
+      tags: [transactions]
+      summary: Update a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionUpdate"
+      responses:
+        "200":
+          description: Updated transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /summary/overview:
+    get:
+      operationId: getSummaryOverview
+      tags: [summary]
+      summary: Get overall financial summary
+      responses:
+        "200":
+          description: Summary overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryOverview"
+
+  /summary/spending-by-category:
+    get:
+      operationId: getSpendingByCategory
+      tags: [summary]
+      summary: Get spending grouped by category
+      parameters:
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Spending by category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategorySpending"
+
+  /summary/monthly-trend:
+    get:
+      operationId: getMonthlyTrend
+      tags: [summary]
+      summary: Get monthly income vs expense trend
+      parameters:
+        - name: months
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Monthly trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyTrend"
+
+  /summary/recent-transactions:
+    get:
+      operationId: getRecentTransactions
+      tags: [summary]
+      summary: Get recent transactions
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Recent transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +409,228 @@ components:
       required:
         - status
 
+    Account:
+      type: object
+      required: [id, name, type, balance, currency, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [checking, savings, credit_card, cash, investment, other]
+        balance:
+          type: number
+        currency:
+          type: string
+        color:
+          type: ["string", "null"]
+        icon:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    AccountInput:
+      type: object
+      required: [name, type, balance]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [checking, savings, credit_card, cash, investment, other]
+        balance:
+          type: number
+        currency:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+
+    AccountUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [checking, savings, credit_card, cash, investment, other]
+        balance:
+          type: number
+        currency:
+          type: string
+        color:
+          type: ["string", "null"]
+        icon:
+          type: ["string", "null"]
+
+    Category:
+      type: object
+      required: [id, name, type, color]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [expense, income, both]
+        color:
+          type: string
+        icon:
+          type: ["string", "null"]
+
+    CategoryInput:
+      type: object
+      required: [name, type, color]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [expense, income, both]
+        color:
+          type: string
+        icon:
+          type: string
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [expense, income, both]
+        color:
+          type: string
+        icon:
+          type: ["string", "null"]
+
+    Transaction:
+      type: object
+      required: [id, amount, description, type, date, accountId, createdAt]
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+        description:
+          type: string
+        type:
+          type: string
+          enum: [expense, income]
+        date:
+          type: string
+        accountId:
+          type: integer
+        accountName:
+          type: ["string", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        categoryColor:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    TransactionInput:
+      type: object
+      required: [amount, description, type, date, accountId]
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        description:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [expense, income]
+        date:
+          type: string
+        accountId:
+          type: integer
+        categoryId:
+          type: ["integer", "null"]
+        notes:
+          type: string
+
+    TransactionUpdate:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        description:
+          type: string
+        type:
+          type: string
+          enum: [expense, income]
+        date:
+          type: string
+        accountId:
+          type: integer
+        categoryId:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+
+    SummaryOverview:
+      type: object
+      required: [totalBalance, totalExpensesThisMonth, totalIncomeThisMonth, netThisMonth, accountCount, transactionCount]
+      properties:
+        totalBalance:
+          type: number
+        totalExpensesThisMonth:
+          type: number
+        totalIncomeThisMonth:
+          type: number
+        netThisMonth:
+          type: number
+        accountCount:
+          type: integer
+        transactionCount:
+          type: integer
+        topExpenseCategory:
+          type: ["string", "null"]
+
+    CategorySpending:
+      type: object
+      required: [categoryId, categoryName, categoryColor, total, count]
+      properties:
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: string
+        categoryColor:
+          type: string
+        total:
+          type: number
+        count:
+          type: integer
+
+    MonthlyTrend:
+      type: object
+      required: [month, year, label, expenses, income, net]
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        label:
+          type: string
+        expenses:
+          type: number
+        income:
+          type: number
+        net:
+          type: number

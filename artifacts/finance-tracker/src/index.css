@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --font-sans: 'Inter', sans-serif;
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+}
+
+:root {
+  --background: 195 100% 95%; /* Pale aqua */
+  --foreground: 222 47% 11%;
+
+  --border: 0 0% 100% / 0.6;
+  --input: 0 0% 100% / 0.6;
+  --ring: 199 89% 48%;
+
+  --card: 0 0% 100% / 0.35;
+  --card-foreground: 222 47% 11%;
+  --card-border: 0 0% 100% / 0.6;
+
+  --popover: 0 0% 100% / 0.8;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 0 0% 100% / 0.6;
+
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 195 100% 90%;
+  --secondary-foreground: 222 47% 11%;
+
+  --muted: 195 50% 90%;
+  --muted-foreground: 215 25% 40%;
+
+  --accent: 195 100% 90%;
+  --accent-foreground: 222 47% 11%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --radius: 1rem;
+}
+
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 0 0% 100%;
+  
+  --border: 0 0% 100% / 0.2;
+  --input: 0 0% 100% / 0.2;
+  --ring: 199 89% 48%;
+
+  --card: 0 0% 100% / 0.1;
+  --card-foreground: 0 0% 100%;
+  --card-border: 0 0% 100% / 0.2;
+
+  --popover: 0 0% 100% / 0.2;
+  --popover-foreground: 0 0% 100%;
+  --popover-border: 0 0% 100% / 0.2;
+
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 215 25% 20%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 215 25% 20%;
+  --muted-foreground: 215 25% 80%;
+
+  --accent: 215 25% 20%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased text-foreground;
+    background: linear-gradient(135deg, #87ceeb 0%, #e0f6f9 50%, #b0e0e8 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.glass-button {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.1) 51%, rgba(255,255,255,0.3) 100%);
+  background-color: var(--color-primary);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.8);
+  position: relative;
+  overflow: hidden;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+.glass-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+.glass-button:hover {
+  filter: brightness(1.1);
+}
+.glass-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.2);
+}

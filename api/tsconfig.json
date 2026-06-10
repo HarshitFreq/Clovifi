@@ -4,7 +4,8 @@
     "moduleResolution": "bundler",
     "module": "esnext",
     "target": "es2022",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": ["node"]
   },
   "include": ["**/*.ts"]
 }

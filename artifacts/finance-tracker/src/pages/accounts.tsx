@@ -28,7 +28,7 @@ export default function Accounts() {
           <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
             Loading accounts...
           </div>
-        ) : accounts?.length === 0 ? (
+        ) : !Array.isArray(accounts) || accounts.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
             <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No accounts yet.</div>
             <button className="glass-button" style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
@@ -37,7 +37,7 @@ export default function Accounts() {
           </div>
         ) : (
           <div style={{ padding: "12px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px" }}>
-            {accounts?.map(acc => (
+            {Array.isArray(accounts) && accounts.map(acc => (
               <div
                 key={acc.id}
                 className="glass-panel"
@@ -92,7 +92,7 @@ export default function Accounts() {
       </div>
 
       {/* Summary bar */}
-      {accounts && accounts.length > 0 && (
+      {Array.isArray(accounts) && accounts.length > 0 && (
         <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
           <div className="panel-titlebar">Portfolio Summary</div>
           <div style={{ padding: "10px 14px", display: "flex", gap: "24px", flexWrap: "wrap" }}>

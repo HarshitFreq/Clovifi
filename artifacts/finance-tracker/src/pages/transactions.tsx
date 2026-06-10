@@ -20,7 +20,7 @@ export default function Transactions() {
           <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
             Loading transactions...
           </div>
-        ) : transactions?.length === 0 ? (
+        ) : !Array.isArray(transactions) || transactions.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
             <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No transactions yet.</div>
             <button className="glass-button" style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
@@ -41,7 +41,7 @@ export default function Transactions() {
                 </tr>
               </thead>
               <tbody>
-                {transactions?.map((t) => (
+                {Array.isArray(transactions) && transactions.map((t) => (
                   <tr key={t.id}>
                     <td style={{ color: "rgba(160,210,100,0.75)", fontFamily: "monospace", fontSize: "0.78rem" }}>
                       {format(new Date(t.date), "MMM d, yyyy")}

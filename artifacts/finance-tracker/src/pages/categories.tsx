@@ -9,8 +9,8 @@ const TYPE_COLORS: Record<string, string> = {
 export default function Categories() {
   const { data: categories, isLoading } = useListCategories({ query: { queryKey: getListCategoriesQueryKey() } });
 
-  const expenses = categories?.filter(c => c.type === "expense" || c.type === "both") ?? [];
-  const income = categories?.filter(c => c.type === "income" || c.type === "both") ?? [];
+  const expenses = Array.isArray(categories) ? categories.filter(c => c.type === "expense" || c.type === "both") : [];
+  const income = Array.isArray(categories) ? categories.filter(c => c.type === "income" || c.type === "both") : [];
 
   return (
     <div className="flex flex-col gap-3">
@@ -26,7 +26,7 @@ export default function Categories() {
           <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
             Loading categories...
           </div>
-        ) : categories?.length === 0 ? (
+        ) : !Array.isArray(categories) || categories.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
             <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No categories yet.</div>
             <button className="glass-button" style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>

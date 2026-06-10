@@ -20,7 +20,7 @@ export default function Dashboard() {
   const { data: recent } = useGetRecentTransactions({ limit: 8 }, { query: { queryKey: getGetRecentTransactionsQueryKey({ limit: 8 }) } });
   const { data: spendingRaw } = useGetSpendingByCategory({}, { query: { queryKey: getGetSpendingByCategoryQueryKey({}) } });
 
-  const spendingData = (spendingRaw ?? []).map((s, i) => ({
+  const spendingData = (Array.isArray(spendingRaw) ? spendingRaw : []).map((s, i) => ({
     name: s.categoryName,
     value: s.total,
     count: s.count,
@@ -99,7 +99,7 @@ export default function Dashboard() {
               <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(130,180,80,0.6)", fontSize: "0.8rem" }}>
                 Loading chart data...
               </div>
-            ) : trend && trend.length > 0 ? (
+            ) : Array.isArray(trend) && trend.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trend} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
                   <defs>
@@ -280,7 +280,7 @@ export default function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {(!recent || recent.length === 0) ? (
+            {(!Array.isArray(recent) || recent.length === 0) ? (
               <tr>
                 <td colSpan={5} style={{ textAlign: "center", color: "rgba(130,180,80,0.5)", padding: "2rem 1rem", fontStyle: "italic" }}>
                   No transactions yet

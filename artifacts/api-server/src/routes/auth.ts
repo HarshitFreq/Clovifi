@@ -98,6 +98,14 @@ router.post("/auth/register", async (req, res) => {
     return;
   }
 
+  // Strong password complexity check: min 8 chars, 1 uppercase, 1 digit, 1 special char
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^a-zA-Z0-9]/.test(password)) {
+    res.status(400).json({
+      error: "Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character."
+    });
+    return;
+  }
+
   try {
     // Check if username exists
     const [existing] = await db
@@ -153,7 +161,16 @@ router.post("/auth/login", async (req, res) => {
       .select()
       .from(usersTable)
       .where(eq(usersTable.username, username.toLowerCase().trim()));
-    if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+
+    let isMatch = false;
+    if (user && user.passwordHash) {
+      isMatch = verifyPassword(password, user.passwordHash);
+    } else {
+      // Timing attack mitigation: run fake verification to occupy CPU time matching standard hash checks
+      verifyPassword(password, "$2b$10$invalidhashplaceholderthatlooksrealforequaltime");
+    }
+
+    if (!user || !isMatch) {
       res.status(401).json({ error: "Invalid username or password" });
       return;
     }

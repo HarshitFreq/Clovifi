@@ -32,14 +32,14 @@ interface CurrencyContextValue {
 }
 
 const CurrencyContext = createContext<CurrencyContextValue>({
-  currency: "USD",
+  currency: "INR",
   setCurrency: () => {},
-  formatAmount: (n) => `$${n.toFixed(2)}`,
+  formatAmount: (n) => `₹${n.toFixed(2)}`,
 });
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrencyState] = useState<string>(
-    () => localStorage.getItem(STORAGE_KEY) ?? "USD"
+    () => localStorage.getItem(STORAGE_KEY) ?? "INR"
   );
 
   function setCurrency(code: string) {

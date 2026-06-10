@@ -85,7 +85,7 @@ router.get("/summary/overview", async (req, res) => {
 
 router.get("/summary/spending-by-category", async (req, res) => {
   const userId = req.userId!;
-  const filters = [];
+  const filters: any[] = [];
   if (req.query.startDate) filters.push(gte(transactionsTable.date, req.query.startDate as string));
   if (req.query.endDate) filters.push(lte(transactionsTable.date, req.query.endDate as string));
 

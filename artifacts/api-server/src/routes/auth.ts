@@ -1,7 +1,22 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { usersTable } from "@workspace/db";
+import { usersTable, categoriesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+
+const DEFAULT_CATEGORIES = [
+  { name: "Food & Dining",      color: "#FF6B6B", icon: "🍔" },
+  { name: "Transport",          color: "#4ECDC4", icon: "🚗" },
+  { name: "Shopping",           color: "#45B7D1", icon: "🛍️" },
+  { name: "Entertainment",      color: "#96CEB4", icon: "🎬" },
+  { name: "Health & Fitness",   color: "#FFEAA7", icon: "💪" },
+  { name: "Housing & Rent",     color: "#DDA0DD", icon: "🏠" },
+  { name: "Utilities",          color: "#98D8C8", icon: "⚡" },
+  { name: "Education",          color: "#F7DC6F", icon: "📚" },
+  { name: "Travel",             color: "#85C1E9", icon: "✈️" },
+  { name: "Salary",             color: "#7DDA2A", icon: "💰" },
+  { name: "Freelance",          color: "#A8FF60", icon: "💻" },
+  { name: "Investments",        color: "#52BE80", icon: "📈" },
+];
 import { RegisterBody, LoginBody } from "@workspace/api-zod";
 import { hashPassword, verifyPassword } from "../lib/crypto";
 import rateLimit from "express-rate-limit";
@@ -125,6 +140,11 @@ router.post("/auth/register", async (req, res) => {
         passwordHash,
       })
       .returning();
+
+    // Seed default categories for the new user
+    await db.insert(categoriesTable).values(
+      DEFAULT_CATEGORIES.map((c) => ({ ...c, userId: user.id }))
+    );
 
     // Set signed cookie
     const isProd = process.env.NODE_ENV === "production";

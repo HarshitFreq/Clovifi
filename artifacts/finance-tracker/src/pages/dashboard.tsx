@@ -2,34 +2,30 @@ import {
   useGetSummaryOverview, getGetSummaryOverviewQueryKey,
   useGetMonthlyTrend, getGetMonthlyTrendQueryKey,
   useGetRecentTransactions, getGetRecentTransactionsQueryKey,
+  useGetSpendingByCategory, getGetSpendingByCategoryQueryKey,
 } from "@workspace/api-client-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { useCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 
-const PIE_COLORS = ["#66c028", "#4da820", "#38891a", "#2a6c12", "#1e520d", "#8dda40", "#a8e660", "#52a81c"];
+const PIE_FALLBACK = ["#66c028","#f87171","#facc15","#60a5fa","#c084fc","#fb923c","#34d399","#f472b6"];
 
 export default function Dashboard() {
   const { formatAmount } = useCurrency();
   const { data: summary, isLoading: isLoadingSummary } = useGetSummaryOverview({ query: { queryKey: getGetSummaryOverviewQueryKey() } });
   const { data: trend, isLoading: isLoadingTrend } = useGetMonthlyTrend({ months: 6 }, { query: { queryKey: getGetMonthlyTrendQueryKey({ months: 6 }) } });
   const { data: recent } = useGetRecentTransactions({ limit: 8 }, { query: { queryKey: getGetRecentTransactionsQueryKey({ limit: 8 }) } });
+  const { data: spendingRaw } = useGetSpendingByCategory({}, { query: { queryKey: getGetSpendingByCategoryQueryKey({}) } });
 
-  const spendingData = recent
-    ? Object.values(
-        recent
-          .filter(t => t.type === "expense" && t.categoryName)
-          .reduce((acc, t) => {
-            const key = t.categoryName!;
-            if (!acc[key]) acc[key] = { name: key, value: 0, color: t.categoryColor || "#66c028" };
-            acc[key].value += t.amount;
-            return acc;
-          }, {} as Record<string, { name: string; value: number; color: string }>)
-      )
-    : [];
+  const spendingData = (spendingRaw ?? []).map((s, i) => ({
+    name: s.categoryName,
+    value: s.total,
+    count: s.count,
+    color: s.categoryColor || PIE_FALLBACK[i % PIE_FALLBACK.length],
+  }));
 
   return (
     <div className="flex flex-col gap-3">
@@ -138,31 +134,135 @@ export default function Dashboard() {
         </div>
 
         {/* Spending by Category */}
-        <div className="glass-panel" style={{ flex: "1 1 220px", borderRadius: "6px", overflow: "hidden", minWidth: "200px" }}>
+        <div className="glass-panel" style={{ flex: "1 1 240px", borderRadius: "6px", overflow: "hidden", minWidth: "220px", display: "flex", flexDirection: "column" }}>
           <div className="panel-titlebar">Spending by Category</div>
-          <div style={{ padding: "8px", height: "240px" }}>
-            {spendingData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={spendingData} cx="50%" cy="48%" outerRadius={75} dataKey="value" strokeWidth={1} stroke="rgba(0,0,0,0.4)">
-                    {spendingData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color || PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ background: "rgba(6,18,4,0.92)", border: "1px solid rgba(80,160,30,0.4)", borderRadius: "6px", fontSize: "0.75rem" }}
-                    labelStyle={{ color: "rgba(180,230,120,0.9)" }}
-                    formatter={(v: number) => formatAmount(v)}
-                  />
-                  <Legend wrapperStyle={{ fontSize: "0.7rem", color: "rgba(190,230,140,0.8)" }} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(130,180,80,0.5)", fontSize: "0.8rem", textAlign: "center" }}>
-                Add transactions<br />to see breakdown
+
+          {spendingData.length > 0 ? (
+            <>
+              {/* Donut chart */}
+              <div style={{ height: "190px", padding: "8px 8px 0" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <defs>
+                      {spendingData.map((entry, i) => (
+                        <filter key={i} id={`glow-${i}`} x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="2.5" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      ))}
+                    </defs>
+                    <Pie
+                      data={spendingData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="52%"
+                      outerRadius="78%"
+                      dataKey="value"
+                      paddingAngle={2}
+                      strokeWidth={0}
+                    >
+                      {spendingData.map((entry, i) => (
+                        <Cell
+                          key={i}
+                          fill={entry.color}
+                          stroke={entry.color}
+                          strokeWidth={0.5}
+                          style={{ filter: `drop-shadow(0 0 4px ${entry.color}99)` }}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(4,14,2,0.96)",
+                        border: "1px solid rgba(80,160,30,0.45)",
+                        borderRadius: "5px",
+                        fontSize: "0.74rem",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.8), 0 0 8px rgba(60,140,20,0.2)",
+                        backdropFilter: "blur(14px)",
+                        padding: "8px 12px",
+                      }}
+                      labelStyle={{ color: "rgba(180,230,120,0.9)", fontWeight: 700, marginBottom: "2px" }}
+                      itemStyle={{ color: "rgba(200,235,160,0.85)" }}
+                      formatter={(v: number, _name: string, props: { payload?: { count?: number } }) => [
+                        <span style={{ fontFamily: "monospace", color: "#c8eea0" }}>{formatAmount(v)}</span>,
+                        <span style={{ color: "rgba(150,200,90,0.75)", fontSize: "0.68rem" }}>
+                          {props.payload?.count ?? ""} txn{(props.payload?.count ?? 0) !== 1 ? "s" : ""}
+                        </span>,
+                      ]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            )}
-          </div>
+
+              {/* Custom dark legend */}
+              <div style={{
+                padding: "6px 12px 10px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+                overflowY: "auto",
+                maxHeight: "120px",
+              }}>
+                {spendingData.map((entry, i) => {
+                  const total = spendingData.reduce((s, d) => s + d.value, 0);
+                  const pct = total > 0 ? ((entry.value / total) * 100).toFixed(1) : "0.0";
+                  return (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+                      {/* Color swatch */}
+                      <div style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "2px",
+                        flexShrink: 0,
+                        background: entry.color,
+                        boxShadow: `0 0 5px ${entry.color}88`,
+                      }} />
+                      {/* Name */}
+                      <div style={{
+                        flex: 1,
+                        fontSize: "0.7rem",
+                        color: "rgba(190,230,145,0.85)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}>
+                        {entry.name}
+                      </div>
+                      {/* Percent */}
+                      <div style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        fontFamily: "monospace",
+                        color: entry.color,
+                        textShadow: `0 0 6px ${entry.color}66`,
+                        flexShrink: 0,
+                      }}>
+                        {pct}%
+                      </div>
+                      {/* Amount */}
+                      <div style={{
+                        fontSize: "0.68rem",
+                        fontFamily: "monospace",
+                        color: "rgba(160,205,105,0.65)",
+                        flexShrink: 0,
+                        minWidth: "60px",
+                        textAlign: "right",
+                      }}>
+                        {formatAmount(entry.value)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(130,180,80,0.45)", fontSize: "0.8rem", textAlign: "center", padding: "2rem", lineHeight: 1.6 }}>
+              Add expense transactions<br />to see breakdown
+            </div>
+          )}
         </div>
       </div>
 

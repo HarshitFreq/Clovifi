@@ -7,6 +7,7 @@ import transactionsRouter from "./transactions";
 import summaryRouter from "./summary";
 import adminRouter from "./admin";
 import subscriptionsRouter from "./subscriptions";
+import demoRouter from "./demo";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -24,5 +25,6 @@ router.use(transactionsRouter);
 router.use(summaryRouter);
 router.use(adminRouter);
 router.use(subscriptionsRouter);
+router.use(demoRouter);
 
 export default router;

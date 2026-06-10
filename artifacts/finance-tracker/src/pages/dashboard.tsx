@@ -16,6 +16,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical, GripHorizontal, User, LogOut } from "lucide-react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
+import OnboardingTour from "@/components/OnboardingTour";
 
 const PIE_FALLBACK = ["#66c028","#f87171","#facc15","#60a5fa","#c084fc","#fb923c","#34d399","#f472b6"];
 
@@ -24,6 +25,17 @@ export default function Dashboard() {
   const { data: user } = useGetMe();
   const logoutMutation = useLogout();
   const queryClient = useQueryClient();
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  const handleLoadDemo = async () => {
+    setDemoLoading(true);
+    try {
+      await fetch("/api/demo-data", { method: "POST" });
+      queryClient.invalidateQueries();
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -627,6 +639,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-3">
+      <OnboardingTour onDemoLoad={handleLoadDemo} demoLoading={demoLoading} />
       {/* Welcome & Profile Header */}
       <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
         <div className="panel-titlebar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>

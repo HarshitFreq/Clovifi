@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { usersTable, categoriesTable } from "@workspace/db";
+import { usersTable, categoriesTable, accountsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const DEFAULT_CATEGORIES = [
@@ -145,6 +145,17 @@ router.post("/auth/register", async (req, res) => {
     await db.insert(categoriesTable).values(
       DEFAULT_CATEGORIES.map((c) => ({ ...c, userId: user.id }))
     );
+
+    // Seed a default Cash Wallet account
+    await db.insert(accountsTable).values({
+      userId: user.id,
+      name: "Cash Wallet",
+      type: "checking",
+      balance: "0",
+      currency: "INR",
+      color: "#7DDA2A",
+      icon: "💵",
+    });
 
     // Set signed cookie
     const isProd = process.env.NODE_ENV === "production";

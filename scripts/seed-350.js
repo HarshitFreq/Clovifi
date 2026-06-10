@@ -1,6 +1,6 @@
 import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { accountsTable, categoriesTable, transactionsTable, usersTable } from "../lib/db/src/schema/index.js";
+import { accountsTable, categoriesTable, transactionsTable, usersTable } from "../lib/db/src/schema/index.ts";
 import { eq } from "drizzle-orm";
 
 const DATABASE_URL = process.env.DATABASE_URL || "postgresql://localhost/aerofinance";

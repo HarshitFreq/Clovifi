@@ -19,64 +19,7 @@ export default function Login({ onSuccess }: LoginProps) {
   const registerMutation = useRegister();
   const { toast } = useToast();
 
-  // Load Google GIS button once component mounts
-  useEffect(() => {
-    /* global google */
-    if (typeof window !== "undefined" && (window as any).google) {
-      try {
-        (window as any).google.accounts.id.initialize({
-          client_id: "mock-google-client-id.apps.googleusercontent.com", // Fallback mock client ID
-          callback: handleGoogleLoginCallback,
-        });
-        (window as any).google.accounts.id.renderButton(
-          document.getElementById("google-signin-btn"),
-          { theme: "dark", size: "large", width: 320, text: "signin_with" }
-        );
-      } catch (err) {
-        console.warn("Google GIS initialization skipped / no environment configuration", err);
-      }
-    }
-  }, []);
 
-  const handleGoogleLoginCallback = async (response: any) => {
-    setError(null);
-    try {
-      // Decode mock or real credential token (standard JWT payload decode)
-      const base64Url = response.credential.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      const decoded = JSON.parse(jsonPayload);
-
-      // Call our API with Google details
-      const r = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          googleId: decoded.sub,
-          email: decoded.email,
-          username: decoded.name || decoded.given_name,
-        }),
-      });
-
-      if (!r.ok) {
-        const body = await r.json();
-        throw new Error(body.error || "Google Auth failed");
-      }
-
-      toast({
-        title: "Welcome!",
-        description: `Logged in via Google as ${decoded.email}`,
-      });
-      onSuccess();
-    } catch (err: any) {
-      setError(err?.message || "Google Login failed.");
-    }
-  };
 
   // Mock login with Google function if GIS iframe fails or is blocked
   const handleMockGoogleLogin = async () => {
@@ -300,8 +243,7 @@ export default function Login({ onSuccess }: LoginProps) {
 
           {/* Google SSO Buttons */}
           <div className="w-full flex flex-col gap-2 items-center">
-            {/* GIS standard iframe mount point */}
-            <div id="google-signin-btn" className="w-full overflow-hidden rounded-xl flex justify-center scale-90" />
+
             
             {/* Direct Glass Mock Login Google Button */}
             <button

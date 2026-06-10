@@ -297,8 +297,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           })}
         </Reorder.Group>
 
-        {/* User profile card & Logout button in the down-left side */}
-        <UserProfileCard />
+
       </nav>
 
       {/* ── Main content ── */}

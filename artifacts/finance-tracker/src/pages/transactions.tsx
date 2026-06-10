@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, ChevronDown, Check, X } from "lucide-react";
 import {
   useListTransactions,
   getListTransactionsQueryKey,
@@ -31,6 +33,47 @@ export default function Transactions() {
 
   // Search & Filter States
   const [search, setSearch] = useState("");
+  const [activeCapsule, setActiveCapsule] = useState<string | null>(null);
+
+  // helper to get human readable text for active capsule values
+  const getTypeText = () => {
+    if (selectedType === "all") return "All Types";
+    if (selectedType === "expense") return "📉 Expenses";
+    if (selectedType === "income") return "📈 Income";
+    return "Types";
+  };
+
+  const getAccountText = () => {
+    if (selectedAccount === "all") return "All Accounts";
+    const found = accounts?.find(a => a.id === Number(selectedAccount));
+    return found ? found.name : "Accounts";
+  };
+
+  const getCategoryText = () => {
+    if (selectedCategory === "all") return "All Categories";
+    if (selectedCategory === "uncategorized") return "Uncategorized";
+    const found = categories?.find(c => c.id === Number(selectedCategory));
+    return found ? found.name : "Categories";
+  };
+
+  const getDateText = () => {
+    if (datePreset === "all") return "Anytime";
+    if (datePreset === "week") return "Past 7 Days";
+    if (datePreset === "month") return "This Month";
+    if (datePreset === "lastMonth") return "Last Month";
+    if (datePreset === "custom") return "Custom Range";
+    return "Date";
+  };
+
+  const getSortText = () => {
+    if (sortBy === "dateDesc") return "Newest First";
+    if (sortBy === "dateAsc") return "Oldest First";
+    if (sortBy === "amountDesc") return "Highest Amount";
+    if (sortBy === "amountAsc") return "Lowest Amount";
+    if (sortBy === "descAsc") return "Name A-Z";
+    if (sortBy === "descDesc") return "Name Z-A";
+    return "Sort By";
+  };
   const [selectedAccount, setSelectedAccount] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
@@ -141,11 +184,12 @@ export default function Transactions() {
           </div>
         </div>
 
-        {/* ── Filters & Search Control Bar ── */}
-        <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(80, 160, 30, 0.15)", background: "rgba(6, 18, 4, 0.3)", display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {/* Search Input */}
-            <div style={{ flex: "1 1 200px" }}>
+        {/* ── Dynamic Glass Capsule Filter Bar ── */}
+        <div style={{ padding: "16px", borderBottom: "1px solid rgba(80, 160, 30, 0.15)", background: "rgba(6, 18, 4, 0.35)", position: "relative" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px" }}>
+            {/* Glossy Search Input */}
+            <div style={{ position: "relative", flex: "1 1 240px" }}>
+              <Search style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "rgba(160,220,90,0.6)" }} />
               <input
                 type="text"
                 placeholder="Search descriptions..."
@@ -153,200 +197,265 @@ export default function Transactions() {
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "4px",
+                  padding: "8px 10px 8px 30px",
+                  borderRadius: "20px",
                   background: "rgba(8, 22, 4, 0.75)",
                   border: "1px solid rgba(70, 140, 25, 0.35)",
                   color: "rgba(215, 240, 190, 0.95)",
                   fontSize: "0.8rem",
                   outline: "none",
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
+                  boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)",
+                  transition: "all 0.2s",
                 }}
+                onFocus={(e) => e.currentTarget.style.borderColor = "rgba(100, 220, 40, 0.6)"}
+                onBlur={(e) => e.currentTarget.style.borderColor = "rgba(70, 140, 25, 0.35)"}
               />
+              {search && (
+                <X 
+                  onClick={() => setSearch("")}
+                  style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", width: "13px", height: "13px", color: "rgba(160,220,90,0.6)", cursor: "pointer" }}
+                />
+              )}
             </div>
 
-            {/* Type Filter */}
-            <div style={{ flex: "0 1 120px" }}>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              >
-                <option value="all">All Types</option>
-                <option value="expense">📉 Expenses</option>
-                <option value="income">📈 Income</option>
-              </select>
-            </div>
+            {/* Capsules Row */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+              {/* Type Capsule */}
+              <CapsuleButton 
+                label={getTypeText()} 
+                active={selectedType !== "all"} 
+                isOpen={activeCapsule === "type"} 
+                onClick={() => setActiveCapsule(activeCapsule === "type" ? null : "type")} 
+              />
 
-            {/* Account Filter */}
-            <div style={{ flex: "0 1 140px" }}>
-              <select
-                value={selectedAccount}
-                onChange={(e) => setSelectedAccount(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              >
-                <option value="all">All Accounts</option>
-                {Array.isArray(accounts) && accounts.map(a => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
-            </div>
+              {/* Account Capsule */}
+              <CapsuleButton 
+                label={getAccountText()} 
+                active={selectedAccount !== "all"} 
+                isOpen={activeCapsule === "account"} 
+                onClick={() => setActiveCapsule(activeCapsule === "account" ? null : "account")} 
+              />
 
-            {/* Category Filter */}
-            <div style={{ flex: "0 1 140px" }}>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              >
-                <option value="all">All Categories</option>
-                <option value="uncategorized">Uncategorized</option>
-                {(() => {
-                  const catsList = Array.isArray(categories) ? categories : [];
-                  const parents = catsList.filter(c => !c.parentId);
-                  const children = catsList.filter(c => c.parentId);
-                  const childrenMap: Record<number, typeof catsList> = {};
-                  children.forEach(child => {
-                    const pid = child.parentId!;
-                    if (!childrenMap[pid]) childrenMap[pid] = [];
-                    childrenMap[pid].push(child);
-                  });
+              {/* Category Capsule */}
+              <CapsuleButton 
+                label={getCategoryText()} 
+                active={selectedCategory !== "all"} 
+                isOpen={activeCapsule === "category"} 
+                onClick={() => setActiveCapsule(activeCapsule === "category" ? null : "category")} 
+              />
 
-                  return parents.map(parent => {
-                    const subCats = childrenMap[parent.id] || [];
-                    if (subCats.length === 0) {
-                      return <option key={parent.id} value={parent.id}>{parent.name}</option>;
-                    }
-                    return (
-                      <optgroup key={parent.id} label={parent.name} style={{ background: "rgba(6,18,4,0.98)", color: "rgba(215,240,190,0.95)" }}>
-                        <option value={parent.id}>{parent.name} (Main)</option>
-                        {subCats.map(child => (
-                          <option key={child.id} value={child.id}>↳ {child.name}</option>
-                        ))}
-                      </optgroup>
-                    );
-                  });
-                })()}
-              </select>
-            </div>
+              {/* Date Capsule */}
+              <CapsuleButton 
+                label={getDateText()} 
+                active={datePreset !== "all"} 
+                isOpen={activeCapsule === "date"} 
+                onClick={() => setActiveCapsule(activeCapsule === "date" ? null : "date")} 
+              />
 
-            {/* Date Range Preset Selector */}
-            <div style={{ flex: "0 1 140px" }}>
-              <select
-                value={datePreset}
-                onChange={(e) => setDatePreset(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              >
-                <option value="all">Anytime</option>
-                <option value="week">Past 7 Days</option>
-                <option value="month">This Month</option>
-                <option value="lastMonth">Last Month</option>
-                <option value="custom">Custom Range...</option>
-              </select>
-            </div>
+              {/* Sort Capsule */}
+              <CapsuleButton 
+                label={`Sort: ${getSortText()}`} 
+                active={sortBy !== "dateDesc"} 
+                isOpen={activeCapsule === "sort"} 
+                onClick={() => setActiveCapsule(activeCapsule === "sort" ? null : "sort")} 
+              />
 
-            {/* Sorting Dropdown */}
-            <div style={{ flex: "0 1 140px" }}>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              >
-                <option value="dateDesc">Newest First</option>
-                <option value="dateAsc">Oldest First</option>
-                <option value="amountDesc">Highest Amount</option>
-                <option value="amountAsc">Lowest Amount</option>
-                <option value="descAsc">Name A-Z</option>
-                <option value="descDesc">Name Z-A</option>
-              </select>
+              {/* Clear Filters Button (If any active) */}
+              {(selectedType !== "all" || selectedAccount !== "all" || selectedCategory !== "all" || datePreset !== "all" || search || sortBy !== "dateDesc") && (
+                <button
+                  onClick={() => {
+                    setSelectedType("all");
+                    setSelectedAccount("all");
+                    setSelectedCategory("all");
+                    setDatePreset("all");
+                    setStartDate("");
+                    setEndDate("");
+                    setSearch("");
+                    setSortBy("dateDesc");
+                    setActiveCapsule(null);
+                  }}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "15px",
+                    background: "rgba(239, 68, 68, 0.15)",
+                    border: "1px solid rgba(239, 68, 68, 0.35)",
+                    color: "#fca5a5",
+                    fontSize: "0.72rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.3)";
+                    e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.15)";
+                    e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.35)";
+                  }}
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Custom Date Range Selectors */}
-          {datePreset === "custom" && (
-            <div style={{ display: "flex", gap: 10, alignItems: "center", animation: "fadeIn 0.15s ease" }}>
-              <span style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", color: "rgba(160,220,90,0.7)" }}>From</span>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+          {/* AnimatePresence Option Popup Menu */}
+          <AnimatePresence>
+            {activeCapsule && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 style={{
-                  padding: "5px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
+                  position: "absolute",
+                  left: "16px",
+                  right: "16px",
+                  top: "100%",
+                  zIndex: 100,
+                  marginTop: "8px",
+                  borderRadius: "6px",
+                  overflow: "hidden",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.65), 0 0 0 1px rgba(80,160,30,0.25)",
                 }}
-              />
-              <span style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", color: "rgba(160,220,90,0.7)" }}>To</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                style={{
-                  padding: "5px 10px",
-                  borderRadius: "4px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
-                  fontSize: "0.8rem",
-                  outline: "none",
-                }}
-              />
-            </div>
-          )}
+                className="glass-panel"
+              >
+                <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(80,160,30,0.15)", paddingBottom: "6px" }}>
+                    <span style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(160,220,90,0.85)" }}>
+                      Filter by {activeCapsule}
+                    </span>
+                    <span 
+                      onClick={() => setActiveCapsule(null)} 
+                      style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                    >
+                      <X style={{ width: "13px", height: "13px", color: "rgba(160,220,90,0.6)" }} />
+                    </span>
+                  </div>
+
+                  {/* Render Menu Options based on active capsule */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "200px", overflowY: "auto", padding: "4px 0" }}>
+                    {activeCapsule === "type" && [
+                      { value: "all", label: "All Types" },
+                      { value: "expense", label: "📉 Expenses" },
+                      { value: "income", label: "📈 Income" }
+                    ].map(opt => (
+                      <MenuOptionItem 
+                        key={opt.value} 
+                        label={opt.label} 
+                        selected={selectedType === opt.value} 
+                        onClick={() => { setSelectedType(opt.value); setActiveCapsule(null); }} 
+                      />
+                    ))}
+
+                    {activeCapsule === "account" && [
+                      { value: "all", label: "All Accounts" },
+                      ...(accounts || []).map(a => ({ value: String(a.id), label: a.name }))
+                    ].map(opt => (
+                      <MenuOptionItem 
+                        key={opt.value} 
+                        label={opt.label} 
+                        selected={selectedAccount === opt.value} 
+                        onClick={() => { setSelectedAccount(opt.value); setActiveCapsule(null); }} 
+                      />
+                    ))}
+
+                    {activeCapsule === "category" && [
+                      { value: "all", label: "All Categories" },
+                      { value: "uncategorized", label: "Uncategorized" },
+                      ...(categories || []).map(c => ({ value: String(c.id), label: c.name }))
+                    ].map(opt => (
+                      <MenuOptionItem 
+                        key={opt.value} 
+                        label={opt.label} 
+                        selected={selectedCategory === opt.value} 
+                        onClick={() => { setSelectedCategory(opt.value); setActiveCapsule(null); }} 
+                      />
+                    ))}
+
+                    {activeCapsule === "date" && (
+                      <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "8px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                          {[
+                            { value: "all", label: "Anytime" },
+                            { value: "week", label: "Past 7 Days" },
+                            { value: "month", label: "This Month" },
+                            { value: "lastMonth", label: "Last Month" },
+                            { value: "custom", label: "Custom Range..." }
+                          ].map(opt => (
+                            <MenuOptionItem 
+                              key={opt.value} 
+                              label={opt.label} 
+                              selected={datePreset === opt.value} 
+                              onClick={() => { 
+                                setDatePreset(opt.value); 
+                                if (opt.value !== "custom") {
+                                  setActiveCapsule(null); 
+                                }
+                              }} 
+                            />
+                          ))}
+                        </div>
+                        {datePreset === "custom" && (
+                          <motion.div 
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            style={{ display: "flex", gap: "10px", alignItems: "center", borderTop: "1px solid rgba(80,160,30,0.15)", paddingTop: "8px", flexWrap: "wrap" }}
+                          >
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span style={{ fontSize: "0.7rem", color: "rgba(160,220,90,0.8)" }}>Start:</span>
+                              <input 
+                                type="date" 
+                                value={startDate} 
+                                onChange={(e) => setStartDate(e.target.value)} 
+                                style={{ background: "rgba(8,22,4,0.8)", border: "1px solid rgba(80,160,30,0.3)", borderRadius: "4px", color: "#fff", padding: "4px 8px", fontSize: "0.75rem", outline: "none" }}
+                              />
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span style={{ fontSize: "0.7rem", color: "rgba(160,220,90,0.8)" }}>End:</span>
+                              <input 
+                                type="date" 
+                                value={endDate} 
+                                onChange={(e) => setEndDate(e.target.value)} 
+                                style={{ background: "rgba(8,22,4,0.8)", border: "1px solid rgba(80,160,30,0.3)", borderRadius: "4px", color: "#fff", padding: "4px 8px", fontSize: "0.75rem", outline: "none" }}
+                              />
+                            </div>
+                            <button
+                              className="glass-button"
+                              onClick={() => setActiveCapsule(null)}
+                              style={{ padding: "4px 12px", borderRadius: "4px", fontSize: "0.7rem" }}
+                            >
+                              Apply Range
+                            </button>
+                          </motion.div>
+                        )}
+                      </div>
+                    )}
+
+                    {activeCapsule === "sort" && [
+                      { value: "dateDesc", label: "Newest First" },
+                      { value: "dateAsc", label: "Oldest First" },
+                      { value: "amountDesc", label: "Highest Amount" },
+                      { value: "amountAsc", label: "Lowest Amount" },
+                      { value: "descAsc", label: "Name A-Z" },
+                      { value: "descDesc", label: "Name Z-A" }
+                    ].map(opt => (
+                      <MenuOptionItem 
+                        key={opt.value} 
+                        label={opt.label} 
+                        selected={sortBy === opt.value} 
+                        onClick={() => { setSortBy(opt.value); setActiveCapsule(null); }} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {isLoading ? (
@@ -448,5 +557,101 @@ export default function Transactions() {
       <TransactionModal open={modalOpen} onClose={closeModal} transaction={editingTransaction} />
       <ExportPdfModal open={exportOpen} onClose={() => setExportOpen(false)} />
     </div>
+  );
+}
+
+function CapsuleButton({ label, active, isOpen, onClick }: { label: string; active: boolean; isOpen: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "5px 12px",
+        borderRadius: "16px",
+        background: active 
+          ? "linear-gradient(to bottom, #8dda40 0%, #52a81c 100%)" 
+          : "rgba(255, 255, 255, 0.05)",
+        border: active 
+          ? "1px solid rgba(160, 230, 80, 0.5)" 
+          : "1px solid rgba(70, 140, 25, 0.25)",
+        color: active ? "#fff" : "rgba(190, 225, 150, 0.85)",
+        fontSize: "0.75rem",
+        fontWeight: active ? 600 : 400,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        boxShadow: active ? "0 0 8px rgba(80, 180, 20, 0.3)" : "none",
+        transition: "all 0.15s",
+        textShadow: active ? "0 1px 2px rgba(0,0,0,0.5)" : "none",
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "rgba(110, 180, 50, 0.12)";
+          e.currentTarget.style.borderColor = "rgba(110, 180, 50, 0.4)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+          e.currentTarget.style.borderColor = "rgba(70, 140, 25, 0.25)";
+        }
+      }}
+    >
+      {active && (
+        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fff", display: "inline-block" }} />
+      )}
+      <span>{label}</span>
+      <ChevronDown 
+        style={{ 
+          width: "12px", 
+          height: "12px", 
+          transition: "transform 0.2s", 
+          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          opacity: 0.8 
+        }} 
+      />
+    </button>
+  );
+}
+
+function MenuOptionItem({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "6px 12px",
+        borderRadius: "15px",
+        background: selected 
+          ? "linear-gradient(to bottom, #8dda40 0%, #52a81c 100%)" 
+          : "rgba(8, 22, 4, 0.6)",
+        border: selected 
+          ? "1px solid rgba(160, 230, 80, 0.45)" 
+          : "1px solid rgba(80, 160, 30, 0.2)",
+        color: selected ? "#fff" : "rgba(215, 240, 190, 0.9)",
+        fontSize: "0.75rem",
+        fontWeight: selected ? 600 : 400,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        transition: "all 0.12s",
+        textShadow: selected ? "0 1px 1.5px rgba(0,0,0,0.5)" : "none",
+      }}
+      onMouseEnter={(e) => {
+        if (!selected) {
+          e.currentTarget.style.background = "rgba(110, 180, 50, 0.15)";
+          e.currentTarget.style.borderColor = "rgba(110, 180, 50, 0.45)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!selected) {
+          e.currentTarget.style.background = "rgba(8, 22, 4, 0.6)";
+          e.currentTarget.style.borderColor = "rgba(80, 160, 30, 0.2)";
+        }
+      }}
+    >
+      {selected && <Check style={{ width: "11px", height: "11px", strokeWidth: 3 }} />}
+      <span>{label}</span>
+    </button>
   );
 }

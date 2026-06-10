@@ -7,47 +7,82 @@ export default function Transactions() {
   const { data: transactions, isLoading } = useListTransactions({}, { query: { queryKey: getListTransactionsQueryKey({}) } });
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      <header className="glass-panel p-6 rounded-2xl flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-slate-800 drop-shadow-sm">Transactions</h2>
-        <button className="glass-button px-4 py-2 rounded-xl font-bold text-sm">Add Transaction</button>
-      </header>
+    <div className="flex flex-col gap-3">
+      <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
+        <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>Transactions — All Records</span>
+          <button className="glass-button" style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
+            + Add Transaction
+          </button>
+        </div>
 
-      <div className="glass-panel rounded-2xl overflow-hidden flex flex-col">
         {isLoading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
+          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
+            Loading transactions...
+          </div>
         ) : transactions?.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center gap-4">
-            <p className="text-slate-600">No transactions yet.</p>
-            <button className="glass-button px-4 py-2 rounded-xl font-bold text-sm">Add First Transaction</button>
+          <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+            <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No transactions yet.</div>
+            <button className="glass-button" style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
+              + Add First Transaction
+            </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div style={{ overflowX: "auto" }}>
+            <table className="aero-table" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="border-b border-white/40 bg-white/20">
-                  <th className="p-4 font-bold text-slate-700">Date</th>
-                  <th className="p-4 font-bold text-slate-700">Description</th>
-                  <th className="p-4 font-bold text-slate-700">Category</th>
-                  <th className="p-4 font-bold text-slate-700">Account</th>
-                  <th className="p-4 font-bold text-slate-700 text-right">Amount</th>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Account</th>
+                  <th>Type</th>
+                  <th style={{ textAlign: "right" }}>Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions?.map((t) => (
-                  <tr key={t.id} className="border-b border-white/20 hover:bg-white/30 transition-colors">
-                    <td className="p-4 text-slate-700">{format(new Date(t.date), "MMM d, yyyy")}</td>
-                    <td className="p-4 font-medium text-slate-800">{t.description}</td>
-                    <td className="p-4">
-                      {t.categoryName && (
-                        <span className="px-2 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: `${t.categoryColor || '#cbd5e1'}40`, color: t.categoryColor || '#475569' }}>
+                  <tr key={t.id}>
+                    <td style={{ color: "rgba(160,210,100,0.75)", fontFamily: "monospace", fontSize: "0.78rem" }}>
+                      {format(new Date(t.date), "MMM d, yyyy")}
+                    </td>
+                    <td style={{ fontWeight: 500, color: "rgba(215,240,190,0.9)" }}>{t.description}</td>
+                    <td>
+                      {t.categoryName ? (
+                        <span style={{
+                          padding: "2px 8px",
+                          borderRadius: "3px",
+                          fontSize: "0.7rem",
+                          fontWeight: 600,
+                          background: `${t.categoryColor || "#4da820"}30`,
+                          color: t.categoryColor || "#66c028",
+                          border: `1px solid ${t.categoryColor || "#4da820"}50`,
+                          letterSpacing: "0.04em",
+                        }}>
                           {t.categoryName}
                         </span>
+                      ) : (
+                        <span style={{ fontSize: "0.72rem", color: "rgba(100,140,60,0.45)", fontStyle: "italic" }}>Uncategorized</span>
                       )}
                     </td>
-                    <td className="p-4 text-slate-600 text-sm">{t.accountName}</td>
-                    <td className={`p-4 text-right font-bold drop-shadow-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
-                      {t.type === 'income' ? '+' : '-'}{formatAmount(Math.abs(t.amount))}
+                    <td style={{ fontSize: "0.78rem", color: "rgba(150,200,100,0.7)" }}>{t.accountName}</td>
+                    <td>
+                      <span style={{
+                        padding: "2px 8px",
+                        borderRadius: "3px",
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        background: t.type === "income" ? "rgba(50,180,60,0.15)" : "rgba(200,60,60,0.15)",
+                        color: t.type === "income" ? "#6ee87a" : "#f87171",
+                        border: `1px solid ${t.type === "income" ? "rgba(60,180,70,0.3)" : "rgba(200,60,60,0.3)"}`,
+                      }}>
+                        {t.type}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", color: t.type === "income" ? "#6ee87a" : "#f87171", textShadow: t.type === "income" ? "0 0 8px rgba(60,200,80,0.4)" : "0 0 8px rgba(220,60,60,0.3)" }}>
+                      {t.type === "income" ? "+" : "-"}{formatAmount(Math.abs(t.amount))}
                     </td>
                   </tr>
                 ))}

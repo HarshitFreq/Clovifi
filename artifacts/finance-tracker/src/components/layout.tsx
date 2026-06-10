@@ -1,63 +1,144 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Receipt, Wallet, Tags, Settings } from "lucide-react";
+import { LayoutDashboard, Receipt, Wallet, Tags, Settings, DollarSign } from "lucide-react";
 import { ReactNode } from "react";
+import { useCurrency } from "@/lib/currency";
+
+const NAV_SECTIONS = [
+  {
+    label: "Finance",
+    items: [
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/transactions", label: "Transactions", icon: Receipt },
+      { href: "/accounts", label: "Accounts", icon: Wallet },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [
+      { href: "/categories", label: "Categories", icon: Tags },
+    ],
+  },
+  {
+    label: "App",
+    items: [
+      { href: "/settings", label: "Settings", icon: Settings },
+    ],
+  },
+];
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-
-  const navItems = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/transactions", label: "Transactions", icon: Receipt },
-    { href: "/accounts", label: "Accounts", icon: Wallet },
-    { href: "/categories", label: "Categories", icon: Tags },
-  ];
+  const { currency } = useCurrency();
 
   return (
-    <div className="min-h-[100dvh] flex flex-col md:flex-row max-w-7xl mx-auto p-4 gap-6">
-      <nav className="glass-panel w-full md:w-64 flex-shrink-0 rounded-2xl p-4 flex flex-col gap-2 h-fit md:sticky top-4">
-        <div className="flex items-center gap-3 px-2 py-4 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white to-blue-200 shadow-sm flex items-center justify-center border border-white/60">
-            <div className="w-6 h-6 rounded-full bg-blue-500 glass-button" />
-          </div>
-          <h1 className="font-bold text-xl tracking-tight text-slate-800 drop-shadow-sm">Aero Finance</h1>
-        </div>
-
-        <div className="flex flex-col gap-1 flex-1">
-          {navItems.map((item) => {
-            const isActive = location === item.href;
-            return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
-                    isActive
-                      ? "bg-white/40 shadow-sm border border-white/70 text-blue-900"
-                      : "hover:bg-white/20 text-slate-700 hover:text-slate-900 border border-transparent"
-                  }`}
-                >
-                  <item.icon className={`w-5 h-5 ${isActive ? "text-blue-600 drop-shadow-sm" : ""}`} />
-                  <span className="font-medium">{item.label}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="mt-2 pt-2 border-t border-white/30">
-          <Link href="/settings">
-            <div
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
-                location === "/settings"
-                  ? "bg-white/40 shadow-sm border border-white/70 text-blue-900"
-                  : "hover:bg-white/20 text-slate-700 hover:text-slate-900 border border-transparent"
-              }`}
-            >
-              <Settings className={`w-5 h-5 ${location === "/settings" ? "text-blue-600 drop-shadow-sm" : ""}`} />
-              <span className="font-medium">Settings</span>
+    <div
+      className="min-h-[100dvh] flex flex-col md:flex-row"
+      style={{ maxWidth: "1400px", margin: "0 auto", padding: "1rem", gap: "10px" }}
+    >
+      {/* ── Sidebar ── */}
+      <nav
+        className="glass-panel flex-shrink-0 flex flex-col"
+        style={{
+          width: "200px",
+          borderRadius: "6px",
+          overflow: "hidden",
+          height: "fit-content",
+          position: "sticky",
+          top: "1rem",
+        }}
+      >
+        {/* Logo / header */}
+        <div
+          style={{
+            background: "linear-gradient(to bottom, rgba(15,40,6,0.95) 0%, rgba(8,22,3,0.98) 100%)",
+            borderBottom: "1px solid rgba(70,140,20,0.3)",
+            padding: "12px 10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          {/* Vista-style orb */}
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "radial-gradient(circle at 38% 35%, #9ded40 0%, #5db820 40%, #2d6b08 80%, #1a4204 100%)",
+              boxShadow: "0 0 10px rgba(90,200,20,0.5), inset 0 2px 3px rgba(255,255,255,0.4)",
+              flexShrink: 0,
+            }}
+          />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#d4f0a0", letterSpacing: "0.02em", lineHeight: 1.2, textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}>
+              Aero Finance
             </div>
-          </Link>
+            <div style={{ fontSize: "0.6rem", color: "rgba(140,190,80,0.7)", letterSpacing: "0.04em", lineHeight: 1 }}>
+              {currency} selected
+            </div>
+          </div>
+        </div>
+
+        {/* Nav sections */}
+        <div style={{ padding: "6px 0", flex: 1 }}>
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.label}>
+              <div
+                style={{
+                  padding: "8px 10px 3px",
+                  fontSize: "0.62rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "rgba(110,170,60,0.7)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                }}
+              >
+                {section.label}
+              </div>
+              {section.items.map((item) => {
+                const isActive = location === item.href;
+                const Icon = item.icon;
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <div
+                      className={isActive ? "nav-active" : "nav-item-hover"}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "6px 10px",
+                        margin: "1px 5px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        border: "1px solid transparent",
+                        transition: "all 0.15s",
+                        color: isActive ? "#fff" : "rgba(190,225,150,0.88)",
+                        fontSize: "0.8rem",
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      <Icon
+                        style={{
+                          width: "13px",
+                          height: "13px",
+                          flexShrink: 0,
+                          color: isActive ? "#fff" : "rgba(140,200,80,0.8)",
+                          filter: isActive ? "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" : "none",
+                        }}
+                      />
+                      {item.label}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </nav>
-      <main className="flex-1 min-w-0 flex flex-col gap-6">
+
+      {/* ── Main content ── */}
+      <main className="flex-1 min-w-0 flex flex-col gap-3">
         {children}
       </main>
     </div>

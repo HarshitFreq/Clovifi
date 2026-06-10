@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useCurrency, CURRENCIES } from "@/lib/currency";
-import { Check, Settings2 } from "lucide-react";
+import { Check } from "lucide-react";
 
 export default function Settings() {
   const { currency, setCurrency } = useCurrency();
-  const [saved, setSaved] = useState(false);
   const [selected, setSelected] = useState(currency);
+  const [saved, setSaved] = useState(false);
 
   function handleSave() {
     setCurrency(selected);
@@ -14,77 +14,95 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      <header className="glass-panel p-6 rounded-2xl flex items-center gap-4">
-        <Settings2 className="w-7 h-7 text-blue-600" />
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800 drop-shadow-sm">Settings</h2>
-          <p className="text-slate-600 font-medium">Customize your Aero Finance experience.</p>
-        </div>
-      </header>
+    <div className="flex flex-col gap-3">
+      <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
+        <div className="panel-titlebar">Settings — Application Preferences</div>
 
-      <div className="glass-panel p-6 rounded-2xl flex flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-lg font-bold text-slate-800">Display Currency</h3>
-          <p className="text-sm text-slate-500">
-            Choose the currency symbol used across the app. This does not convert values — it only changes the display symbol.
-          </p>
-        </div>
+        <div style={{ padding: "16px" }}>
+          {/* Currency section */}
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(160,220,90,0.8)", marginBottom: "4px" }}>
+              Display Currency
+            </div>
+            <div style={{ fontSize: "0.78rem", color: "rgba(150,190,110,0.6)", marginBottom: "14px", lineHeight: 1.5 }}>
+              Choose the currency symbol shown across the app. Values are not converted — only the symbol changes.
+            </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {CURRENCIES.map((cur) => {
-            const isSelected = selected === cur.code;
-            return (
-              <button
-                key={cur.code}
-                onClick={() => setSelected(cur.code)}
-                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left
-                  ${isSelected
-                    ? "bg-white/60 border-blue-400 shadow-md ring-1 ring-blue-300"
-                    : "bg-white/20 border-white/40 hover:bg-white/40 hover:border-white/70"
-                  }
-                `}
-              >
-                <div
-                  className={`
-                    w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0
-                    ${isSelected
-                      ? "bg-blue-500 text-white shadow-sm"
-                      : "bg-white/50 text-slate-700 border border-white/60"
-                    }
-                  `}
-                >
-                  {cur.symbol.length <= 2 ? cur.symbol : cur.code.slice(0, 2)}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="font-bold text-slate-800 text-sm">{cur.code}</span>
-                  <span className="text-xs text-slate-500 truncate">{cur.name}</span>
-                </div>
-                {isSelected && (
-                  <Check className="w-4 h-4 text-blue-600 ml-auto flex-shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: "6px" }}>
+              {CURRENCIES.map((cur) => {
+                const isSelected = selected === cur.code;
+                return (
+                  <button
+                    key={cur.code}
+                    onClick={() => setSelected(cur.code)}
+                    className={`currency-btn${isSelected ? " selected" : ""}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "8px 10px",
+                      borderRadius: "4px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      width: "100%",
+                    }}
+                  >
+                    {/* Symbol badge */}
+                    <div style={{
+                      width: "30px",
+                      height: "30px",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      fontFamily: "monospace",
+                      background: isSelected
+                        ? "linear-gradient(to bottom, #8dda40 0%, #52a81c 100%)"
+                        : "rgba(20, 50, 8, 0.6)",
+                      color: isSelected ? "#fff" : "rgba(140,200,80,0.8)",
+                      border: isSelected ? "1px solid rgba(160,230,80,0.5)" : "1px solid rgba(60,120,20,0.3)",
+                      boxShadow: isSelected ? "0 0 8px rgba(80,180,20,0.4)" : "none",
+                      textShadow: isSelected ? "0 1px 2px rgba(0,0,0,0.6)" : "none",
+                    }}>
+                      {cur.symbol.length <= 2 ? cur.symbol : cur.code.slice(0, 2)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: "0.8rem", color: isSelected ? "#c8eea0" : "rgba(190,225,150,0.85)", letterSpacing: "0.02em" }}>
+                        {cur.code}
+                      </div>
+                      <div style={{ fontSize: "0.68rem", color: "rgba(120,170,70,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {cur.name}
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <Check style={{ width: "13px", height: "13px", color: "#66c028", flexShrink: 0 }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-        <div className="flex items-center gap-4 pt-2 border-t border-white/30">
-          <button
-            onClick={handleSave}
-            className="glass-button px-6 py-2.5 rounded-xl font-bold text-sm"
-          >
-            Save Changes
-          </button>
-          {saved && (
-            <span className="flex items-center gap-1.5 text-green-700 font-medium text-sm">
-              <Check className="w-4 h-4" />
-              Saved!
-            </span>
-          )}
-          {selected !== currency && !saved && (
-            <span className="text-slate-500 text-sm">Unsaved changes</span>
-          )}
+          {/* Save bar */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", paddingTop: "12px", borderTop: "1px solid rgba(60,120,20,0.25)" }}>
+            <button
+              className="glass-button"
+              onClick={handleSave}
+              style={{ padding: "6px 20px", borderRadius: "4px", fontSize: "0.8rem" }}
+            >
+              Save Changes
+            </button>
+            {saved ? (
+              <span style={{ display: "flex", alignItems: "center", gap: "5px", color: "#6ee87a", fontSize: "0.78rem", fontWeight: 600 }}>
+                <Check style={{ width: "13px", height: "13px" }} /> Saved!
+              </span>
+            ) : selected !== currency ? (
+              <span style={{ color: "rgba(200,160,80,0.75)", fontSize: "0.75rem" }}>Unsaved changes</span>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

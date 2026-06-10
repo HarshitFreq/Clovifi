@@ -18,6 +18,10 @@ tags:
     description: Category management
   - name: summary
     description: Dashboard summary data
+  - name: subscriptions
+    description: Subscription and recurring bills management
+  - name: auth
+    description: User authentication operations
 paths:
   /healthz:
     get:
@@ -318,6 +322,116 @@ paths:
         "204":
           description: Deleted
 
+  /subscriptions:
+    get:
+      operationId: listSubscriptions
+      tags: [subscriptions]
+      summary: List all subscriptions
+      responses:
+        "200":
+          description: List of subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subscription"
+    post:
+      operationId: createSubscription
+      tags: [subscriptions]
+      summary: Create a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionInput"
+      responses:
+        "201":
+          description: Created subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  /subscriptions/{id}:
+    get:
+      operationId: getSubscription
+      tags: [subscriptions]
+      summary: Get a subscription by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSubscription
+      tags: [subscriptions]
+      summary: Update a subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionUpdate"
+      responses:
+        "200":
+          description: Updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+    delete:
+      operationId: deleteSubscription
+      tags: [subscriptions]
+      summary: Delete a subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /subscriptions/{id}/pay:
+    post:
+      operationId: paySubscription
+      tags: [subscriptions]
+      summary: Log a transaction payment and advance subscription due date
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment logged successfully, returns updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "404":
+          description: Subscription not found
+
   /summary/overview:
     get:
       operationId: getSummaryOverview
@@ -399,6 +513,72 @@ paths:
                 items:
                   $ref: "#/components/schemas/Transaction"
 
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredentialInput"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request (username already exists, invalid inputs)
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredentialInput"
+      responses:
+        "200":
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized (invalid credentials)
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out current user
+      responses:
+        "200":
+          description: Logged out successfully
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthenticated
+
 components:
   schemas:
     HealthStatus:
@@ -419,7 +599,7 @@ components:
           type: string
         type:
           type: string
-          enum: [checking, savings, credit_card, cash, investment, other]
+          enum: [checking, savings, credit_card, cash, investment]
         balance:
           type: number
         currency:
@@ -440,7 +620,7 @@ components:
           minLength: 1
         type:
           type: string
-          enum: [checking, savings, credit_card, cash, investment, other]
+          enum: [checking, savings, credit_card, cash, investment]
         balance:
           type: number
         currency:
@@ -458,7 +638,7 @@ components:
           minLength: 1
         type:
           type: string
-          enum: [checking, savings, credit_card, cash, investment, other]
+          enum: [checking, savings, credit_card, cash, investment]
         balance:
           type: number
         currency:
@@ -483,6 +663,8 @@ components:
           type: string
         icon:
           type: ["string", "null"]
+        parentId:
+          type: ["integer", "null"]
 
     CategoryInput:
       type: object
@@ -498,6 +680,8 @@ components:
           type: string
         icon:
           type: string
+        parentId:
+          type: ["integer", "null"]
 
     CategoryUpdate:
       type: object
@@ -511,6 +695,8 @@ components:
           type: string
         icon:
           type: ["string", "null"]
+        parentId:
+          type: ["integer", "null"]
 
     Transaction:
       type: object
@@ -634,3 +820,111 @@ components:
           type: number
         net:
           type: number
+
+    Subscription:
+      type: object
+      required: [id, name, amount, type, interval, nextDueDate, accountId, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [expense, income]
+        interval:
+          type: string
+          enum: [monthly, weekly, yearly]
+        nextDueDate:
+          type: string
+        accountId:
+          type: integer
+        accountName:
+          type: ["string", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        categoryColor:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SubscriptionInput:
+      type: object
+      required: [name, amount, type, interval, nextDueDate, accountId]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        amount:
+          type: number
+          minimum: 0.01
+        type:
+          type: string
+          enum: [expense, income]
+        interval:
+          type: string
+          enum: [monthly, weekly, yearly]
+        nextDueDate:
+          type: string
+        accountId:
+          type: integer
+        categoryId:
+          type: ["integer", "null"]
+        notes:
+          type: string
+        isActive:
+          type: boolean
+
+    SubscriptionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [expense, income]
+        interval:
+          type: string
+          enum: [monthly, weekly, yearly]
+        nextDueDate:
+          type: string
+        accountId:
+          type: integer
+        categoryId:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    User:
+      type: object
+      required: [id, username, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        createdAt:
+          type: string
+
+    CredentialInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 6

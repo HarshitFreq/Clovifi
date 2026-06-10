@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { accountsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import {
   CreateAccountBody,
   UpdateAccountBody,
@@ -13,9 +13,11 @@ import {
 const router = Router();
 
 router.get("/accounts", async (req, res) => {
+  const userId = req.userId!;
   const accounts = await db
     .select()
     .from(accountsTable)
+    .where(eq(accountsTable.userId, userId))
     .orderBy(accountsTable.createdAt);
 
   res.json(
@@ -28,6 +30,7 @@ router.get("/accounts", async (req, res) => {
 });
 
 router.post("/accounts", async (req, res) => {
+  const userId = req.userId!;
   const parsed = CreateAccountBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid request body" });
@@ -37,6 +40,7 @@ router.post("/accounts", async (req, res) => {
   const [account] = await db
     .insert(accountsTable)
     .values({
+      userId,
       name,
       type: type ?? "checking",
       balance: String(balance ?? 0),
@@ -53,6 +57,7 @@ router.post("/accounts", async (req, res) => {
 });
 
 router.get("/accounts/:id", async (req, res) => {
+  const userId = req.userId!;
   const parsed = GetAccountParams.safeParse({ id: parseInt(req.params.id) });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid id" });
@@ -61,7 +66,7 @@ router.get("/accounts/:id", async (req, res) => {
   const [account] = await db
     .select()
     .from(accountsTable)
-    .where(eq(accountsTable.id, parsed.data.id));
+    .where(and(eq(accountsTable.id, parsed.data.id), eq(accountsTable.userId, userId)));
   if (!account) {
     res.status(404).json({ error: "Account not found" });
     return;
@@ -74,6 +79,7 @@ router.get("/accounts/:id", async (req, res) => {
 });
 
 router.patch("/accounts/:id", async (req, res) => {
+  const userId = req.userId!;
   const paramsParsed = UpdateAccountParams.safeParse({ id: parseInt(req.params.id) });
   if (!paramsParsed.success) {
     res.status(400).json({ error: "Invalid id" });
@@ -96,7 +102,7 @@ router.patch("/accounts/:id", async (req, res) => {
   const [account] = await db
     .update(accountsTable)
     .set(updates)
-    .where(eq(accountsTable.id, paramsParsed.data.id))
+    .where(and(eq(accountsTable.id, paramsParsed.data.id), eq(accountsTable.userId, userId)))
     .returning();
   if (!account) {
     res.status(404).json({ error: "Account not found" });
@@ -110,12 +116,20 @@ router.patch("/accounts/:id", async (req, res) => {
 });
 
 router.delete("/accounts/:id", async (req, res) => {
+  const userId = req.userId!;
   const parsed = DeleteAccountParams.safeParse({ id: parseInt(req.params.id) });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
-  await db.delete(accountsTable).where(eq(accountsTable.id, parsed.data.id));
+  const [deletedAccount] = await db
+    .delete(accountsTable)
+    .where(and(eq(accountsTable.id, parsed.data.id), eq(accountsTable.userId, userId)))
+    .returning();
+  if (!deletedAccount) {
+    res.status(404).json({ error: "Account not found" });
+    return;
+  }
   res.status(204).send();
 });
 

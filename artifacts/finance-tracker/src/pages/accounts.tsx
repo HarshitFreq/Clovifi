@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { useListAccounts, getListAccountsQueryKey } from "@workspace/api-client-react";
+import type { Account } from "@workspace/api-client-react";
 import { useCurrency } from "@/lib/currency";
+import AccountModal from "@/components/AccountModal";
 
 const TYPE_LABELS: Record<string, string> = {
   checking: "Checking",
@@ -7,45 +10,61 @@ const TYPE_LABELS: Record<string, string> = {
   credit_card: "Credit Card",
   cash: "Cash",
   investment: "Investment",
-  other: "Other",
 };
 
 export default function Accounts() {
   const { formatAmount } = useCurrency();
   const { data: accounts, isLoading } = useListAccounts({ query: { queryKey: getListAccountsQueryKey() } });
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+
+  const openAdd = () => { setEditingAccount(null); setModalOpen(true); };
+  const openEdit = (acc: Account) => { setEditingAccount(acc); setModalOpen(true); };
+  const closeModal = () => setModalOpen(false);
+
   return (
     <div className="flex flex-col gap-3">
       <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Accounts — Balance Overview</span>
-          <button className="glass-button" style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
+          <button className="glass-button" onClick={openAdd} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
             + Add Account
           </button>
         </div>
 
         {isLoading ? (
           <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
-            Loading accounts...
+            Loading accounts…
           </div>
         ) : !Array.isArray(accounts) || accounts.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
             <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No accounts yet.</div>
-            <button className="glass-button" style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
+            <button className="glass-button" onClick={openAdd} style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
               + Add First Account
             </button>
           </div>
         ) : (
           <div style={{ padding: "12px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "10px" }}>
-            {Array.isArray(accounts) && accounts.map(acc => (
+            {accounts.map(acc => (
               <div
                 key={acc.id}
                 className="glass-panel"
+                onClick={() => openEdit(acc)}
                 style={{
                   borderRadius: "5px",
                   overflow: "hidden",
                   position: "relative",
-                  transition: "box-shadow 0.2s",
+                  transition: "box-shadow 0.2s, transform 0.15s",
+                  cursor: "pointer",
+                }}
+                onMouseOver={e => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 18px ${acc.color || "#4da820"}30, 0 8px 24px rgba(0,0,0,0.7)`;
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                }}
+                onMouseOut={e => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = "";
+                  (e.currentTarget as HTMLElement).style.transform = "";
                 }}
               >
                 {/* Color bar */}
@@ -70,6 +89,7 @@ export default function Accounts() {
                         {TYPE_LABELS[acc.type] || acc.type}
                       </div>
                     </div>
+                    <div style={{ fontSize: "0.65rem", color: "rgba(150,200,100,0.45)", marginTop: "2px" }}>✎ edit</div>
                   </div>
 
                   <div style={{
@@ -121,6 +141,8 @@ export default function Accounts() {
           </div>
         </div>
       )}
+
+      <AccountModal open={modalOpen} onClose={closeModal} account={editingAccount} />
     </div>
   );
 }

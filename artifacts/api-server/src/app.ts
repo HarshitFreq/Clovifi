@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import cookieParser from "cookie-parser";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -26,6 +27,8 @@ app.use(
   }),
 );
 app.use(cors());
+const cookieSecret = process.env.COOKIE_SECRET || "clovifi_cookie_secret_fallback_development";
+app.use(cookieParser(cookieSecret));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -3,9 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "codegen": "orval --config ./orval.config.ts && pnpm -w run typecheck:libs"
+    "codegen": "orval --config ./orval.config.ts && npm run typecheck:libs"
   },
   "devDependencies": {
     "orval": "^8.9.1"
+  },
+  "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
+    "express-rate-limit": "^8.5.2"
   }
 }

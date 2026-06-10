@@ -1,21 +1,83 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useCurrency, CURRENCIES } from "@/lib/currency";
+import { useSoundEffects } from "@/lib/sound";
 import { Check, TriangleAlert, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
+import { useToast } from "@/hooks/use-toast";
+
 export default function Settings() {
   const { currency, setCurrency } = useCurrency();
+  const { soundEnabled, setSoundEnabled } = useSoundEffects();
   const [selected, setSelected] = useState(currency);
   const [saved, setSaved] = useState(false);
+
+  const { data: user, refetch: refetchMe } = useGetMe();
+  const { toast } = useToast();
+  
+  // Profile settings state
+  const [username, setUsername] = useState(user?.username || "");
+  const [password, setPassword] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   const [confirmStep, setConfirmStep] = useState<"idle" | "confirm" | "clearing" | "done">("idle");
   const [clearError, setClearError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
+  // Update form username if user data changes
+  React.useEffect(() => {
+    if (user?.username) {
+      setUsername(user.username);
+    }
+  }, [user]);
+
   function handleSave() {
     setCurrency(selected);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  async function handleProfileSave(e: React.FormEvent) {
+    e.preventDefault();
+    setProfileError(null);
+    
+    const cleanUsername = username.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+    if (cleanUsername.length < 3) {
+      setProfileError("Username must be at least 3 alphanumeric characters.");
+      return;
+    }
+    if (password && password.length < 6) {
+      setProfileError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setProfileSaving(true);
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: cleanUsername, password: password || undefined }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update profile");
+      }
+
+      toast({
+        title: "Profile Updated 🍀",
+        description: "Your user settings were successfully saved.",
+      });
+      setPassword("");
+      await refetchMe();
+      queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+    } catch (err: any) {
+      setProfileError(err?.message || "Something went wrong.");
+    } finally {
+      setProfileSaving(false);
+    }
   }
 
   async function handleClearAll() {
@@ -35,6 +97,76 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Profile Settings Block */}
+      <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
+        <div className="panel-titlebar">User Profile — Account Management</div>
+        <form onSubmit={handleProfileSave} style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(160,220,90,0.8)", marginBottom: "4px" }}>
+              Username
+            </div>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))}
+              placeholder="alphanumeric username"
+              style={{
+                width: "100%",
+                maxWidth: "320px",
+                padding: "8px 10px",
+                borderRadius: "4px",
+                background: "rgba(8,22,4,0.75)",
+                border: "1px solid rgba(70,140,25,0.35)",
+                color: "rgba(215,240,190,0.95)",
+                fontSize: "0.85rem",
+                outline: "none",
+                boxSizing: "border-box"
+              }}
+            />
+          </div>
+
+          <div>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(160,220,90,0.8)", marginBottom: "4px" }}>
+              New Password (Leave blank to keep current)
+            </div>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Min 6 characters"
+              style={{
+                width: "100%",
+                maxWidth: "320px",
+                padding: "8px 10px",
+                borderRadius: "4px",
+                background: "rgba(8,22,4,0.75)",
+                border: "1px solid rgba(70,140,25,0.35)",
+                color: "rgba(215,240,190,0.95)",
+                fontSize: "0.85rem",
+                outline: "none",
+                boxSizing: "border-box"
+              }}
+            />
+          </div>
+
+          {profileError && (
+            <div style={{ color: "#f87171", fontSize: "0.78rem" }}>
+              ⚠️ {profileError}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+            <button
+              type="submit"
+              disabled={profileSaving}
+              className="glass-button"
+              style={{ padding: "6px 20px", borderRadius: "4px", fontSize: "0.8rem" }}
+            >
+              {profileSaving ? "Saving..." : "Update Profile"}
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* Currency */}
       <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
@@ -90,6 +222,40 @@ export default function Settings() {
             ) : selected !== currency ? (
               <span style={{ color: "rgba(200,160,80,0.75)", fontSize: "0.75rem" }}>Unsaved changes</span>
             ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Sound Settings */}
+      <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
+        <div className="panel-titlebar">Sound & Audio Feedback</div>
+        <div style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "24px", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 300px" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(160,220,90,0.8)", marginBottom: "4px" }}>
+              Retro Sound Effects
+            </div>
+            <div style={{ fontSize: "0.78rem", color: "rgba(150,190,110,0.6)", lineHeight: 1.5 }}>
+              Enable Vista-style chimes and micro-interactions for button clicks, navigation, successes, and deletions.
+            </div>
+          </div>
+          <div style={{ flexShrink: 0 }}>
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="glass-button"
+              style={{
+                padding: "6px 16px",
+                borderRadius: "4px",
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                minWidth: "120px",
+                background: soundEnabled ? undefined : "linear-gradient(to bottom, rgba(50,80,20,0.2) 0%, rgba(20,40,10,0.3) 100%)",
+                borderColor: soundEnabled ? undefined : "rgba(60,120,20,0.2)",
+                color: soundEnabled ? "#fff" : "rgba(120,160,100,0.5)",
+                boxShadow: soundEnabled ? undefined : "none",
+              }}
+            >
+              {soundEnabled ? "🔊 Enabled" : "🔇 Disabled"}
+            </button>
           </div>
         </div>
       </div>

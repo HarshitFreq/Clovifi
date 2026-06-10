@@ -6,6 +6,7 @@ import { eq, sql, desc, gte, lte, and } from "drizzle-orm";
 const router = Router();
 
 router.get("/summary/overview", async (req, res) => {
+  const userId = req.userId!;
   const now = new Date();
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     .toISOString()
@@ -16,15 +17,18 @@ router.get("/summary/overview", async (req, res) => {
 
   const [balanceRow] = await db
     .select({ total: sql<string>`COALESCE(SUM(balance), 0)` })
-    .from(accountsTable);
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, userId));
 
   const [accountCountRow] = await db
     .select({ count: sql<string>`COUNT(*)` })
-    .from(accountsTable);
+    .from(accountsTable)
+    .where(eq(accountsTable.userId, userId));
 
   const [txCountRow] = await db
     .select({ count: sql<string>`COUNT(*)` })
-    .from(transactionsTable);
+    .from(transactionsTable)
+    .where(eq(transactionsTable.userId, userId));
 
   const monthlyRows = await db
     .select({
@@ -34,6 +38,7 @@ router.get("/summary/overview", async (req, res) => {
     .from(transactionsTable)
     .where(
       and(
+        eq(transactionsTable.userId, userId),
         gte(transactionsTable.date, firstOfMonth),
         lte(transactionsTable.date, lastOfMonth)
       )
@@ -57,6 +62,7 @@ router.get("/summary/overview", async (req, res) => {
     .leftJoin(categoriesTable, eq(transactionsTable.categoryId, categoriesTable.id))
     .where(
       and(
+        eq(transactionsTable.userId, userId),
         eq(transactionsTable.type, "expense"),
         gte(transactionsTable.date, firstOfMonth),
         lte(transactionsTable.date, lastOfMonth)
@@ -78,6 +84,7 @@ router.get("/summary/overview", async (req, res) => {
 });
 
 router.get("/summary/spending-by-category", async (req, res) => {
+  const userId = req.userId!;
   const filters = [];
   if (req.query.startDate) filters.push(gte(transactionsTable.date, req.query.startDate as string));
   if (req.query.endDate) filters.push(lte(transactionsTable.date, req.query.endDate as string));
@@ -94,6 +101,7 @@ router.get("/summary/spending-by-category", async (req, res) => {
     .leftJoin(categoriesTable, eq(transactionsTable.categoryId, categoriesTable.id))
     .where(
       and(
+        eq(transactionsTable.userId, userId),
         eq(transactionsTable.type, "expense"),
         ...(filters.length > 0 ? filters : [])
       )
@@ -113,6 +121,7 @@ router.get("/summary/spending-by-category", async (req, res) => {
 });
 
 router.get("/summary/monthly-trend", async (req, res) => {
+  const userId = req.userId!;
   const months = req.query.months ? parseInt(req.query.months as string) : 6;
 
   // Compute cutoff date in JS to avoid SQL injection issues
@@ -128,7 +137,12 @@ router.get("/summary/monthly-trend", async (req, res) => {
       total: sql<string>`SUM(${transactionsTable.amount})`,
     })
     .from(transactionsTable)
-    .where(gte(transactionsTable.date, cutoffStr))
+    .where(
+      and(
+        eq(transactionsTable.userId, userId),
+        gte(transactionsTable.date, cutoffStr)
+      )
+    )
     .groupBy(
       sql`EXTRACT(YEAR FROM date::date)`,
       sql`EXTRACT(MONTH FROM date::date)`,
@@ -162,6 +176,7 @@ router.get("/summary/monthly-trend", async (req, res) => {
 });
 
 router.get("/summary/recent-transactions", async (req, res) => {
+  const userId = req.userId!;
   const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
   const rows = await db
@@ -174,6 +189,7 @@ router.get("/summary/recent-transactions", async (req, res) => {
     .from(transactionsTable)
     .leftJoin(accountsTable, eq(transactionsTable.accountId, accountsTable.id))
     .leftJoin(categoriesTable, eq(transactionsTable.categoryId, categoriesTable.id))
+    .where(eq(transactionsTable.userId, userId))
     .orderBy(desc(transactionsTable.date), desc(transactionsTable.createdAt))
     .limit(limit);
 

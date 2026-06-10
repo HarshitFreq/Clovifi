@@ -7,6 +7,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "zod": "catalog:"
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
+    "express-rate-limit": "^8.5.2",
+    "zod": "^3.25.76"
   }
 }

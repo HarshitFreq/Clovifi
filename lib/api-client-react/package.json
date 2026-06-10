@@ -7,7 +7,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "^5.90.21",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
+    "express-rate-limit": "^8.5.2"
   },
   "peerDependencies": {
     "react": ">=18"

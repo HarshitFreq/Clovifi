@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 /**
  * Hashes a plaintext password using bcrypt with 10 salt rounds.

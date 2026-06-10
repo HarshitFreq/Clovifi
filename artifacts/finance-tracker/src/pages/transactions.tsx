@@ -1,8 +1,9 @@
 import { useListTransactions, getListTransactionsQueryKey } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { Link } from "wouter";
+import { useCurrency } from "@/lib/currency";
 
 export default function Transactions() {
+  const { formatAmount } = useCurrency();
   const { data: transactions, isLoading } = useListTransactions({}, { query: { queryKey: getListTransactionsQueryKey({}) } });
 
   return (
@@ -46,7 +47,7 @@ export default function Transactions() {
                     </td>
                     <td className="p-4 text-slate-600 text-sm">{t.accountName}</td>
                     <td className={`p-4 text-right font-bold drop-shadow-sm ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
-                      {t.type === 'income' ? '+' : '-'}${Math.abs(t.amount).toFixed(2)}
+                      {t.type === 'income' ? '+' : '-'}{formatAmount(Math.abs(t.amount))}
                     </td>
                   </tr>
                 ))}

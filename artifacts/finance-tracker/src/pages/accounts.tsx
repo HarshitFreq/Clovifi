@@ -1,6 +1,8 @@
 import { useListAccounts, getListAccountsQueryKey } from "@workspace/api-client-react";
+import { useCurrency } from "@/lib/currency";
 
 export default function Accounts() {
+  const { formatAmount } = useCurrency();
   const { data: accounts, isLoading } = useListAccounts({ query: { queryKey: getListAccountsQueryKey() } });
 
   return (
@@ -21,19 +23,20 @@ export default function Accounts() {
         ) : (
           accounts?.map(acc => (
             <div key={acc.id} className="glass-panel p-6 rounded-2xl flex flex-col gap-4 hover:shadow-lg transition-shadow relative overflow-hidden group">
-              <div 
-                className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-80" 
-                style={{ backgroundColor: acc.color || undefined }} 
+              <div
+                className="absolute top-0 left-0 w-1 h-full opacity-80"
+                style={{ backgroundColor: acc.color || '#60A5FA' }}
               />
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-bold text-lg text-slate-800">{acc.name}</h3>
-                  <p className="text-sm text-slate-500 uppercase tracking-wider">{acc.type}</p>
+                  <p className="text-sm text-slate-500 uppercase tracking-wider">{acc.type.replace('_', ' ')}</p>
                 </div>
               </div>
               <div className="mt-2">
-                <p className="text-3xl font-bold text-slate-800 drop-shadow-sm">${acc.balance.toFixed(2)}</p>
-                <p className="text-sm text-slate-500">{acc.currency}</p>
+                <p className={`text-3xl font-bold drop-shadow-sm ${acc.balance < 0 ? 'text-red-600' : 'text-slate-800'}`}>
+                  {formatAmount(acc.balance)}
+                </p>
               </div>
             </div>
           ))

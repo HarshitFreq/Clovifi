@@ -1,8 +1,9 @@
 import { useGetSummaryOverview, getGetSummaryOverviewQueryKey, useGetMonthlyTrend, getGetMonthlyTrendQueryKey } from "@workspace/api-client-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { format } from "date-fns";
+import { useCurrency } from "@/lib/currency";
 
 export default function Dashboard() {
+  const { formatAmount } = useCurrency();
   const { data: summary, isLoading: isLoadingSummary } = useGetSummaryOverview({ query: { queryKey: getGetSummaryOverviewQueryKey() } });
   const { data: trend, isLoading: isLoadingTrend } = useGetMonthlyTrend({ months: 6 }, { query: { queryKey: getGetMonthlyTrendQueryKey({ months: 6 }) } });
 
@@ -19,19 +20,19 @@ export default function Dashboard() {
         <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2">
           <p className="text-slate-600 font-medium text-sm uppercase tracking-wider">Total Balance</p>
           <div className="text-3xl font-bold text-slate-800 drop-shadow-sm">
-            {isLoadingSummary ? "..." : `$${summary?.totalBalance?.toFixed(2) || "0.00"}`}
+            {isLoadingSummary ? "..." : formatAmount(summary?.totalBalance ?? 0)}
           </div>
         </div>
         <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2">
           <p className="text-slate-600 font-medium text-sm uppercase tracking-wider">Income This Month</p>
           <div className="text-3xl font-bold text-green-700 drop-shadow-sm">
-            {isLoadingSummary ? "..." : `+$${summary?.totalIncomeThisMonth?.toFixed(2) || "0.00"}`}
+            {isLoadingSummary ? "..." : `+${formatAmount(summary?.totalIncomeThisMonth ?? 0)}`}
           </div>
         </div>
         <div className="glass-panel p-6 rounded-2xl flex flex-col gap-2">
           <p className="text-slate-600 font-medium text-sm uppercase tracking-wider">Expenses This Month</p>
           <div className="text-3xl font-bold text-red-600 drop-shadow-sm">
-            {isLoadingSummary ? "..." : `-$${summary?.totalExpensesThisMonth?.toFixed(2) || "0.00"}`}
+            {isLoadingSummary ? "..." : `-${formatAmount(summary?.totalExpensesThisMonth ?? 0)}`}
           </div>
         </div>
       </div>
@@ -55,11 +56,18 @@ export default function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.4)" />
-                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fill: '#475569'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#475569'}} tickFormatter={(v) => `$${v}`} />
-                <Tooltip 
+                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#475569' }} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#475569' }}
+                  tickFormatter={(v) => formatAmount(v)}
+                  width={80}
+                />
+                <Tooltip
                   contentStyle={{ backgroundColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.6)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                   itemStyle={{ fontWeight: 'bold' }}
+                  formatter={(value: number) => formatAmount(value)}
                 />
                 <Area type="monotone" dataKey="income" name="Income" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
                 <Area type="monotone" dataKey="expenses" name="Expenses" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />

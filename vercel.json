@@ -3,6 +3,11 @@
   "trailingSlash": false,
   "buildCommand": "npm run build",
   "outputDirectory": "artifacts/finance-tracker/dist/public",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "artifacts/api-server/dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",

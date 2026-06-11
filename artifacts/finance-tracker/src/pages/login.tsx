@@ -147,24 +147,11 @@ export default function Login({ onSuccess }: LoginProps) {
               alignItems: "center",
               justifyContent: "center",
               marginBottom: "16px",
+              fontSize: "24px",
+              lineHeight: 1,
             }}
           >
-            {/* Pure SVG Clover Logo (Standard paths only to prevent iOS browser use-tag bugs) */}
-            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <radialGradient id="cloverGrad" cx="35%" cy="35%" r="65%">
-                  <stop offset="0%" stopColor="#A8FF60" />
-                  <stop offset="30%" stopColor="#66c028" />
-                  <stop offset="85%" stopColor="#1b5a04" />
-                  <stop offset="100%" stopColor="#0b3002" />
-                </radialGradient>
-              </defs>
-              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" />
-              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" transform="rotate(90 16 16)" />
-              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" transform="rotate(180 16 16)" />
-              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" transform="rotate(270 16 16)" />
-              <circle cx="16" cy="16" r="2.2" fill="#fff" opacity="0.3" />
-            </svg>
+            🍀
           </div>
 
           <h2 className="text-xl font-bold text-white tracking-tight">

@@ -148,47 +148,22 @@ export default function Layout({ children }: { children: ReactNode }) {
             gap: "10px",
           }}
         >
-          {/* Custom Symmetrical Glossy Clover SVG Logo (2000s Vista Style) */}
-          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.55))", flexShrink: 0 }}>
-            <defs>
-              <radialGradient id="leafGrad" cx="35%" cy="35%" r="65%">
-                <stop offset="0%" stopColor="#c5f838" />
-                <stop offset="30%" stopColor="#66c028" />
-                <stop offset="80%" stopColor="#1b5a04" />
-                <stop offset="100%" stopColor="#0b3002" />
-              </radialGradient>
-              <linearGradient id="stemGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#66c028" />
-                <stop offset="100%" stopColor="#144602" />
-              </linearGradient>
-              <linearGradient id="glossReflection" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
-                <stop offset="45%" stopColor="#ffffff" stopOpacity="0.1" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-              </linearGradient>
-              <path id="clover-leaf" d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" />
-            </defs>
-            <path d="M 16 16 Q 16 23 23 27.5" stroke="url(#stemGrad)" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <use href="#clover-leaf" fill="url(#leafGrad)" />
-            <use href="#clover-leaf" fill="url(#leafGrad)" transform="rotate(90 16 16)" />
-            <use href="#clover-leaf" fill="url(#leafGrad)" transform="rotate(180 16 16)" />
-            <use href="#clover-leaf" fill="url(#leafGrad)" transform="rotate(270 16 16)" />
-            <circle cx="16" cy="16" r="2.8" fill="none" stroke="#ffffff" strokeWidth="0.8" strokeOpacity="0.35" />
-            <path d="M 6 16 C 6 10.4772 10.4772 6 16 6 C 21.5228 6 26 10.4772 26 16 C 26 17.5 24 13.5 16 13.5 C 8 13.5 6 17.5 6 16 Z" fill="url(#glossReflection)" />
-          </svg>
-          <div style={{
-            fontWeight: 900,
-            fontSize: "1.45rem",
-            fontFamily: "'Segoe UI', 'Trebuchet MS', sans-serif",
-            background: "linear-gradient(to bottom, #ffffff 0%, #d5f2a2 45%, #66c028 50%, #1c5204 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 1.5px 2.5px rgba(0,0,0,0.85)) drop-shadow(0 0 5px rgba(100,220,40,0.4))",
-            letterSpacing: "0.01em",
-            lineHeight: 1,
-            paddingBottom: "2px",
-          }}>
-            Clovifi
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "24px", lineHeight: 1 }}>🍀</span>
+            <div style={{
+              fontWeight: 900,
+              fontSize: "1.45rem",
+              fontFamily: "'Segoe UI', 'Trebuchet MS', sans-serif",
+              background: "linear-gradient(to bottom, #ffffff 0%, #d5f2a2 45%, #66c028 50%, #1c5204 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              filter: "drop-shadow(0 1.5px 2.5px rgba(0,0,0,0.85)) drop-shadow(0 0 5px rgba(100,220,40,0.4))",
+              letterSpacing: "0.01em",
+              lineHeight: 1,
+              paddingBottom: "2px",
+            }}>
+              Clovifi
+            </div>
           </div>
 
           {/* Hamburger Menu Toggle (Only visible on mobile) */}

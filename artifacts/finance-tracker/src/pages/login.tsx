@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useLogin, useRegister } from "@workspace/api-client-react";
 import { AlertCircle, Eye, EyeOff, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
 
 interface LoginProps {
   onSuccess: () => void;
@@ -125,12 +124,10 @@ export default function Login({ onSuccess }: LoginProps) {
         background: "#020703",
         backgroundImage: "radial-gradient(circle at center, rgba(102,192,40,0.04) 0%, transparent 75%)",
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        minHeight: "100vh", // Fallback for older mobile browsers
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+      <div
         className="w-full max-w-[400px] p-6 sm:p-8 md:p-10 rounded-2xl border"
         style={{
           background: "rgba(10, 22, 12, 0.95)",
@@ -423,7 +420,7 @@ export default function Login({ onSuccess }: LoginProps) {
             {isRegister ? "Already have an account? Sign In" : "Need an account? Sign Up"}
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

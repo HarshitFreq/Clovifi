@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useLogin, useRegister } from "@workspace/api-client-react";
 import { AlertCircle, Eye, EyeOff, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
 
 interface LoginProps {
   onSuccess: () => void;
@@ -127,10 +126,13 @@ export default function Login({ onSuccess }: LoginProps) {
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+      <style>{`
+        @keyframes loginCardFadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div
         className="w-full max-w-[400px] p-8 md:p-10 rounded-2xl border"
         style={{
           background: "rgba(10, 20, 12, 0.45)",
@@ -138,6 +140,7 @@ export default function Login({ onSuccess }: LoginProps) {
           WebkitBackdropFilter: "blur(16px)",
           borderColor: "rgba(255, 255, 255, 0.05)",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
+          animation: "loginCardFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         }}
       >
         {/* Brand Logo & Header */}
@@ -423,7 +426,7 @@ export default function Login({ onSuccess }: LoginProps) {
             {isRegister ? "Already have an account? Sign In" : "Need an account? Sign Up"}
           </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

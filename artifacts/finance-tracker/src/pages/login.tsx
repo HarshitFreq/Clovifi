@@ -122,18 +122,15 @@ export default function Login({ onSuccess }: LoginProps) {
       className="min-h-[100dvh] w-full flex items-center justify-center p-4 overflow-y-auto"
       style={{
         background: "#020703",
-        backgroundImage: "radial-gradient(circle at center, rgba(102,192,40,0.04) 0%, transparent 75%)",
+        backgroundImage: "radial-gradient(circle at center, rgba(102,192,40,0.03) 0%, transparent 75%)",
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
-        minHeight: "100vh", // Fallback for older mobile browsers
       }}
     >
       <div
-        className="w-full max-w-[400px] p-6 sm:p-8 md:p-10 rounded-2xl border"
+        className="w-full max-w-[400px] p-6 sm:p-8 md:p-10 rounded-2xl border transition-all duration-300"
         style={{
-          background: "rgba(10, 22, 12, 0.95)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          borderColor: "rgba(255, 255, 255, 0.08)",
+          background: "rgba(10, 22, 12, 0.96)",
+          borderColor: "rgba(102, 192, 40, 0.18)",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255,255,255,0.05)",
         }}
       >
@@ -152,7 +149,7 @@ export default function Login({ onSuccess }: LoginProps) {
               marginBottom: "16px",
             }}
           >
-            {/* Minimal SVG Clover Logo */}
+            {/* Pure SVG Clover Logo (Standard paths only to prevent iOS browser use-tag bugs) */}
             <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <radialGradient id="cloverGrad" cx="35%" cy="35%" r="65%">
@@ -161,12 +158,11 @@ export default function Login({ onSuccess }: LoginProps) {
                   <stop offset="85%" stopColor="#1b5a04" />
                   <stop offset="100%" stopColor="#0b3002" />
                 </radialGradient>
-                <path id="leaf" d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" />
               </defs>
-              <use href="#leaf" fill="url(#cloverGrad)" />
-              <use href="#leaf" fill="url(#cloverGrad)" transform="rotate(90 16 16)" />
-              <use href="#leaf" fill="url(#cloverGrad)" transform="rotate(180 16 16)" />
-              <use href="#leaf" fill="url(#cloverGrad)" transform="rotate(270 16 16)" />
+              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" />
+              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" transform="rotate(90 16 16)" />
+              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" transform="rotate(180 16 16)" />
+              <path d="M 16 16 C 13.5 12.5, 10.5 11, 10.5 7.8 C 10.5 4.8, 13.2 4.8, 16 8 C 18.8 4.8, 21.5 4.8, 21.5 7.8 C 21.5 11, 18.5 12.5, 16 16 Z" fill="url(#cloverGrad)" transform="rotate(270 16 16)" />
               <circle cx="16" cy="16" r="2.2" fill="#fff" opacity="0.3" />
             </svg>
           </div>
@@ -214,6 +210,7 @@ export default function Login({ onSuccess }: LoginProps) {
                   width: "14px",
                   height: "14px",
                   color: "#71717a",
+                  zIndex: 2,
                 }}
               />
               <input
@@ -226,21 +223,9 @@ export default function Login({ onSuccess }: LoginProps) {
                   width: "100%",
                   padding: "11px 16px 11px 40px",
                   borderRadius: "8px",
-                  background: "rgba(255,255,255,0.01)",
-                  border: "1px solid rgba(255,255,255,0.08)",
                   color: "#FFFFFF",
                   fontSize: "0.82rem",
-                  outline: "none",
                   boxSizing: "border-box",
-                  transition: "all 0.15s ease",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#66c028";
-                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(102,192,40,0.15)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                  e.currentTarget.style.boxShadow = "none";
                 }}
               />
             </div>
@@ -260,6 +245,7 @@ export default function Login({ onSuccess }: LoginProps) {
                   width: "14px",
                   height: "14px",
                   color: "#71717a",
+                  zIndex: 2,
                 }}
               />
               <input
@@ -272,21 +258,9 @@ export default function Login({ onSuccess }: LoginProps) {
                   width: "100%",
                   padding: "11px 40px 11px 40px",
                   borderRadius: "8px",
-                  background: "rgba(255,255,255,0.01)",
-                  border: "1px solid rgba(255,255,255,0.08)",
                   color: "#FFFFFF",
                   fontSize: "0.82rem",
-                  outline: "none",
                   boxSizing: "border-box",
-                  transition: "all 0.15s ease",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#66c028";
-                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(102,192,40,0.15)";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                  e.currentTarget.style.boxShadow = "none";
                 }}
               />
               <button
@@ -304,6 +278,7 @@ export default function Login({ onSuccess }: LoginProps) {
                   padding: 0,
                   display: "flex",
                   alignItems: "center",
+                  zIndex: 3,
                 }}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -326,6 +301,7 @@ export default function Login({ onSuccess }: LoginProps) {
           <button
             type="submit"
             disabled={loginMutation.isPending || registerMutation.isPending}
+            className="hover:brightness-105 active:scale-95 transition-all duration-150"
             style={{
               width: "100%",
               padding: "11px 24px",
@@ -337,15 +313,6 @@ export default function Login({ onSuccess }: LoginProps) {
               fontWeight: 700,
               fontSize: "0.82rem",
               cursor: "pointer",
-              transition: "all 0.15s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.filter = "brightness(1.08)";
-              e.currentTarget.style.boxShadow = "0 0 16px rgba(102,192,40,0.25)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.filter = "none";
-              e.currentTarget.style.boxShadow = "none";
             }}
           >
             {isRegister
@@ -363,6 +330,7 @@ export default function Login({ onSuccess }: LoginProps) {
         {/* Google Mock OAuth Button */}
         <button
           onClick={handleMockGoogleLogin}
+          className="hover:bg-white/5 transition-all duration-150"
           style={{
             width: "100%",
             padding: "10px 24px",
@@ -377,15 +345,6 @@ export default function Login({ onSuccess }: LoginProps) {
             justifyContent: "center",
             gap: "8px",
             cursor: "pointer",
-            transition: "all 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-            e.currentTarget.style.borderColor = "rgba(102,192,40,0.3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255,255,255,0.02)";
-            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
           }}
         >
           {/* Google Icon */}
@@ -405,6 +364,7 @@ export default function Login({ onSuccess }: LoginProps) {
               setIsRegister(!isRegister);
               setError(null);
             }}
+            className="hover:text-lime-300 transition-colors duration-150"
             style={{
               background: "none",
               border: "none",
@@ -412,10 +372,7 @@ export default function Login({ onSuccess }: LoginProps) {
               cursor: "pointer",
               fontSize: "0.75rem",
               fontWeight: 500,
-              transition: "color 0.15s ease",
             }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "#A8FF60"}
-            onMouseLeave={(e) => e.currentTarget.style.color = "#66c028"}
           >
             {isRegister ? "Already have an account? Sign In" : "Need an account? Sign Up"}
           </button>

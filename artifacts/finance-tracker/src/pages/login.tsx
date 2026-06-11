@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLogin, useRegister } from "@workspace/api-client-react";
 import { AlertCircle, Eye, EyeOff, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 interface LoginProps {
   onSuccess: () => void;
@@ -119,28 +120,24 @@ export default function Login({ onSuccess }: LoginProps) {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4"
+      className="min-h-[100dvh] w-full flex items-center justify-center p-4 overflow-y-auto"
       style={{
         background: "#020703",
         backgroundImage: "radial-gradient(circle at center, rgba(102,192,40,0.04) 0%, transparent 75%)",
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
       }}
     >
-      <style>{`
-        @keyframes loginCardFadeIn {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-      <div
-        className="w-full max-w-[400px] p-8 md:p-10 rounded-2xl border"
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="w-full max-w-[400px] p-6 sm:p-8 md:p-10 rounded-2xl border"
         style={{
-          background: "rgba(10, 20, 12, 0.45)",
+          background: "rgba(10, 22, 12, 0.95)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
-          borderColor: "rgba(255, 255, 255, 0.05)",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
-          animation: "loginCardFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+          borderColor: "rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255,255,255,0.05)",
         }}
       >
         {/* Brand Logo & Header */}
@@ -426,7 +423,7 @@ export default function Login({ onSuccess }: LoginProps) {
             {isRegister ? "Already have an account? Sign In" : "Need an account? Sign Up"}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

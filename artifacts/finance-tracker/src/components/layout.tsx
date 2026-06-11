@@ -51,6 +51,11 @@ const getIconComponent = (item: any) => {
 export default function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { currency } = useCurrency();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
 
   // Stateful sidebar section sorting list
   const [sections, setSections] = React.useState<string[]>(() => {
@@ -139,6 +144,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             padding: "12px 10px",
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: "10px",
           }}
         >
@@ -184,16 +190,43 @@ export default function Layout({ children }: { children: ReactNode }) {
           }}>
             Clovifi
           </div>
+
+          {/* Hamburger Menu Toggle (Only visible on mobile) */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden flex items-center justify-center p-2 rounded"
+            style={{
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            {mobileMenuOpen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
+          </button>
         </div>
 
-        {/* Nav sections */}
-        <Reorder.Group
-          as="div"
-          axis="y"
-          values={sections}
-          onReorder={handleSectionsReorder}
-          style={{ padding: "6px 0", flex: 1 }}
-        >
+        {/* Collapsible links container */}
+        <div className={`${mobileMenuOpen ? "flex" : "hidden"} md:flex flex-col`} style={{ flex: 1 }}>
+          {/* Nav sections */}
+          <Reorder.Group
+            as="div"
+            axis="y"
+            values={sections}
+            onReorder={handleSectionsReorder}
+            style={{ padding: "6px 0", flex: 1 }}
+          >
           {sections.map((secLabel: string) => {
             const currentItems = itemsMap[secLabel] || [];
             return (
@@ -310,6 +343,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             );
           })}
         </Reorder.Group>
+        </div>
 
 
       </nav>

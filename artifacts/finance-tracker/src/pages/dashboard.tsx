@@ -704,9 +704,11 @@ export default function Dashboard() {
                             borderRadius: "4px",
                             background: "rgba(255,255,255,0.02)",
                             border: "1px solid rgba(255,255,255,0.04)",
+                            flexWrap: "wrap",
+                            gap: "8px",
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: "200px", flex: "1 1 auto" }}>
                             <div
                               style={{
                                 padding: "4px 8px",
@@ -753,7 +755,7 @@ export default function Dashboard() {
                             </div>
                           </div>
 
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginLeft: "10px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginLeft: "auto" }}>
                             <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.88rem", color: sub.type === "income" ? "#6ee87a" : "#f87171" }}>
                               {sub.type === "income" ? "+" : "-"}{formatAmount(sub.amount)}
                             </span>
@@ -838,53 +840,55 @@ export default function Dashboard() {
               </div>
               <span>Recent Transactions</span>
             </div>
-            <table className="aero-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Category</th>
-                  <th>Account</th>
-                  <th style={{ textAlign: "right" }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(!Array.isArray(recent) || recent.length === 0) ? (
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <table className="aero-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: "500px" }}>
+                <thead>
                   <tr>
-                    <td colSpan={5} style={{ textAlign: "center", color: "rgba(130,180,80,0.5)", padding: "2rem 1rem", fontStyle: "italic" }}>
-                      No transactions yet
-                    </td>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Account</th>
+                    <th style={{ textAlign: "right" }}>Amount</th>
                   </tr>
-                ) : recent.map(t => (
-                  <tr key={t.id}>
-                    <td style={{ color: "rgba(160,210,100,0.75)", fontFamily: "monospace", fontSize: "0.78rem" }}>
-                      {format(new Date(t.date), "MMM d, yyyy")}
-                    </td>
-                    <td style={{ fontWeight: 500, color: "rgba(215,240,190,0.9)" }}>{t.description}</td>
-                    <td>
-                      {t.categoryName && (
-                        <span style={{
-                          padding: "2px 8px",
-                          borderRadius: "3px",
-                          fontSize: "0.7rem",
-                          fontWeight: 600,
-                          background: `${t.categoryColor || "#4da820"}30`,
-                          color: t.categoryColor || "#66c028",
-                          border: `1px solid ${t.categoryColor || "#4da820"}50`,
-                          letterSpacing: "0.04em",
-                        }}>
-                          {t.categoryName}
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ fontSize: "0.78rem", color: "rgba(150,200,100,0.7)" }}>{t.accountName}</td>
-                    <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", color: t.type === "income" ? "#6ee87a" : "#f87171", textShadow: t.type === "income" ? "0 0 8px rgba(60,200,80,0.4)" : "0 0 8px rgba(220,60,60,0.35)" }}>
-                      {t.type === "income" ? "+" : "-"}{formatAmount(Math.abs(t.amount))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(!Array.isArray(recent) || recent.length === 0) ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: "center", color: "rgba(130,180,80,0.5)", padding: "2rem 1rem", fontStyle: "italic" }}>
+                        No transactions yet
+                      </td>
+                    </tr>
+                  ) : recent.map(t => (
+                    <tr key={t.id}>
+                      <td style={{ color: "rgba(160,210,100,0.75)", fontFamily: "monospace", fontSize: "0.78rem" }}>
+                        {format(new Date(t.date), "MMM d, yyyy")}
+                      </td>
+                      <td style={{ fontWeight: 500, color: "rgba(215,240,190,0.9)" }}>{t.description}</td>
+                      <td>
+                        {t.categoryName && (
+                          <span style={{
+                            padding: "2px 8px",
+                            borderRadius: "3px",
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            background: `${t.categoryColor || "#4da820"}30`,
+                            color: t.categoryColor || "#66c028",
+                            border: `1px solid ${t.categoryColor || "#4da820"}50`,
+                            letterSpacing: "0.04em",
+                          }}>
+                            {t.categoryName}
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ fontSize: "0.78rem", color: "rgba(150,200,100,0.7)" }}>{t.accountName}</td>
+                      <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", color: t.type === "income" ? "#6ee87a" : "#f87171", textShadow: t.type === "income" ? "0 0 8px rgba(60,200,80,0.4)" : "0 0 8px rgba(220,60,60,0.35)" }}>
+                        {t.type === "income" ? "+" : "-"}{formatAmount(Math.abs(t.amount))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Reorder.Item>
         );
       default:

@@ -23,6 +23,8 @@ export interface Transaction {
   /** @nullable */
   categoryColor?: string | null;
   /** @nullable */
+  categoryIcon?: string | null;
+  /** @nullable */
   notes?: string | null;
   createdAt: string;
 }

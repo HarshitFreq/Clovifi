@@ -319,7 +319,7 @@ export default function Subscriptions() {
           </button>
         </div>
         <div style={{ padding: "12px 16px" }}>
-          <p style={{ color: "rgba(190,225,150,0.75)", fontSize: "0.8rem", margin: 0 }}>
+          <p style={{ color: "var(--title-text)", fontSize: "0.8rem", margin: 0 }}>
             Configure and track your automated billing schedules. Click on any date on the calendar to manage due bills and record transactions.
           </p>
         </div>
@@ -329,21 +329,21 @@ export default function Subscriptions() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="glass-panel stat-card" style={{ borderRadius: "6px", padding: "12px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(150,220,90,0.6)" }}>
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--title-text)" }}>
               Outflow ({format(currentMonth, "MMM yyyy")})
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button
                 type="button"
                 onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}
-                style={{ background: "none", border: "none", color: "rgba(150,220,90,0.6)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}
+                style={{ background: "none", border: "none", color: "var(--accent-gradient-1)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}
               >
                 <ChevronLeft style={{ width: 12, height: 12 }} />
               </button>
               <button
                 type="button"
                 onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}
-                style={{ background: "none", border: "none", color: "rgba(150,220,90,0.6)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}
+                style={{ background: "none", border: "none", color: "var(--accent-gradient-1)", cursor: "pointer", display: "flex", alignItems: "center", padding: 0 }}
               >
                 <ChevronRight style={{ width: 12, height: 12 }} />
               </button>
@@ -355,7 +355,7 @@ export default function Subscriptions() {
         </div>
 
         <div className="glass-panel stat-card" style={{ borderRadius: "6px", padding: "12px 16px" }}>
-          <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(150,220,90,0.6)" }}>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--title-text)" }}>
             Monthly Commitment
           </span>
           <div style={{ fontSize: "1.4rem", fontWeight: 900, color: "#ffffff", marginTop: "4px", fontFamily: "monospace" }}>
@@ -364,7 +364,7 @@ export default function Subscriptions() {
         </div>
 
         <div className="glass-panel stat-card" style={{ borderRadius: "6px", padding: "12px 16px" }}>
-          <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(150,220,90,0.6)" }}>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--title-text)" }}>
             Active Schedules
           </span>
           <div style={{ fontSize: "1.4rem", fontWeight: 900, color: "#ffffff", marginTop: "4px", fontFamily: "monospace" }}>
@@ -377,12 +377,12 @@ export default function Subscriptions() {
       <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
         <div className="panel-titlebar">All Recurring Schedules</div>
         {subsLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
+          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255, 255, 255, 0.45)", fontSize: "0.85rem", fontStyle: "italic" }}>
             Loading schedules…
           </div>
         ) : !Array.isArray(subscriptions) || subscriptions.length === 0 ? (
           <div style={{ padding: "3rem 1.5rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-            <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.85rem" }}>No recurring schedules configured yet.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.45)", fontSize: "0.85rem" }}>No recurring schedules configured yet.</div>
             <button className="glass-button" onClick={openAdd} style={{ padding: "5px 14px", borderRadius: "4px", fontSize: "0.76rem" }}>
               + Add First Schedule
             </button>
@@ -413,14 +413,14 @@ export default function Subscriptions() {
                         <span style={{ fontFamily: "monospace", fontWeight: 700, color: sub.type === "income" ? "#6ee87a" : "#f87171" }}>
                           {sub.type === "income" ? "+" : "-"}{formatAmount(sub.amount)}
                         </span>
-                        <span style={{ fontSize: "0.62rem", color: "rgba(150,200,100,0.5)", textTransform: "uppercase", marginLeft: 6 }}>
+                        <span style={{ fontSize: "0.62rem", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", marginLeft: 6 }}>
                           / {sub.interval.substring(0, 3)}
                         </span>
                       </td>
-                      <td style={{ color: "rgba(160,210,100,0.85)", fontFamily: "monospace", fontSize: "0.78rem" }}>
+                      <td style={{ color: "var(--accent-gradient-1)", fontFamily: "monospace", fontSize: "0.78rem" }}>
                         {format(new Date(sub.nextDueDate), "MMM d, yyyy")}
                       </td>
-                      <td style={{ fontSize: "0.78rem", color: "rgba(150,200,100,0.7)" }}>{sub.accountName}</td>
+                      <td style={{ fontSize: "0.78rem", color: "rgba(255, 255, 255, 0.55)" }}>{sub.accountName}</td>
                       <td>
                         {sub.categoryName ? (
                           <span
@@ -437,7 +437,7 @@ export default function Subscriptions() {
                             {sub.categoryName}
                           </span>
                         ) : (
-                          <span style={{ fontSize: "0.7rem", color: "rgba(100,140,60,0.4)", fontStyle: "italic" }}>
+                          <span style={{ fontSize: "0.7rem", color: "rgba(255, 255, 255, 0.35)", fontStyle: "italic" }}>
                             Uncategorized
                           </span>
                         )}
@@ -486,9 +486,9 @@ export default function Subscriptions() {
                             style={{
                               padding: "2px 6px",
                               borderRadius: "3px",
-                              background: "linear-gradient(to bottom, rgba(50,80,20,0.3) 0%, rgba(20,40,10,0.4) 100%)",
-                              borderColor: "rgba(60,120,20,0.22)",
-                              color: "rgba(180,230,120,0.8)",
+                              background: "rgba(255, 255, 255, 0.03)",
+                              borderColor: "var(--panel-border)",
+                              color: "var(--accent-gradient-1)",
                             }}
                           >
                             <Edit style={{ width: 10, height: 10 }} />
@@ -539,12 +539,12 @@ export default function Subscriptions() {
       {modalOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", animation: "fadeIn 0.15s ease" }}
              onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}>
-          <div style={{ background: "rgba(6,18,4,0.96)", border: "1px solid rgba(80,160,30,0.35)", boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(140,220,60,0.1)", borderRadius: "8px", width: "100%", maxWidth: "460px", overflow: "hidden", animation: "slideUp 0.2s ease" }}>
+          <div style={{ background: "var(--panel-bg)", border: "1px solid var(--panel-border)", boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 var(--panel-border)", borderRadius: "8px", width: "100%", maxWidth: "460px", overflow: "hidden", animation: "slideUp 0.2s ease" }}>
             
             {/* Title Bar */}
             <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span>{editingSub ? "Edit Subscription" : "Add Subscription"}</span>
-              <button onClick={() => setModalOpen(false)} style={{ background: "none", border: "none", color: "rgba(180,220,120,0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+              <button onClick={() => setModalOpen(false)} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
             </div>
 
             {/* Form */}
@@ -572,23 +572,23 @@ export default function Subscriptions() {
               {/* Name & Amount */}
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "12px" }}>
                 <div>
-                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Name</label>
+                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Name</label>
                   <input
                     placeholder="e.g. Netflix, Rent"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Amount</label>
+                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Amount</label>
                   <input
                     type="number"
                     step="0.01"
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                   />
                 </div>
               </div>
@@ -596,11 +596,11 @@ export default function Subscriptions() {
               {/* Frequency & Next Date */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
-                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Frequency</label>
+                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Frequency</label>
                   <select
                     value={interval}
                     onChange={(e) => setInterval(e.target.value as any)}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                   >
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
@@ -608,12 +608,12 @@ export default function Subscriptions() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Next Due Date</label>
+                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Next Due Date</label>
                   <input
                     type="date"
                     value={nextDueDate}
                     onChange={(e) => setNextDueDate(e.target.value)}
-                    style={{ width: "100%", padding: "7px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                   />
                 </div>
               </div>
@@ -621,11 +621,11 @@ export default function Subscriptions() {
               {/* Account & Category */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
-                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Account</label>
+                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Account</label>
                   <select
                     value={accountId}
                     onChange={(e) => setAccountId(Number(e.target.value))}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                   >
                     {Array.isArray(accounts) &&
                       accounts.map((a) => (
@@ -636,11 +636,11 @@ export default function Subscriptions() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Category</label>
+                  <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Category</label>
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value !== "" ? Number(e.target.value) : "")}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
                   >
                     <option value="">Uncategorized</option>
                     {(() => {
@@ -659,7 +659,7 @@ export default function Subscriptions() {
                           return <option key={parent.id} value={parent.id}>{parent.name}</option>;
                         }
                         return (
-                          <optgroup key={parent.id} label={parent.name} style={{ background: "rgba(6,18,4,0.98)", color: "rgba(215,240,190,0.95)" }}>
+                          <optgroup key={parent.id} label={parent.name} style={{ background: "var(--bg-color)", color: "#fff" }}>
                             <option value={parent.id}>{parent.name} (Main)</option>
                             {subCats.map(child => (
                               <option key={child.id} value={child.id}>↳ {child.name}</option>
@@ -674,13 +674,13 @@ export default function Subscriptions() {
 
               {/* Notes */}
               <div>
-                <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block" }}>Notes</label>
+                <label style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block" }}>Notes</label>
                 <textarea
                   placeholder="Optional details..."
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)", color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "none" }}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: "4px", background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "none" }}
                 />
               </div>
 
@@ -693,7 +693,7 @@ export default function Subscriptions() {
                   onChange={(e) => setIsActive(e.target.checked)}
                   style={{ width: "16px", height: "16px", cursor: "pointer" }}
                 />
-                <label htmlFor="isActive" style={{ fontSize: "0.76rem", fontWeight: 600, color: "rgba(215,240,190,0.9)", cursor: "pointer" }}>
+                <label htmlFor="isActive" style={{ fontSize: "0.76rem", fontWeight: 600, color: "rgba(255, 255, 255, 0.9)", cursor: "pointer" }}>
                   Active Scheduling (Disabled updates pauses occurrences)
                 </label>
               </div>
@@ -711,7 +711,7 @@ export default function Subscriptions() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(20,50,8,0.6)", border: "1px solid rgba(60,120,20,0.3)", color: "rgba(180,220,130,0.8)" }}
+                  style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(255, 255, 255, 0.05)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.7)" }}
                 >
                   Cancel
                 </button>

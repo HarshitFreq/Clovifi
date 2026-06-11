@@ -175,7 +175,7 @@ export default function Transactions() {
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Transactions — All Records</span>
           <div style={{ display: "flex", gap: "8px" }}>
-            <button className="glass-button" onClick={() => setExportOpen(true)} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem", background: "linear-gradient(to bottom, rgba(50,80,20,0.4) 0%, rgba(20,40,10,0.5) 100%)", borderColor: "rgba(60,120,20,0.3)", color: "rgba(180,230,120,0.85)" }}>
+            <button className="glass-button" onClick={() => setExportOpen(true)} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem", background: "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)", borderColor: "var(--panel-border)", color: "rgba(255,255,255,0.85)" }}>
               📄 Export PDF
             </button>
             <button className="glass-button" onClick={openAdd} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
@@ -185,11 +185,11 @@ export default function Transactions() {
         </div>
 
         {/* ── Dynamic Glass Capsule Filter Bar ── */}
-        <div style={{ padding: "16px", borderBottom: "1px solid rgba(80, 160, 30, 0.15)", background: "rgba(6, 18, 4, 0.35)", position: "relative" }}>
+        <div style={{ padding: "16px", borderBottom: "1px solid var(--panel-border)", background: "rgba(0, 0, 0, 0.2)", position: "relative" }}>
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px" }}>
             {/* Glossy Search Input */}
             <div style={{ position: "relative", flex: "1 1 240px" }}>
-              <Search style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "rgba(160,220,90,0.6)" }} />
+              <Search style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", width: "14px", height: "14px", color: "rgba(255,255,255,0.4)" }} />
               <input
                 type="text"
                 placeholder="Search descriptions..."
@@ -199,22 +199,22 @@ export default function Transactions() {
                   width: "100%",
                   padding: "8px 10px 8px 30px",
                   borderRadius: "20px",
-                  background: "rgba(8, 22, 4, 0.75)",
-                  border: "1px solid rgba(70, 140, 25, 0.35)",
-                  color: "rgba(215, 240, 190, 0.95)",
+                  background: "rgba(0, 0, 0, 0.4)",
+                  border: "1px solid var(--panel-border)",
+                  color: "rgba(255, 255, 255, 0.95)",
                   fontSize: "0.8rem",
                   outline: "none",
                   boxSizing: "border-box",
                   boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)",
                   transition: "all 0.2s",
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = "rgba(100, 220, 40, 0.6)"}
-                onBlur={(e) => e.currentTarget.style.borderColor = "rgba(70, 140, 25, 0.35)"}
+                onFocus={(e) => e.currentTarget.style.borderColor = "var(--accent-border-color)"}
+                onBlur={(e) => e.currentTarget.style.borderColor = "var(--panel-border)"}
               />
               {search && (
                 <X 
                   onClick={() => setSearch("")}
-                  style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", width: "13px", height: "13px", color: "rgba(160,220,90,0.6)", cursor: "pointer" }}
+                  style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", width: "13px", height: "13px", color: "rgba(255,255,255,0.4)", cursor: "pointer" }}
                 />
               )}
             </div>
@@ -320,20 +320,20 @@ export default function Transactions() {
                   marginTop: "8px",
                   borderRadius: "6px",
                   overflow: "hidden",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.65), 0 0 0 1px rgba(80,160,30,0.25)",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.65), 0 0 0 1px var(--panel-border)",
                 }}
                 className="glass-panel"
               >
                 <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(80,160,30,0.15)", paddingBottom: "6px" }}>
-                    <span style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(160,220,90,0.85)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--panel-border)", paddingBottom: "6px" }}>
+                    <span style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--title-text)" }}>
                       Filter by {activeCapsule}
                     </span>
                     <span 
                       onClick={() => setActiveCapsule(null)} 
                       style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
                     >
-                      <X style={{ width: "13px", height: "13px", color: "rgba(160,220,90,0.6)" }} />
+                      <X style={{ width: "13px", height: "13px", color: "rgba(255,255,255,0.4)" }} />
                     </span>
                   </div>
 
@@ -404,24 +404,24 @@ export default function Transactions() {
                           <motion.div 
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
-                            style={{ display: "flex", gap: "10px", alignItems: "center", borderTop: "1px solid rgba(80,160,30,0.15)", paddingTop: "8px", flexWrap: "wrap" }}
+                            style={{ display: "flex", gap: "10px", alignItems: "center", borderTop: "1px solid var(--panel-border)", paddingTop: "8px", flexWrap: "wrap" }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <span style={{ fontSize: "0.7rem", color: "rgba(160,220,90,0.8)" }}>Start:</span>
+                              <span style={{ fontSize: "0.7rem", color: "rgba(255, 255, 255, 0.6)" }}>Start:</span>
                               <input 
                                 type="date" 
                                 value={startDate} 
                                 onChange={(e) => setStartDate(e.target.value)} 
-                                style={{ background: "rgba(8,22,4,0.8)", border: "1px solid rgba(80,160,30,0.3)", borderRadius: "4px", color: "#fff", padding: "4px 8px", fontSize: "0.75rem", outline: "none" }}
+                                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid var(--panel-border)", borderRadius: "4px", color: "#fff", padding: "4px 8px", fontSize: "0.75rem", outline: "none" }}
                               />
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <span style={{ fontSize: "0.7rem", color: "rgba(160,220,90,0.8)" }}>End:</span>
+                              <span style={{ fontSize: "0.7rem", color: "rgba(255, 255, 255, 0.6)" }}>End:</span>
                               <input 
                                 type="date" 
                                 value={endDate} 
                                 onChange={(e) => setEndDate(e.target.value)} 
-                                style={{ background: "rgba(8,22,4,0.8)", border: "1px solid rgba(80,160,30,0.3)", borderRadius: "4px", color: "#fff", padding: "4px 8px", fontSize: "0.75rem", outline: "none" }}
+                                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid var(--panel-border)", borderRadius: "4px", color: "#fff", padding: "4px 8px", fontSize: "0.75rem", outline: "none" }}
                               />
                             </div>
                             <button
@@ -459,19 +459,19 @@ export default function Transactions() {
         </div>
 
         {isLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
+          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255, 255, 255, 0.4)", fontSize: "0.85rem", fontStyle: "italic" }}>
             Loading transactions…
           </div>
         ) : !Array.isArray(transactions) || transactions.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-            <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No transactions yet.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "0.9rem" }}>No transactions yet.</div>
             <button className="glass-button" onClick={openAdd} style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
               + Add First Transaction
             </button>
           </div>
         ) : sortedTransactions.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-            <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No matching transactions found.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "0.9rem" }}>No matching transactions found.</div>
             <button
               className="glass-button"
               onClick={() => {
@@ -505,10 +505,10 @@ export default function Transactions() {
               <tbody>
                 {sortedTransactions.map((t) => (
                   <tr key={t.id} onClick={() => openEdit(t)} style={{ cursor: "pointer" }}>
-                    <td style={{ color: "rgba(160,210,100,0.75)", fontFamily: "monospace", fontSize: "0.78rem" }}>
+                    <td style={{ color: "rgba(255, 255, 255, 0.45)", fontFamily: "monospace", fontSize: "0.78rem" }}>
                       {format(new Date(t.date), "MMM d, yyyy")}
                     </td>
-                    <td style={{ fontWeight: 500, color: "rgba(215,240,190,0.9)" }}>{t.description}</td>
+                    <td style={{ fontWeight: 500, color: "var(--title-text)" }}>{t.description}</td>
                     <td>
                       {t.categoryName ? (
                         <span style={{
@@ -521,13 +521,13 @@ export default function Transactions() {
                           border: `1px solid ${t.categoryColor || "#4da820"}50`,
                           letterSpacing: "0.04em",
                         }}>
-                          {t.categoryName}
+                          {t.categoryIcon ? `${t.categoryIcon} ` : ""}{t.categoryName}
                         </span>
                       ) : (
-                        <span style={{ fontSize: "0.72rem", color: "rgba(100,140,60,0.45)", fontStyle: "italic" }}>Uncategorized</span>
+                        <span style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.3)", fontStyle: "italic" }}>Uncategorized</span>
                       )}
                     </td>
-                    <td style={{ fontSize: "0.78rem", color: "rgba(150,200,100,0.7)" }}>{t.accountName}</td>
+                    <td style={{ fontSize: "0.78rem", color: "rgba(255, 255, 255, 0.65)" }}>{t.accountName}</td>
                     <td>
                       <span style={{
                         padding: "2px 8px",
@@ -568,32 +568,32 @@ function CapsuleButton({ label, active, isOpen, onClick }: { label: string; acti
         padding: "5px 12px",
         borderRadius: "16px",
         background: active 
-          ? "linear-gradient(to bottom, #8dda40 0%, #52a81c 100%)" 
+          ? "linear-gradient(to bottom, var(--accent-gradient-1) 0%, var(--accent-gradient-2) 45%, var(--accent-gradient-3) 50%, var(--accent-gradient-4) 100%)" 
           : "rgba(255, 255, 255, 0.05)",
         border: active 
-          ? "1px solid rgba(160, 230, 80, 0.5)" 
-          : "1px solid rgba(70, 140, 25, 0.25)",
-        color: active ? "#fff" : "rgba(190, 225, 150, 0.85)",
+          ? "1px solid var(--accent-border-color)" 
+          : "1px solid var(--panel-border)",
+        color: active ? "#fff" : "rgba(255, 255, 255, 0.8)",
         fontSize: "0.75rem",
         fontWeight: active ? 600 : 400,
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
         gap: "6px",
-        boxShadow: active ? "0 0 8px rgba(80, 180, 20, 0.3)" : "none",
+        boxShadow: active ? "0 0 8px var(--accent-glow-shadow)" : "none",
         transition: "all 0.15s",
         textShadow: active ? "0 1px 2px rgba(0,0,0,0.5)" : "none",
       }}
       onMouseEnter={(e) => {
         if (!active) {
-          e.currentTarget.style.background = "rgba(110, 180, 50, 0.12)";
-          e.currentTarget.style.borderColor = "rgba(110, 180, 50, 0.4)";
+          e.currentTarget.style.background = "var(--panel-border)";
+          e.currentTarget.style.borderColor = "var(--accent-border-color)";
         }
       }}
       onMouseLeave={(e) => {
         if (!active) {
           e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
-          e.currentTarget.style.borderColor = "rgba(70, 140, 25, 0.25)";
+          e.currentTarget.style.borderColor = "var(--panel-border)";
         }
       }}
     >
@@ -622,12 +622,12 @@ function MenuOptionItem({ label, selected, onClick }: { label: string; selected:
         padding: "6px 12px",
         borderRadius: "15px",
         background: selected 
-          ? "linear-gradient(to bottom, #8dda40 0%, #52a81c 100%)" 
-          : "rgba(8, 22, 4, 0.6)",
+          ? "linear-gradient(to bottom, var(--accent-gradient-1) 0%, var(--accent-gradient-2) 45%, var(--accent-gradient-3) 50%, var(--accent-gradient-4) 100%)" 
+          : "rgba(0, 0, 0, 0.35)",
         border: selected 
-          ? "1px solid rgba(160, 230, 80, 0.45)" 
-          : "1px solid rgba(80, 160, 30, 0.2)",
-        color: selected ? "#fff" : "rgba(215, 240, 190, 0.9)",
+          ? "1px solid var(--accent-border-color)" 
+          : "1px solid var(--panel-border)",
+        color: selected ? "#fff" : "rgba(255, 255, 255, 0.8)",
         fontSize: "0.75rem",
         fontWeight: selected ? 600 : 400,
         cursor: "pointer",
@@ -639,14 +639,14 @@ function MenuOptionItem({ label, selected, onClick }: { label: string; selected:
       }}
       onMouseEnter={(e) => {
         if (!selected) {
-          e.currentTarget.style.background = "rgba(110, 180, 50, 0.15)";
-          e.currentTarget.style.borderColor = "rgba(110, 180, 50, 0.45)";
+          e.currentTarget.style.background = "var(--panel-border)";
+          e.currentTarget.style.borderColor = "var(--accent-border-color)";
         }
       }}
       onMouseLeave={(e) => {
         if (!selected) {
-          e.currentTarget.style.background = "rgba(8, 22, 4, 0.6)";
-          e.currentTarget.style.borderColor = "rgba(80, 160, 30, 0.2)";
+          e.currentTarget.style.background = "rgba(0, 0, 0, 0.35)";
+          e.currentTarget.style.borderColor = "var(--panel-border)";
         }
       }}
     >

@@ -1,11 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Receipt, Wallet, Tags, Settings, Calculator, User, Calendar } from "lucide-react";
+import { LayoutDashboard, Receipt, Wallet, Tags, Settings, User, Calendar } from "lucide-react";
 import React, { ReactNode } from "react";
 import { useCurrency } from "@/lib/currency";
 import { useGetMe, useLogout } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Reorder } from "framer-motion";
-import GlassCalculator from "./GlassCalculator";
 
 const NAV_SECTIONS = [
   {
@@ -27,7 +26,6 @@ const NAV_SECTIONS = [
     label: "App",
     items: [
       { href: "/settings", label: "Settings", icon: Settings },
-      { href: "#calculator", label: "Calculator", icon: Calculator },
     ],
   },
 ];
@@ -42,7 +40,6 @@ const getIconComponent = (item: any) => {
     if (item.href === "/accounts") return Wallet;
     if (item.href === "/categories") return Tags;
     if (item.href === "/settings") return Settings;
-    if (item.href === "#calculator") return Calculator;
     if (item.href === "/subscriptions") return Calendar;
   }
   return Settings;
@@ -81,19 +78,24 @@ export default function Layout({ children }: { children: ReactNode }) {
       ],
       App: [
         { href: "/settings", label: "Settings", icon: Settings },
-        { href: "#calculator", label: "Calculator", icon: Calculator },
       ]
     };
     try {
       const saved = localStorage.getItem("clovifi_sidebar_subitems_order");
       if (saved) {
         const parsed = JSON.parse(saved);
+        // Filter out calculator option from any saved section arrangement
+        Object.keys(parsed).forEach(key => {
+          if (Array.isArray(parsed[key])) {
+            parsed[key] = parsed[key].filter((item: any) => item.href !== "#calculator");
+          }
+        });
         if (parsed.Finance) {
           const hasSub = parsed.Finance.some((item: any) => item.href === "/subscriptions");
           if (!hasSub) {
             parsed.Finance.push({ href: "/subscriptions", label: "Subscriptions", icon: Calendar });
-            localStorage.setItem("clovifi_sidebar_subitems_order", JSON.stringify(parsed));
           }
+          localStorage.setItem("clovifi_sidebar_subitems_order", JSON.stringify(parsed));
           return parsed;
         }
       }
@@ -139,8 +141,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Logo / header */}
         <div
           style={{
-            background: "linear-gradient(to bottom, rgba(15,40,6,0.95) 0%, rgba(8,22,3,0.98) 100%)",
-            borderBottom: "1px solid rgba(70,140,20,0.3)",
+            background: "linear-gradient(to bottom, var(--title-bg-1) 0%, var(--title-bg-2) 100%)",
+            borderBottom: "1px solid var(--title-border)",
             padding: "12px 10px",
             display: "flex",
             alignItems: "center",
@@ -150,18 +152,17 @@ export default function Layout({ children }: { children: ReactNode }) {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "24px", lineHeight: 1 }}>🍀</span>
-            <div style={{
-              fontWeight: 900,
-              fontSize: "1.45rem",
-              fontFamily: "'Segoe UI', 'Trebuchet MS', sans-serif",
-              background: "linear-gradient(to bottom, #ffffff 0%, #d5f2a2 45%, #66c028 50%, #1c5204 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 1.5px 2.5px rgba(0,0,0,0.85)) drop-shadow(0 0 5px rgba(100,220,40,0.4))",
-              letterSpacing: "0.01em",
-              lineHeight: 1,
-              paddingBottom: "2px",
-            }}>
+            <div
+              className="brand-title"
+              style={{
+                fontWeight: 900,
+                fontSize: "1.45rem",
+                fontFamily: "'Segoe UI', 'Trebuchet MS', sans-serif",
+                letterSpacing: "0.01em",
+                lineHeight: 1,
+                paddingBottom: "2px",
+              }}
+            >
               Clovifi
             </div>
           </div>
@@ -216,9 +217,10 @@ export default function Layout({ children }: { children: ReactNode }) {
                     padding: "8px 10px 3px",
                     fontSize: "0.62rem",
                     fontWeight: 700,
-                    letterSpacing: "0.1em",
+                    letterSpacing: "0.08em",
                     textTransform: "uppercase",
-                    color: "rgba(110,170,60,0.7)",
+                    color: "var(--accent-gradient-1)",
+                    opacity: 0.75,
                     textShadow: "0 1px 2px rgba(0,0,0,0.8)",
                   }}
                 >
@@ -234,45 +236,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                     const isActive = location === item.href;
                     const Icon = getIconComponent(item);
 
-                    if (item.href === "#calculator") {
-                      return (
-                        <Reorder.Item
-                          key={item.href}
-                          value={item}
-                          as="div"
-                          style={{ cursor: "grab" }}
-                        >
-                          <div
-                            className="nav-item-hover"
-                            onClick={() => {
-                              window.dispatchEvent(new CustomEvent("open-calculator"));
-                            }}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              padding: "6px 10px",
-                              margin: "1px 5px",
-                              borderRadius: "4px",
-                              border: "1px solid transparent",
-                              transition: "all 0.15s",
-                              color: "rgba(190,225,150,0.88)",
-                              fontSize: "0.8rem",
-                            }}
-                          >
-                            <Icon
-                              style={{
-                                width: "13px",
-                                height: "13px",
-                                flexShrink: 0,
-                                color: "rgba(140,200,80,0.8)",
-                              }}
-                            />
-                            {item.label}
-                          </div>
-                        </Reorder.Item>
-                      );
-                    }
+
 
                     return (
                       <Reorder.Item
@@ -293,7 +257,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                               borderRadius: "4px",
                               border: "1px solid transparent",
                               transition: "all 0.15s",
-                              color: isActive ? "#fff" : "rgba(190,225,150,0.88)",
+                              color: isActive ? "#fff" : "rgba(255,255,255,0.75)",
                               fontSize: "0.8rem",
                               fontWeight: isActive ? 600 : 400,
                             }}
@@ -303,7 +267,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                                 width: "13px",
                                 height: "13px",
                                 flexShrink: 0,
-                                color: isActive ? "#fff" : "rgba(140,200,80,0.8)",
+                                color: isActive ? "#fff" : "rgba(255, 255, 255, 0.55)",
                                 filter: isActive ? "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" : "none",
                               }}
                             />
@@ -328,8 +292,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {/* Floating Glassmorphic Calculator */}
-      <GlassCalculator />
     </div>
   );
 }
@@ -354,9 +316,9 @@ function UserProfileCard() {
   return (
     <div
       style={{
-        borderTop: "1px solid rgba(70,140,20,0.3)",
+        borderTop: "1px solid var(--panel-border)",
         padding: "12px 10px",
-        background: "rgba(10,30,5,0.45)",
+        background: "rgba(0, 0, 0, 0.35)",
         display: "flex",
         flexDirection: "column",
         gap: "8px",
@@ -376,8 +338,8 @@ function UserProfileCard() {
             transition: "all 0.15s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(110,180,50,0.15)";
-            e.currentTarget.style.borderColor = "rgba(110,180,50,0.3)";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+            e.currentTarget.style.borderColor = "var(--panel-border)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "transparent";
@@ -389,7 +351,7 @@ function UserProfileCard() {
               width: "28px",
               height: "28px",
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #66c028, #1b5a04)",
+              background: "linear-gradient(135deg, var(--accent-gradient-1), var(--accent-gradient-3))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -418,9 +380,9 @@ function UserProfileCard() {
               }}
             >
               <span>{user.username}</span>
-              <User style={{ width: "10px", height: "10px", color: "rgba(160,220,90,0.7)" }} />
+              <User style={{ width: "10px", height: "10px", color: "var(--accent-gradient-1)" }} />
             </div>
-            <div style={{ fontSize: "0.6rem", color: "rgba(160,220,90,0.8)" }}>Edit Profile</div>
+            <div style={{ fontSize: "0.6rem", color: "var(--title-text)" }}>Edit Profile</div>
           </div>
         </div>
       </Link>

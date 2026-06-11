@@ -144,6 +144,7 @@ export const ListTransactionsResponseItem = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -179,6 +180,7 @@ export const CreateTransactionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -202,6 +204,7 @@ export const GetTransactionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -239,6 +242,7 @@ export const UpdateTransactionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -342,6 +346,7 @@ export const ListSubscriptionsResponseItem = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "isActive": zod.boolean(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
@@ -381,6 +386,7 @@ export const CreateSubscriptionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "isActive": zod.boolean(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
@@ -406,6 +412,7 @@ export const GetSubscriptionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "isActive": zod.boolean(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
@@ -443,6 +450,7 @@ export const UpdateSubscriptionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "isActive": zod.boolean(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
@@ -478,6 +486,7 @@ export const PaySubscriptionResponse = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "isActive": zod.boolean(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
@@ -552,6 +561,7 @@ export const GetRecentTransactionsResponseItem = zod.object({
   "categoryId": zod.number().nullish(),
   "categoryName": zod.string().nullish(),
   "categoryColor": zod.string().nullish(),
+  "categoryIcon": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 })

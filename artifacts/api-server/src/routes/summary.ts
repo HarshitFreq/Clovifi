@@ -185,6 +185,7 @@ router.get("/summary/recent-transactions", async (req, res) => {
       accountName: accountsTable.name,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
+      categoryIcon: categoriesTable.icon,
     })
     .from(transactionsTable)
     .leftJoin(accountsTable, eq(transactionsTable.accountId, accountsTable.id))
@@ -205,6 +206,7 @@ router.get("/summary/recent-transactions", async (req, res) => {
       categoryId: r.tx.categoryId ?? null,
       categoryName: r.categoryName ?? null,
       categoryColor: r.categoryColor ?? null,
+      categoryIcon: r.categoryIcon ?? null,
       notes: r.tx.notes ?? null,
       createdAt: r.tx.createdAt.toISOString(),
     }))

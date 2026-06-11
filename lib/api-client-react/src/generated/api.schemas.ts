@@ -159,6 +159,8 @@ export interface Transaction {
   /** @nullable */
   categoryColor?: string | null;
   /** @nullable */
+  categoryIcon?: string | null;
+  /** @nullable */
   notes?: string | null;
   createdAt: string;
 }
@@ -267,6 +269,8 @@ export interface Subscription {
   categoryName?: string | null;
   /** @nullable */
   categoryColor?: string | null;
+  /** @nullable */
+  categoryIcon?: string | null;
   isActive: boolean;
   /** @nullable */
   notes?: string | null;

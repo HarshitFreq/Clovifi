@@ -723,6 +723,8 @@ components:
           type: ["string", "null"]
         categoryColor:
           type: ["string", "null"]
+        categoryIcon:
+          type: ["string", "null"]
         notes:
           type: ["string", "null"]
         createdAt:
@@ -848,6 +850,8 @@ components:
         categoryName:
           type: ["string", "null"]
         categoryColor:
+          type: ["string", "null"]
+        categoryIcon:
           type: ["string", "null"]
         isActive:
           type: boolean

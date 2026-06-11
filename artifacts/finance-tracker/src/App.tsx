@@ -60,7 +60,27 @@ function Router() {
   );
 }
 
+import { useEffect } from "react";
+
 function App() {
+  useEffect(() => {
+    // Apply theme
+    const savedTheme = localStorage.getItem("clovifi_theme") || "emerald";
+    const classes = ["theme-sapphire", "theme-amethyst", "theme-ruby", "theme-noir"];
+    classes.forEach(c => document.documentElement.classList.remove(c));
+    if (savedTheme !== "emerald" && classes.includes(`theme-${savedTheme}`)) {
+      document.documentElement.classList.add(`theme-${savedTheme}`);
+    }
+
+    // Apply background style
+    const savedBgStyle = localStorage.getItem("clovifi_bg_style") || "aurora";
+    const bgClasses = ["bg-style-grid", "bg-style-oled"];
+    bgClasses.forEach(c => document.documentElement.classList.remove(c));
+    if (savedBgStyle !== "aurora" && bgClasses.includes(`bg-style-${savedBgStyle}`)) {
+      document.documentElement.classList.add(`bg-style-${savedBgStyle}`);
+    }
+  }, []);
+
   return (
     <SoundProvider>
       <CurrencyProvider>

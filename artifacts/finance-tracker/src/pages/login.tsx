@@ -121,16 +121,16 @@ export default function Login({ onSuccess }: LoginProps) {
     <div
       className="min-h-[100dvh] w-full flex items-center justify-center p-4 overflow-y-auto"
       style={{
-        background: "#020703",
-        backgroundImage: "radial-gradient(circle at center, rgba(102,192,40,0.03) 0%, transparent 75%)",
+        background: "var(--bg-color)",
+        backgroundImage: "radial-gradient(circle at center, var(--panel-glow) 0%, transparent 75%)",
         fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
       }}
     >
       <div
         className="w-full max-w-[400px] p-6 sm:p-8 md:p-10 rounded-2xl border transition-all duration-300"
         style={{
-          background: "rgba(10, 22, 12, 0.96)",
-          borderColor: "rgba(102, 192, 40, 0.18)",
+          background: "var(--panel-bg)",
+          borderColor: "var(--panel-border)",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255,255,255,0.05)",
         }}
       >
@@ -141,8 +141,8 @@ export default function Login({ onSuccess }: LoginProps) {
               width: "42px",
               height: "42px",
               borderRadius: "10px",
-              background: "linear-gradient(135deg, rgba(102,192,40,0.15) 0%, rgba(5,15,5,0.8) 100%)",
-              border: "1px solid rgba(102,192,40,0.3)",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.45) 100%)",
+              border: "1px solid var(--panel-border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -294,12 +294,13 @@ export default function Login({ onSuccess }: LoginProps) {
               padding: "11px 24px",
               marginTop: "4px",
               borderRadius: "8px",
-              background: "#66c028",
-              border: "none",
-              color: "#020a04",
+              background: "linear-gradient(to bottom, var(--accent-gradient-1) 0%, var(--accent-gradient-3) 100%)",
+              border: "1px solid var(--accent-border-color)",
+              color: "#000",
               fontWeight: 700,
               fontSize: "0.82rem",
               cursor: "pointer",
+              boxShadow: "0 0 10px var(--accent-glow-shadow)",
             }}
           >
             {isRegister
@@ -351,11 +352,11 @@ export default function Login({ onSuccess }: LoginProps) {
               setIsRegister(!isRegister);
               setError(null);
             }}
-            className="hover:text-lime-300 transition-colors duration-150"
+            className="hover:brightness-125 transition-all duration-150"
             style={{
               background: "none",
               border: "none",
-              color: "#66c028",
+              color: "var(--accent-gradient-1)",
               cursor: "pointer",
               fontSize: "0.75rem",
               fontWeight: 500,

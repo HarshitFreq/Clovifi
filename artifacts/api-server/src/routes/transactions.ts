@@ -13,7 +13,7 @@ import {
 
 const router = Router();
 
-function formatTx(tx: Record<string, unknown>, accountName?: string | null, categoryName?: string | null, categoryColor?: string | null) {
+function formatTx(tx: Record<string, unknown>, accountName?: string | null, categoryName?: string | null, categoryColor?: string | null, categoryIcon?: string | null) {
   return {
     id: tx.id,
     amount: parseFloat(tx.amount as string),
@@ -25,6 +25,7 @@ function formatTx(tx: Record<string, unknown>, accountName?: string | null, cate
     categoryId: tx.categoryId ?? null,
     categoryName: categoryName ?? null,
     categoryColor: categoryColor ?? null,
+    categoryIcon: categoryIcon ?? null,
     notes: tx.notes ?? null,
     createdAt: (tx.createdAt as Date).toISOString(),
   };
@@ -66,6 +67,7 @@ router.get("/transactions", async (req, res) => {
       accountName: accountsTable.name,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
+      categoryIcon: categoriesTable.icon,
     })
     .from(transactionsTable)
     .leftJoin(accountsTable, eq(transactionsTable.accountId, accountsTable.id))
@@ -77,7 +79,7 @@ router.get("/transactions", async (req, res) => {
 
   res.json(
     rows.map((r) =>
-      formatTx(r.tx as unknown as Record<string, unknown>, r.accountName, r.categoryName, r.categoryColor)
+      formatTx(r.tx as unknown as Record<string, unknown>, r.accountName, r.categoryName, r.categoryColor, r.categoryIcon)
     )
   );
 });
@@ -146,6 +148,7 @@ router.post("/transactions", async (req, res) => {
       accountName: accountsTable.name,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
+      categoryIcon: categoriesTable.icon,
     })
     .from(transactionsTable)
     .leftJoin(accountsTable, eq(transactionsTable.accountId, accountsTable.id))
@@ -157,7 +160,8 @@ router.post("/transactions", async (req, res) => {
       joinedTx.tx as unknown as Record<string, unknown>,
       joinedTx.accountName,
       joinedTx.categoryName,
-      joinedTx.categoryColor
+      joinedTx.categoryColor,
+      joinedTx.categoryIcon
     )
   );
 });
@@ -176,6 +180,7 @@ router.get("/transactions/:id", async (req, res) => {
       accountName: accountsTable.name,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
+      categoryIcon: categoriesTable.icon,
     })
     .from(transactionsTable)
     .leftJoin(accountsTable, eq(transactionsTable.accountId, accountsTable.id))
@@ -186,7 +191,7 @@ router.get("/transactions/:id", async (req, res) => {
     res.status(404).json({ error: "Transaction not found" });
     return;
   }
-  res.json(formatTx(row.tx as unknown as Record<string, unknown>, row.accountName, row.categoryName, row.categoryColor));
+  res.json(formatTx(row.tx as unknown as Record<string, unknown>, row.accountName, row.categoryName, row.categoryColor, row.categoryIcon));
 });
 
 router.patch("/transactions/:id", async (req, res) => {
@@ -297,6 +302,7 @@ router.patch("/transactions/:id", async (req, res) => {
       accountName: accountsTable.name,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
+      categoryIcon: categoriesTable.icon,
     })
     .from(transactionsTable)
     .leftJoin(accountsTable, eq(transactionsTable.accountId, accountsTable.id))
@@ -308,7 +314,8 @@ router.patch("/transactions/:id", async (req, res) => {
       joinedTx.tx as unknown as Record<string, unknown>,
       joinedTx.accountName,
       joinedTx.categoryName,
-      joinedTx.categoryColor
+      joinedTx.categoryColor,
+      joinedTx.categoryIcon
     )
   );
 });

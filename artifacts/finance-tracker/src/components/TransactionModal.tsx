@@ -29,9 +29,9 @@ const OVERLAY: React.CSSProperties = {
 };
 
 const MODAL: React.CSSProperties = {
-  background: "rgba(6,18,4,0.96)",
-  border: "1px solid rgba(80,160,30,0.35)",
-  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(140,220,60,0.1)",
+  background: "var(--panel-bg)",
+  border: "1px solid var(--panel-border)",
+  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 var(--panel-border)",
   borderRadius: "8px",
   width: "100%",
   maxWidth: "460px",
@@ -132,12 +132,12 @@ export default function TransactionModal({ open, onClose, transaction }: Props) 
 
   const labelStyle: React.CSSProperties = {
     fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em",
-    textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block",
+    textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block",
   };
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "8px 10px", borderRadius: "4px",
-    background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)",
-    color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none",
+    background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)",
+    color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none",
     boxSizing: "border-box",
   };
 
@@ -146,25 +146,25 @@ export default function TransactionModal({ open, onClose, transaction }: Props) 
       <div style={MODAL}>
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{isEdit ? "Edit Transaction" : "Add Transaction"}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(180,220,120,0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "13px" }}>
 
           {/* Expense / Income toggle */}
-          <div style={{ display: "flex", borderRadius: "5px", overflow: "hidden", border: "1px solid rgba(60,120,20,0.3)" }}>
+          <div style={{ display: "flex", borderRadius: "5px", overflow: "hidden", border: "1px solid var(--panel-border)" }}>
             {(["expense", "income"] as const).map(t => (
               <button key={t} type="button" onClick={() => { setType(t); setCategoryId(""); }}
                 style={{
                   flex: 1, padding: "9px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", border: "none", letterSpacing: "0.05em",
                   background: type === t
-                    ? (t === "expense" ? "rgba(200,50,50,0.25)" : "rgba(40,160,60,0.25)")
-                    : "rgba(8,22,4,0.7)",
+                    ? (t === "expense" ? "rgba(239, 68, 68, 0.25)" : "rgba(34, 197, 94, 0.25)")
+                    : "rgba(0, 0, 0, 0.45)",
                   color: type === t
                     ? (t === "expense" ? "#f87171" : "#6ee87a")
-                    : "rgba(140,180,100,0.5)",
+                    : "rgba(255, 255, 255, 0.45)",
                   transition: "all 0.15s",
-                  borderRight: t === "expense" ? "1px solid rgba(60,120,20,0.3)" : "none",
+                  borderRight: t === "expense" ? "1px solid var(--panel-border)" : "none",
                 }}>
                 {t === "expense" ? "↓ Expense" : "↑ Income"}
               </button>
@@ -221,7 +221,7 @@ export default function TransactionModal({ open, onClose, transaction }: Props) 
                       return <option key={parent.id} value={parent.id}>{parent.name}</option>;
                     }
                     return (
-                      <optgroup key={parent.id} label={parent.name} style={{ background: "rgba(6,18,4,0.98)", color: "rgba(215,240,190,0.95)" }}>
+                      <optgroup key={parent.id} label={parent.name} style={{ background: "var(--bg-color)", color: "#fff" }}>
                         <option value={parent.id}>{parent.name} (Main)</option>
                         {subCats.map(child => (
                           <option key={child.id} value={child.id}>↳ {child.name}</option>
@@ -261,7 +261,7 @@ export default function TransactionModal({ open, onClose, transaction }: Props) 
               </button>
             )}
             <button type="button" onClick={onClose}
-              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(20,50,8,0.6)", border: "1px solid rgba(60,120,20,0.3)", color: "rgba(180,220,130,0.8)" }}>
+              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(255,255,255,0.05)", border: "1px solid var(--panel-border)", color: "rgba(255,255,255,0.7)" }}>
               Cancel
             </button>
             <button type="submit" className="glass-button" disabled={isPending}
@@ -275,7 +275,7 @@ export default function TransactionModal({ open, onClose, transaction }: Props) 
       <style>{`
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6) sepia(1) saturate(2) hue-rotate(75deg); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
       `}</style>
     </div>
   );

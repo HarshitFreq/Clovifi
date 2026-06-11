@@ -19,9 +19,9 @@ const OVERLAY: React.CSSProperties = {
 };
 
 const MODAL: React.CSSProperties = {
-  background: "rgba(6,18,4,0.96)",
-  border: "1px solid rgba(80,160,30,0.35)",
-  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(140,220,60,0.1)",
+  background: "var(--panel-bg)",
+  border: "1px solid var(--panel-border)",
+  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 var(--panel-border)",
   borderRadius: "8px",
   width: "100%",
   maxWidth: "420px",
@@ -70,8 +70,10 @@ export default function ExportPdfModal({ open, onClose }: Props) {
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    // Get active theme variables
+    const activeAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-gradient-2').trim() || '#66c028';
+    const activeBg = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim() || '#030712';
+    const activeGlow = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow-shadow').trim() || 'rgba(100,220,40,0.4)';
 
     // Open print window synchronously within the user-initiated click event to bypass popup blockers
     const printWindow = window.open("", "_blank");
@@ -89,21 +91,22 @@ export default function ExportPdfModal({ open, onClose }: Props) {
           <style>
             body {
               font-family: 'Segoe UI', 'Trebuchet MS', -apple-system, BlinkMacSystemFont, sans-serif;
-              background-color: #fafdf8;
+              background-color: ${activeBg};
               display: flex;
               flex-direction: column;
               align-items: center;
               justify-content: center;
               height: 100vh;
               margin: 0;
-              color: #1b5a04;
+              color: #ffffff;
             }
             .spinner {
-              border: 4px solid rgba(102, 192, 40, 0.1);
+              border: 4px solid rgba(255, 255, 255, 0.05);
               width: 36px;
               height: 36px;
               border-radius: 50%;
-              border-left-color: #66c028;
+              border-left-color: ${activeAccent};
+              box-shadow: 0 0 15px ${activeGlow};
               animation: spin 0.8s linear infinite;
               margin-bottom: 12px;
             }
@@ -175,7 +178,7 @@ export default function ExportPdfModal({ open, onClose }: Props) {
               .title {
                 font-size: 2rem;
                 font-weight: 850;
-                color: #1b5a04;
+                color: ${activeAccent};
                 letter-spacing: -0.02em;
                 line-height: 1.1;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -343,17 +346,17 @@ export default function ExportPdfModal({ open, onClose }: Props) {
                       const catName = t.categoryName || "Uncategorized";
                       return `
                   <tr>
-                    <td style="font-family: monospace; color: #4b6a3a; font-size: 0.78rem;">${format(
+                    <td style="font-family: monospace; color: #475569; font-size: 0.78rem;">${format(
                       new Date(t.date),
                       "MMM d, yyyy"
                     )}</td>
-                    <td style="font-weight: 600; color: #122c04;">${t.description}</td>
+                    <td style="font-weight: 600; color: #0f172a;">${t.description}</td>
                     <td>
                       <span class="category-badge" style="background-color: ${catColor}15; color: ${catColor}; border: 1px solid ${catColor}35;">
                         ${catName}
                       </span>
                     </td>
-                    <td style="color: #557245; font-size: 0.8rem; font-weight: 500;">${t.accountName}</td>
+                    <td style="color: #475569; font-size: 0.8rem; font-weight: 500;">${t.accountName}</td>
                     <td class="amount ${t.type}">
                       ${t.type === "income" ? "+" : "-"}${formatAmount(t.amount)}
                     </td>
@@ -399,13 +402,13 @@ export default function ExportPdfModal({ open, onClose }: Props) {
 
   const labelStyle: React.CSSProperties = {
     fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em",
-    textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block",
+    textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block",
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "8px 10px", borderRadius: "4px",
-    background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)",
-    color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none",
+    background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)",
+    color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none",
   };
 
   return (
@@ -414,7 +417,7 @@ export default function ExportPdfModal({ open, onClose }: Props) {
         {/* Title bar */}
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Export PDF Statement</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(180,220,120,0.6)", cursor: "pointer", fontSize: "1rem", lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem", lineHeight: 1 }}>✕</button>
         </div>
 
         <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -447,8 +450,8 @@ export default function ExportPdfModal({ open, onClose }: Props) {
 
           {/* Preset Display dates */}
           {preset !== "custom" && startDate && endDate && (
-            <div style={{ fontSize: "0.76rem", color: "rgba(150,200,100,0.6)", background: "rgba(8,22,4,0.4)", padding: "8px 10px", borderRadius: "4px", border: "1px solid rgba(60,120,20,0.18)" }}>
-              Range: <span style={{ fontFamily: "monospace", color: "#c8eea0" }}>{format(new Date(startDate), "MMM d, yyyy")}</span> to <span style={{ fontFamily: "monospace", color: "#c8eea0" }}>{format(new Date(endDate), "MMM d, yyyy")}</span>
+            <div style={{ fontSize: "0.76rem", color: "rgba(255, 255, 255, 0.55)", background: "rgba(0, 0, 0, 0.2)", padding: "8px 10px", borderRadius: "4px", border: "1px solid var(--panel-border)" }}>
+              Range: <span style={{ fontFamily: "monospace", color: "var(--accent-gradient-1)" }}>{format(new Date(startDate), "MMM d, yyyy")}</span> to <span style={{ fontFamily: "monospace", color: "var(--accent-gradient-1)" }}>{format(new Date(endDate), "MMM d, yyyy")}</span>
             </div>
           )}
 
@@ -461,7 +464,7 @@ export default function ExportPdfModal({ open, onClose }: Props) {
           {/* Actions */}
           <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "4px" }}>
             <button type="button" onClick={onClose}
-              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(20,50,8,0.6)", border: "1px solid rgba(60,120,20,0.3)", color: "rgba(180,220,130,0.8)" }}>
+              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(255, 255, 255, 0.05)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.7)" }}>
               Cancel
             </button>
             <button onClick={handleGenerate} className="glass-button" disabled={loading}
@@ -475,7 +478,7 @@ export default function ExportPdfModal({ open, onClose }: Props) {
       <style>{`
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6) sepia(1) saturate(2) hue-rotate(75deg); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
       `}</style>
     </div>
   );

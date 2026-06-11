@@ -38,9 +38,9 @@ const OVERLAY: React.CSSProperties = {
 };
 
 const MODAL: React.CSSProperties = {
-  background: "rgba(6,18,4,0.96)",
-  border: "1px solid rgba(80,160,30,0.35)",
-  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(140,220,60,0.1)",
+  background: "var(--panel-bg)",
+  border: "1px solid var(--panel-border)",
+  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 var(--panel-border)",
   borderRadius: "8px",
   width: "100%",
   maxWidth: "420px",
@@ -103,12 +103,12 @@ export default function AccountModal({ open, onClose, account }: Props) {
 
   const labelStyle: React.CSSProperties = {
     fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em",
-    textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block",
+    textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block",
   };
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "8px 10px", borderRadius: "4px",
-    background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)",
-    color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none",
+    background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)",
+    color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none",
     transition: "border-color 0.15s, box-shadow 0.15s",
   };
 
@@ -118,7 +118,7 @@ export default function AccountModal({ open, onClose, account }: Props) {
         {/* Title bar */}
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{isEdit ? "Edit Account" : "Add Account"}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(180,220,120,0.6)", cursor: "pointer", fontSize: "1rem", lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem", lineHeight: 1 }}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -158,7 +158,7 @@ export default function AccountModal({ open, onClose, account }: Props) {
                 />
               ))}
               <input type="color" value={color} onChange={e => setColor(e.target.value)}
-                style={{ width: "28px", height: "22px", border: "1px solid rgba(70,140,25,0.4)", borderRadius: "4px", background: "transparent", cursor: "pointer", padding: "0" }} />
+                style={{ width: "28px", height: "22px", border: "1px solid var(--panel-border)", borderRadius: "4px", background: "transparent", cursor: "pointer", padding: "0" }} />
             </div>
           </div>
 
@@ -183,7 +183,7 @@ export default function AccountModal({ open, onClose, account }: Props) {
               </button>
             )}
             <button type="button" onClick={onClose}
-              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(20,50,8,0.6)", border: "1px solid rgba(60,120,20,0.3)", color: "rgba(180,220,130,0.8)" }}>
+              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(255, 255, 255, 0.05)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.7)" }}>
               Cancel
             </button>
             <button type="submit" className="glass-button" disabled={isPending}

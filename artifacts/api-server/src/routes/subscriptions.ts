@@ -13,7 +13,8 @@ function formatSub(
   sub: Record<string, unknown>,
   accountName?: string | null,
   categoryName?: string | null,
-  categoryColor?: string | null
+  categoryColor?: string | null,
+  categoryIcon?: string | null
 ) {
   return {
     id: sub.id,
@@ -27,6 +28,7 @@ function formatSub(
     categoryId: sub.categoryId ?? null,
     categoryName: categoryName ?? null,
     categoryColor: categoryColor ?? null,
+    categoryIcon: categoryIcon ?? null,
     isActive: sub.isActive,
     notes: sub.notes ?? null,
     createdAt: (sub.createdAt as Date).toISOString(),
@@ -66,6 +68,7 @@ router.get("/subscriptions", async (req, res) => {
         accountName: accountsTable.name,
         categoryName: categoriesTable.name,
         categoryColor: categoriesTable.color,
+        categoryIcon: categoriesTable.icon,
       })
       .from(subscriptionsTable)
       .leftJoin(accountsTable, eq(subscriptionsTable.accountId, accountsTable.id))
@@ -79,7 +82,8 @@ router.get("/subscriptions", async (req, res) => {
           r.sub as unknown as Record<string, unknown>,
           r.accountName,
           r.categoryName,
-          r.categoryColor
+          r.categoryColor,
+          r.categoryIcon
         )
       )
     );
@@ -104,6 +108,7 @@ router.get("/subscriptions/:id", async (req, res) => {
         accountName: accountsTable.name,
         categoryName: categoriesTable.name,
         categoryColor: categoriesTable.color,
+        categoryIcon: categoriesTable.icon,
       })
       .from(subscriptionsTable)
       .leftJoin(accountsTable, eq(subscriptionsTable.accountId, accountsTable.id))
@@ -120,7 +125,8 @@ router.get("/subscriptions/:id", async (req, res) => {
         row.sub as unknown as Record<string, unknown>,
         row.accountName,
         row.categoryName,
-        row.categoryColor
+        row.categoryColor,
+        row.categoryIcon
       )
     );
   } catch (err) {
@@ -183,6 +189,7 @@ router.post("/subscriptions", async (req, res) => {
         accountName: accountsTable.name,
         categoryName: categoriesTable.name,
         categoryColor: categoriesTable.color,
+        categoryIcon: categoriesTable.icon,
       })
       .from(subscriptionsTable)
       .leftJoin(accountsTable, eq(subscriptionsTable.accountId, accountsTable.id))
@@ -194,7 +201,8 @@ router.post("/subscriptions", async (req, res) => {
         row.sub as unknown as Record<string, unknown>,
         row.accountName,
         row.categoryName,
-        row.categoryColor
+        row.categoryColor,
+        row.categoryIcon
       )
     );
   } catch (err) {
@@ -275,6 +283,7 @@ router.patch("/subscriptions/:id", async (req, res) => {
         accountName: accountsTable.name,
         categoryName: categoriesTable.name,
         categoryColor: categoriesTable.color,
+        categoryIcon: categoriesTable.icon,
       })
       .from(subscriptionsTable)
       .leftJoin(accountsTable, eq(subscriptionsTable.accountId, accountsTable.id))
@@ -286,7 +295,8 @@ router.patch("/subscriptions/:id", async (req, res) => {
         row.sub as unknown as Record<string, unknown>,
         row.accountName,
         row.categoryName,
-        row.categoryColor
+        row.categoryColor,
+        row.categoryIcon
       )
     );
   } catch (err) {
@@ -378,6 +388,7 @@ router.post("/subscriptions/:id/pay", async (req, res) => {
         accountName: accountsTable.name,
         categoryName: categoriesTable.name,
         categoryColor: categoriesTable.color,
+        categoryIcon: categoriesTable.icon,
       })
       .from(subscriptionsTable)
       .leftJoin(accountsTable, eq(subscriptionsTable.accountId, accountsTable.id))
@@ -389,7 +400,8 @@ router.post("/subscriptions/:id/pay", async (req, res) => {
         row.sub as unknown as Record<string, unknown>,
         row.accountName,
         row.categoryName,
-        row.categoryColor
+        row.categoryColor,
+        row.categoryIcon
       )
     );
   } catch (err) {

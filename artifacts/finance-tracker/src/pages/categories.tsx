@@ -55,12 +55,12 @@ export default function Categories() {
         </div>
 
         {isLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(130,180,80,0.55)", fontSize: "0.85rem", fontStyle: "italic" }}>
+          <div style={{ padding: "3rem", textAlign: "center", color: "rgba(255, 255, 255, 0.4)", fontSize: "0.85rem", fontStyle: "italic" }}>
             Loading categories…
           </div>
         ) : !Array.isArray(categories) || categories.length === 0 ? (
           <div style={{ padding: "4rem 2rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-            <div style={{ color: "rgba(130,180,80,0.55)", fontSize: "0.9rem" }}>No categories yet.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "0.9rem" }}>No categories yet.</div>
             <button className="glass-button" onClick={openAdd} style={{ padding: "6px 16px", borderRadius: "4px", fontSize: "0.8rem" }}>
               + Add First Category
             </button>
@@ -75,7 +75,7 @@ export default function Categories() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {expenses.length === 0 ? (
-                  <div style={{ color: "rgba(130,180,80,0.4)", fontSize: "0.78rem", fontStyle: "italic", padding: "8px 4px" }}>None yet</div>
+                  <div style={{ color: "rgba(255, 255, 255, 0.3)", fontSize: "0.78rem", fontStyle: "italic", padding: "8px 4px" }}>None yet</div>
                 ) : (
                   <>
                     {expenseTree.parents.map(parent => (
@@ -88,20 +88,34 @@ export default function Categories() {
                             gap: "10px",
                             padding: "7px 10px",
                             borderRadius: "4px",
-                            background: "rgba(10,25,6,0.5)",
+                            background: "rgba(255, 255, 255, 0.02)",
                             border: `1px solid ${parent.color}28`,
                             cursor: "pointer",
                             transition: "background 0.12s, border-color 0.12s",
                           }}
-                          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(20,50,8,0.7)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}50`; }}
-                          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(10,25,6,0.5)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}28`; }}
+                          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
+                          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}28`; }}
                         >
-                          <div style={{ width: "10px", height: "10px", borderRadius: "2px", background: parent.color, flexShrink: 0, boxShadow: `0 0 6px ${parent.color}80` }} />
-                          <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "rgba(210,235,185,0.9)" }}>{parent.name}</div>
+                          <div style={{
+                            width: "20px",
+                            height: "20px",
+                            borderRadius: "4px",
+                            background: `${parent.color}20`,
+                            border: `1px solid ${parent.color}60`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "0.85rem",
+                            flexShrink: 0,
+                            boxShadow: `0 0 6px ${parent.color}30`
+                          }}>
+                            {parent.icon || null}
+                          </div>
+                          <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "rgba(255, 255, 255, 0.9)" }}>{parent.name}</div>
                           <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[parent.type] || "#66c028", opacity: 0.8 }}>
                             {parent.type}
                           </div>
-                          <div style={{ fontSize: "0.6rem", color: "rgba(150,200,100,0.35)" }}>✎</div>
+                          <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
                         </div>
 
                         {(expenseTree.childrenMap[parent.id] || []).map(child => (
@@ -114,19 +128,33 @@ export default function Categories() {
                               gap: "8px",
                               padding: "5px 10px",
                               borderRadius: "4px",
-                              background: "rgba(10,25,6,0.25)",
+                              background: "rgba(0, 0, 0, 0.15)",
                               border: `1px solid ${child.color}15`,
                               cursor: "pointer",
                               transition: "background 0.12s, border-color 0.12s",
                               marginLeft: "18px",
                             }}
-                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(20,50,8,0.5)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}40`; }}
-                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(10,25,6,0.25)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}15`; }}
+                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
+                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0, 0, 0, 0.15)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}15`; }}
                           >
-                            <span style={{ color: "rgba(150,200,100,0.25)", fontSize: "0.85rem", transform: "translateY(-2px)" }}>↳</span>
-                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: child.color, flexShrink: 0, boxShadow: `0 0 5px ${child.color}60` }} />
-                            <div style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "rgba(200,225,175,0.85)" }}>{child.name}</div>
-                            <div style={{ fontSize: "0.58rem", color: "rgba(150,200,100,0.35)" }}>✎</div>
+                            <span style={{ color: "rgba(255, 255, 255, 0.2)", fontSize: "0.85rem", transform: "translateY(-2px)" }}>↳</span>
+                            <div style={{
+                              width: "18px",
+                              height: "18px",
+                              borderRadius: "4px",
+                              background: `${child.color}15`,
+                              border: `1px solid ${child.color}50`,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.78rem",
+                              flexShrink: 0,
+                              boxShadow: `0 0 5px ${child.color}20`
+                            }}>
+                              {child.icon || null}
+                            </div>
+                            <div style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.85)" }}>{child.name}</div>
+                            <div style={{ fontSize: "0.58rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
                           </div>
                         ))}
                       </div>
@@ -142,20 +170,34 @@ export default function Categories() {
                           gap: "10px",
                           padding: "7px 10px",
                           borderRadius: "4px",
-                          background: "rgba(10,25,6,0.5)",
+                          background: "rgba(255, 255, 255, 0.02)",
                           border: `1px solid ${cat.color}28`,
                           cursor: "pointer",
                           transition: "background 0.12s, border-color 0.12s",
                         }}
-                        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(20,50,8,0.7)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}50`; }}
-                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(10,25,6,0.5)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}28`; }}
+                        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
+                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}28`; }}
                       >
-                        <div style={{ width: "10px", height: "10px", borderRadius: "2px", background: cat.color, flexShrink: 0, boxShadow: `0 0 6px ${cat.color}80` }} />
-                        <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 500, color: "rgba(210,235,185,0.9)" }}>{cat.name}</div>
+                        <div style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "4px",
+                          background: `${cat.color}20`,
+                          border: `1px solid ${cat.color}60`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "0.85rem",
+                          flexShrink: 0,
+                          boxShadow: `0 0 6px ${cat.color}30`
+                        }}>
+                          {cat.icon || null}
+                        </div>
+                        <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.9)" }}>{cat.name}</div>
                         <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[cat.type] || "#66c028", opacity: 0.8 }}>
                           {cat.type}
                         </div>
-                        <div style={{ fontSize: "0.6rem", color: "rgba(150,200,100,0.35)" }}>✎</div>
+                        <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
                       </div>
                     ))}
                   </>
@@ -170,7 +212,7 @@ export default function Categories() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {income.length === 0 ? (
-                  <div style={{ color: "rgba(130,180,80,0.4)", fontSize: "0.78rem", fontStyle: "italic", padding: "8px 4px" }}>None yet</div>
+                  <div style={{ color: "rgba(255, 255, 255, 0.3)", fontSize: "0.78rem", fontStyle: "italic", padding: "8px 4px" }}>None yet</div>
                 ) : (
                   <>
                     {incomeTree.parents.map(parent => (
@@ -183,20 +225,34 @@ export default function Categories() {
                             gap: "10px",
                             padding: "7px 10px",
                             borderRadius: "4px",
-                            background: "rgba(10,25,6,0.5)",
+                            background: "rgba(255, 255, 255, 0.02)",
                             border: `1px solid ${parent.color}28`,
                             cursor: "pointer",
                             transition: "background 0.12s, border-color 0.12s",
                           }}
-                          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(20,50,8,0.7)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}50`; }}
-                          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(10,25,6,0.5)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}28`; }}
+                          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
+                          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}28`; }}
                         >
-                          <div style={{ width: "10px", height: "10px", borderRadius: "2px", background: parent.color, flexShrink: 0, boxShadow: `0 0 6px ${parent.color}80` }} />
-                          <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "rgba(210,235,185,0.9)" }}>{parent.name}</div>
+                          <div style={{
+                            width: "20px",
+                            height: "20px",
+                            borderRadius: "4px",
+                            background: `${parent.color}20`,
+                            border: `1px solid ${parent.color}60`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "0.85rem",
+                            flexShrink: 0,
+                            boxShadow: `0 0 6px ${parent.color}30`
+                          }}>
+                            {parent.icon || null}
+                          </div>
+                          <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "rgba(255, 255, 255, 0.9)" }}>{parent.name}</div>
                           <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[parent.type] || "#66c028", opacity: 0.8 }}>
                             {parent.type}
                           </div>
-                          <div style={{ fontSize: "0.6rem", color: "rgba(150,200,100,0.35)" }}>✎</div>
+                          <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
                         </div>
 
                         {(incomeTree.childrenMap[parent.id] || []).map(child => (
@@ -209,19 +265,33 @@ export default function Categories() {
                               gap: "8px",
                               padding: "5px 10px",
                               borderRadius: "4px",
-                              background: "rgba(10,25,6,0.25)",
+                              background: "rgba(0, 0, 0, 0.15)",
                               border: `1px solid ${child.color}15`,
                               cursor: "pointer",
                               transition: "background 0.12s, border-color 0.12s",
                               marginLeft: "18px",
                             }}
-                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(20,50,8,0.5)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}40`; }}
-                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(10,25,6,0.25)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}15`; }}
+                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
+                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0, 0, 0, 0.15)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}15`; }}
                           >
-                            <span style={{ color: "rgba(150,200,100,0.25)", fontSize: "0.85rem", transform: "translateY(-2px)" }}>↳</span>
-                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: child.color, flexShrink: 0, boxShadow: `0 0 5px ${child.color}60` }} />
-                            <div style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "rgba(200,225,175,0.85)" }}>{child.name}</div>
-                            <div style={{ fontSize: "0.58rem", color: "rgba(150,200,100,0.35)" }}>✎</div>
+                            <span style={{ color: "rgba(255, 255, 255, 0.2)", fontSize: "0.85rem", transform: "translateY(-2px)" }}>↳</span>
+                            <div style={{
+                              width: "18px",
+                              height: "18px",
+                              borderRadius: "4px",
+                              background: `${child.color}15`,
+                              border: `1px solid ${child.color}50`,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.78rem",
+                              flexShrink: 0,
+                              boxShadow: `0 0 5px ${child.color}20`
+                            }}>
+                              {child.icon || null}
+                            </div>
+                            <div style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.85)" }}>{child.name}</div>
+                            <div style={{ fontSize: "0.58rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
                           </div>
                         ))}
                       </div>
@@ -237,20 +307,34 @@ export default function Categories() {
                           gap: "10px",
                           padding: "7px 10px",
                           borderRadius: "4px",
-                          background: "rgba(10,25,6,0.5)",
+                          background: "rgba(255, 255, 255, 0.02)",
                           border: `1px solid ${cat.color}28`,
                           cursor: "pointer",
                           transition: "background 0.12s, border-color 0.12s",
                         }}
-                        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(20,50,8,0.7)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}50`; }}
-                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(10,25,6,0.5)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}28`; }}
+                        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
+                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}28`; }}
                       >
-                        <div style={{ width: "10px", height: "10px", borderRadius: "2px", background: cat.color, flexShrink: 0, boxShadow: `0 0 6px ${cat.color}80` }} />
-                        <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 500, color: "rgba(210,235,185,0.9)" }}>{cat.name}</div>
+                        <div style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "4px",
+                          background: `${cat.color}20`,
+                          border: `1px solid ${cat.color}60`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "0.85rem",
+                          flexShrink: 0,
+                          boxShadow: `0 0 6px ${cat.color}30`
+                        }}>
+                          {cat.icon || null}
+                        </div>
+                        <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.9)" }}>{cat.name}</div>
                         <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[cat.type] || "#66c028", opacity: 0.8 }}>
                           {cat.type}
                         </div>
-                        <div style={{ fontSize: "0.6rem", color: "rgba(150,200,100,0.35)" }}>✎</div>
+                        <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
                       </div>
                     ))}
                   </>

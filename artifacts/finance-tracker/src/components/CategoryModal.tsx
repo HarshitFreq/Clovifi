@@ -37,9 +37,9 @@ const OVERLAY: React.CSSProperties = {
 };
 
 const MODAL: React.CSSProperties = {
-  background: "rgba(6,18,4,0.96)",
-  border: "1px solid rgba(80,160,30,0.35)",
-  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 rgba(140,220,60,0.1)",
+  background: "var(--panel-bg)",
+  border: "1px solid var(--panel-border)",
+  boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 var(--panel-border)",
   borderRadius: "8px",
   width: "100%",
   maxWidth: "380px",
@@ -59,6 +59,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
   const [name, setName] = useState("");
   const [type, setType] = useState<typeof CATEGORY_TYPES[number]["value"]>("expense");
   const [color, setColor] = useState("#f87171");
+  const [icon, setIcon] = useState("");
   const [parentId, setParentId] = useState<number | "">("");
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -68,6 +69,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
       setName(category?.name ?? "");
       setType((category?.type as typeof CATEGORY_TYPES[number]["value"]) ?? "expense");
       setColor(category?.color ?? "#f87171");
+      setIcon(category?.icon ?? "");
       setParentId(category?.parentId ?? "");
       setError(null);
       setConfirmDelete(false);
@@ -96,6 +98,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
       name: name.trim(),
       type,
       color,
+      icon,
       parentId: parentId !== "" ? Number(parentId) : null,
     };
     if (isEdit) {
@@ -121,12 +124,12 @@ export default function CategoryModal({ open, onClose, category }: Props) {
 
   const labelStyle: React.CSSProperties = {
     fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.08em",
-    textTransform: "uppercase", color: "rgba(160,220,90,0.75)", marginBottom: "5px", display: "block",
+    textTransform: "uppercase", color: "var(--title-text)", marginBottom: "5px", display: "block",
   };
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "8px 10px", borderRadius: "4px",
-    background: "rgba(8,22,4,0.75)", border: "1px solid rgba(70,140,25,0.35)",
-    color: "rgba(215,240,190,0.95)", fontSize: "0.85rem", outline: "none",
+    background: "rgba(0, 0, 0, 0.4)", border: "1px solid var(--panel-border)",
+    color: "rgba(255, 255, 255, 0.95)", fontSize: "0.85rem", outline: "none",
   };
 
   return (
@@ -134,7 +137,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
       <div style={MODAL}>
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{isEdit ? "Edit Category" : "Add Category"}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(180,220,120,0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -150,11 +153,11 @@ export default function CategoryModal({ open, onClose, category }: Props) {
                 <button key={t.value} type="button" onClick={() => handleTypeChange(t.value)}
                   style={{
                     flex: 1, padding: "7px", borderRadius: "4px", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
-                    background: type === t.value ? "rgba(60,130,20,0.4)" : "rgba(12,30,6,0.6)",
-                    border: type === t.value ? "1px solid rgba(100,190,40,0.6)" : "1px solid rgba(50,100,15,0.3)",
-                    color: type === t.value ? "#c8eea0" : "rgba(150,190,100,0.6)",
+                    background: type === t.value ? "var(--accent-border-color)" : "rgba(255, 255, 255, 0.03)",
+                    border: type === t.value ? "1px solid var(--accent-gradient-1)" : "1px solid var(--panel-border)",
+                    color: type === t.value ? "#fff" : "rgba(255, 255, 255, 0.55)",
                     transition: "all 0.12s",
-                    boxShadow: type === t.value ? "0 0 8px rgba(80,180,20,0.2)" : "none",
+                    boxShadow: type === t.value ? "0 0 8px var(--accent-glow-shadow)" : "none",
                   }}>
                   {t.label}
                 </button>
@@ -193,14 +196,83 @@ export default function CategoryModal({ open, onClose, category }: Props) {
                 />
               ))}
               <input type="color" value={color} onChange={e => setColor(e.target.value)}
-                style={{ width: "28px", height: "22px", border: "1px solid rgba(70,140,25,0.4)", borderRadius: "50%", background: "transparent", cursor: "pointer", padding: "0" }} />
+                style={{ width: "28px", height: "22px", border: "1px solid var(--panel-border)", borderRadius: "50%", background: "transparent", cursor: "pointer", padding: "0" }} />
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Category Icon (Emoji)</label>
+            <div style={{
+              display: "flex",
+              gap: "6px",
+              flexWrap: "wrap",
+              maxHeight: "92px",
+              overflowY: "auto",
+              padding: "8px",
+              background: "rgba(0,0,0,0.3)",
+              border: "1px solid var(--panel-border)",
+              borderRadius: "4px"
+            }}>
+              {/* None button */}
+              <button
+                type="button"
+                onClick={() => setIcon("")}
+                style={{
+                  fontSize: "0.6rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  padding: "4px",
+                  borderRadius: "4px",
+                  background: icon === "" ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                  border: icon === "" ? "1px solid var(--accent-gradient-1)" : "1px solid rgba(255,255,255,0.15)",
+                  cursor: "pointer",
+                  width: "36px",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: icon === "" ? "var(--accent-gradient-1)" : "rgba(255,255,255,0.45)",
+                  boxShadow: icon === "" ? "0 0 6px var(--accent-glow-shadow)" : "none",
+                  transition: "all 0.1s",
+                  flexShrink: 0
+                }}
+              >
+                None
+              </button>
+              {["🍔", "🚗", "🏠", "🛒", "🔌", "🍿", "🎮", "🩺", "🎓", "🎁", "✈️", "👔", "💸", "📈", "💰", "🏦", "🏷️", "🧹", "🧴", "🍎", "🍕", "☕", "🍺", "🚲", "🚇", "🎭", "🐾", "🪴", "🛠️", "📞"].map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setIcon(emoji)}
+                  style={{
+                    fontSize: "1.1rem",
+                    padding: "4px",
+                    borderRadius: "4px",
+                    background: icon === emoji ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                    border: icon === emoji ? "1px solid var(--accent-gradient-1)" : "1px solid transparent",
+                    cursor: "pointer",
+                    width: "30px",
+                    height: "30px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: icon === emoji ? "0 0 6px var(--accent-glow-shadow)" : "none",
+                    transition: "all 0.1s",
+                    flexShrink: 0
+                  }}
+                >
+                  {emoji}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Live preview */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "5px", background: "rgba(8,22,4,0.6)", border: `1px solid ${color}28` }}>
-            <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: color, boxShadow: `0 0 8px ${color}80`, flexShrink: 0 }} />
-            <span style={{ fontSize: "0.82rem", color: "rgba(210,235,185,0.85)", flex: 1 }}>{name || "Category preview"}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "5px", background: "rgba(0, 0, 0, 0.25)", border: `1px solid ${color}28` }}>
+            <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", boxShadow: `0 0 8px ${color}80`, flexShrink: 0 }}>
+              {icon || null}
+            </div>
+            <span style={{ fontSize: "0.82rem", color: "rgba(255, 255, 255, 0.85)", flex: 1 }}>{name || "Category preview"}</span>
             <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color, opacity: 0.85 }}>{type}</span>
           </div>
 
@@ -224,7 +296,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
               </button>
             )}
             <button type="button" onClick={onClose}
-              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(20,50,8,0.6)", border: "1px solid rgba(60,120,20,0.3)", color: "rgba(180,220,130,0.8)" }}>
+              style={{ padding: "7px 14px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", background: "rgba(255, 255, 255, 0.05)", border: "1px solid var(--panel-border)", color: "rgba(255, 255, 255, 0.7)" }}>
               Cancel
             </button>
             <button type="submit" className="glass-button" disabled={isPending}

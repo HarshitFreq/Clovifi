@@ -6,13 +6,14 @@ import {
   useGetMe, useLogout,
   useListSubscriptions, getListSubscriptionsQueryKey,
   usePaySubscription,
+  useListTransactions, getListTransactionsQueryKey,
 } from "@workspace/api-client-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { useCurrency } from "@/lib/currency";
-import { format, parseISO, differenceInDays, isToday } from "date-fns";
+import { format, parseISO, differenceInDays, isToday, subDays, addDays, startOfWeek } from "date-fns";
 import { useState } from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical, GripHorizontal, User, LogOut, Calendar, Check, Clock, ArrowRight, ExternalLink } from "lucide-react";
@@ -88,6 +89,63 @@ export default function Dashboard() {
   const { data: recent } = useGetRecentTransactions({ limit: 8 }, { query: { queryKey: getGetRecentTransactionsQueryKey({ limit: 8 }) } });
   const { data: spendingRaw } = useGetSpendingByCategory({}, { query: { queryKey: getGetSpendingByCategoryQueryKey({}) } });
 
+  // 154 days range Sunday 21 weeks ago to today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDate = startOfWeek(subDays(today, 21 * 7), { weekStartsOn: 0 });
+  const endDate = today;
+
+  const { data: heatmapTransactions } = useListTransactions(
+    {
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
+      type: "expense",
+      limit: 1000,
+    },
+    {
+      query: {
+        queryKey: getListTransactionsQueryKey({
+          startDate: format(startDate, "yyyy-MM-dd"),
+          endDate: format(endDate, "yyyy-MM-dd"),
+          type: "expense",
+          limit: 1000,
+        }),
+      },
+    }
+  );
+
+  const [hoveredCell, setHoveredCell] = useState<{ date: Date; amount: number; x: number; y: number } | null>(null);
+
+  // Map 154 days and compute daily expense
+  const daysRange = Array.from({ length: 154 }, (_, i) => addDays(startDate, i));
+  const spendingDays = daysRange.map((day) => {
+    const formattedDate = format(day, "yyyy-MM-dd");
+    const txsOnDay = Array.isArray(heatmapTransactions)
+      ? heatmapTransactions.filter((t) => t.date.slice(0, 10) === formattedDate)
+      : [];
+    const totalSpend = txsOnDay.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    return { date: day, totalSpend };
+  });
+
+  const maxSpend = Math.max(...spendingDays.map((d) => d.totalSpend), 0);
+  const totalHistoryExpense = spendingDays.reduce((sum, d) => sum + d.totalSpend, 0);
+
+  const spendingDaysWithLevels = spendingDays.map((day) => {
+    let level = 0;
+    if (day.totalSpend > 0) {
+      if (maxSpend > 0) {
+        const ratio = day.totalSpend / maxSpend;
+        if (ratio <= 0.25) level = 1;
+        else if (ratio <= 0.5) level = 2;
+        else if (ratio <= 0.75) level = 3;
+        else level = 4;
+      } else {
+        level = 1;
+      }
+    }
+    return { ...day, level };
+  });
+
   const spendingData = (Array.isArray(spendingRaw) ? spendingRaw : []).map((s, i) => ({
     name: s.categoryName,
     value: s.total,
@@ -98,22 +156,17 @@ export default function Dashboard() {
   // State for Main Widgets Order (vertical)
   const [widgetOrder, setWidgetOrder] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem("clovifi_dashboard_order_v2");
+      const saved = localStorage.getItem("clovifi_dashboard_order_v3");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (!parsed.includes("upcomingSubscriptions")) {
-          const rtIndex = parsed.indexOf("recentTransactions");
-          if (rtIndex !== -1) {
-            parsed.splice(rtIndex, 0, "upcomingSubscriptions");
-          } else {
-            parsed.push("upcomingSubscriptions");
-          }
-          localStorage.setItem("clovifi_dashboard_order_v2", JSON.stringify(parsed));
+        if (!parsed.includes("spendingHeatmap")) {
+          parsed.push("spendingHeatmap");
+          localStorage.setItem("clovifi_dashboard_order_v3", JSON.stringify(parsed));
         }
         return parsed;
       }
     } catch (e) {}
-    return ["stats", "charts", "upcomingSubscriptions", "recentTransactions"];
+    return ["stats", "charts", "spendingHeatmap", "upcomingSubscriptions", "recentTransactions"];
   });
 
   // State for Stat Cards Order (horizontal)
@@ -139,7 +192,7 @@ export default function Dashboard() {
   const handleWidgetReorder = (newOrder: string[]) => {
     setWidgetOrder(newOrder);
     try {
-      localStorage.setItem("clovifi_dashboard_order_v2", JSON.stringify(newOrder));
+      localStorage.setItem("clovifi_dashboard_order_v3", JSON.stringify(newOrder));
     } catch (e) {
       console.error("Failed to save widget order:", e);
     }
@@ -169,6 +222,7 @@ export default function Dashboard() {
     charts: useDragControls(),
     trendChart: useDragControls(),
     spendingChart: useDragControls(),
+    spendingHeatmap: useDragControls(),
     upcomingSubscriptions: useDragControls(),
     recentTransactions: useDragControls(),
   };
@@ -184,19 +238,19 @@ export default function Dashboard() {
             as="div"
             whileDrag={{
               scale: 1.04,
-              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px rgba(100,220,40,0.4)",
-              borderColor: "rgba(100,220,40,0.5)",
+              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
             }}
             className="glass-panel stat-card"
             style={cardStyle}
           >
-            <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(130,190,80,0.75)", marginBottom: "6px" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "6px" }}>
               Total Balance
             </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#c8eea0", textShadow: "0 0 12px rgba(100,200,40,0.4)" }}>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent-gradient-1)", textShadow: "0 0 12px var(--accent-glow-shadow)" }}>
               {isLoadingSummary ? "—" : formatAmount(summary?.totalBalance ?? 0)}
             </div>
-            <div style={{ fontSize: "0.68rem", color: "rgba(130,180,80,0.6)", marginTop: "4px" }}>
+            <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "4px" }}>
               {summary?.accountCount ?? 0} account{(summary?.accountCount ?? 0) !== 1 ? "s" : ""}
             </div>
           </Reorder.Item>
@@ -209,19 +263,19 @@ export default function Dashboard() {
             as="div"
             whileDrag={{
               scale: 1.04,
-              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px rgba(100,220,40,0.4)",
-              borderColor: "rgba(100,220,40,0.5)",
+              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
             }}
             className="glass-panel stat-card"
             style={cardStyle}
           >
-            <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(80,190,100,0.75)", marginBottom: "6px" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "6px" }}>
               Income This Month
             </div>
             <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#6ee87a", textShadow: "0 0 12px rgba(60,200,80,0.35)" }}>
               +{isLoadingSummary ? "—" : formatAmount(summary?.totalIncomeThisMonth ?? 0)}
             </div>
-            <div style={{ fontSize: "0.68rem", color: "rgba(80,170,90,0.6)", marginTop: "4px" }}>
+            <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "4px" }}>
               Net: {formatAmount(summary?.netThisMonth ?? 0)}
             </div>
           </Reorder.Item>
@@ -234,8 +288,8 @@ export default function Dashboard() {
             as="div"
             whileDrag={{
               scale: 1.04,
-              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px rgba(100,220,40,0.4)",
-              borderColor: "rgba(100,220,40,0.5)",
+              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
             }}
             className="glass-panel stat-card"
             style={cardStyle}
@@ -263,19 +317,19 @@ export default function Dashboard() {
             as="div"
             whileDrag={{
               scale: 1.04,
-              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px rgba(100,220,40,0.4)",
-              borderColor: "rgba(100,220,40,0.5)",
+              boxShadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
             }}
             className="glass-panel stat-card"
             style={cardStyle}
           >
-            <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(130,190,80,0.75)", marginBottom: "6px" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--title-text)", marginBottom: "6px" }}>
               Total Transactions
             </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#c8eea0", textShadow: "0 0 12px rgba(100,200,40,0.4)" }}>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent-gradient-1)", textShadow: "0 0 12px var(--accent-glow-shadow)" }}>
               {isLoadingSummary ? "—" : summary?.transactionCount ?? 0}
             </div>
-            <div style={{ fontSize: "0.68rem", color: "rgba(130,180,80,0.6)", marginTop: "4px" }}>all time</div>
+            <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "4px" }}>all time</div>
           </Reorder.Item>
         );
       default:
@@ -295,8 +349,8 @@ export default function Dashboard() {
             dragControls={dragControlsMap.trendChart}
             whileDrag={{
               scale: 1.03,
-              boxShadow: "0 15px 35px rgba(0,0,0,0.6), 0 0 12px rgba(100,220,40,0.4)",
-              borderColor: "rgba(100,220,40,0.5)",
+              boxShadow: "0 15px 35px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
               zIndex: 60,
             }}
             className="glass-panel"
@@ -310,7 +364,7 @@ export default function Dashboard() {
                   onPointerDown={(e) => dragControlsMap.trendChart.start(e)}
                   title="Drag horizontally to swap charts"
                 >
-                  <GripHorizontal size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                  <GripHorizontal size={14} style={{ color: "var(--accent-gradient-1)" }} />
                 </div>
                 <span>Monthly Trend</span>
               </div>
@@ -321,43 +375,43 @@ export default function Dashboard() {
                 onPointerDown={(e) => dragControlsMap.charts.start(e)}
                 title="Drag vertically to move the entire charts row"
               >
-                <GripVertical size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                <GripVertical size={14} style={{ color: "var(--accent-gradient-1)" }} />
               </div>
             </div>
             
             <div style={{ padding: "12px", height: "240px" }}>
               {isLoadingTrend ? (
-                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(130,180,80,0.6)", fontSize: "0.8rem" }}>
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255, 255, 255, 0.4)", fontSize: "0.8rem" }}>
                   Loading chart data...
                 </div>
               ) : Array.isArray(trend) && trend.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trend} margin={{ top: 5, right: 10, left: 5, bottom: 0 }}>
                     <defs>
-                      <linearGradient id="gExpense" x1="0" y1="0" x2="0" y2="1">
+                       <linearGradient id="gExpense" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#ef4444" stopOpacity={0.5} />
                         <stop offset="95%" stopColor="#ef4444" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="gIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#66c028" stopOpacity={0.55} />
-                        <stop offset="95%" stopColor="#66c028" stopOpacity={0.02} />
+                        <stop offset="5%" stopColor="var(--accent-gradient-2)" stopOpacity={0.55} />
+                        <stop offset="95%" stopColor="var(--accent-gradient-2)" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(80,140,30,0.18)" />
-                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "rgba(160,210,100,0.7)", fontSize: 10 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: "rgba(160,210,100,0.7)", fontSize: 10 }} tickFormatter={(v) => formatAmount(v)} width={75} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.08)" />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "rgba(255, 255, 255, 0.5)", fontSize: 10 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: "rgba(255, 255, 255, 0.5)", fontSize: 10 }} tickFormatter={(v) => formatAmount(v)} width={75} />
                     <Tooltip
-                      contentStyle={{ background: "rgba(6,18,4,0.92)", border: "1px solid rgba(80,160,30,0.4)", borderRadius: "6px", fontSize: "0.78rem", backdropFilter: "blur(12px)" }}
-                      labelStyle={{ color: "rgba(180,230,120,0.9)", fontWeight: 600 }}
-                      itemStyle={{ color: "rgba(210,240,170,0.9)" }}
+                      contentStyle={{ background: "var(--panel-bg)", border: "1px solid var(--panel-border)", borderRadius: "6px", fontSize: "0.78rem", backdropFilter: "blur(12px)" }}
+                      labelStyle={{ color: "var(--title-text)", fontWeight: 600 }}
+                      itemStyle={{ color: "var(--title-text)" }}
                       formatter={(v: number) => formatAmount(v)}
                     />
-                    <Area type="monotone" dataKey="income" name="Income" stroke="#66c028" strokeWidth={2} fill="url(#gIncome)" />
+                    <Area type="monotone" dataKey="income" name="Income" stroke="var(--accent-gradient-2)" strokeWidth={2} fill="url(#gIncome)" />
                     <Area type="monotone" dataKey="expenses" name="Expenses" stroke="#ef4444" strokeWidth={2} fill="url(#gExpense)" />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(130,180,80,0.5)", fontSize: "0.8rem" }}>
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255, 255, 255, 0.4)", fontSize: "0.8rem" }}>
                   No trend data yet
                 </div>
               )}
@@ -374,8 +428,8 @@ export default function Dashboard() {
             dragControls={dragControlsMap.spendingChart}
             whileDrag={{
               scale: 1.03,
-              boxShadow: "0 15px 35px rgba(0,0,0,0.6), 0 0 12px rgba(100,220,40,0.4)",
-              borderColor: "rgba(100,220,40,0.5)",
+              boxShadow: "0 15px 35px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
               zIndex: 60,
             }}
             className="glass-panel"
@@ -389,7 +443,7 @@ export default function Dashboard() {
                   onPointerDown={(e) => dragControlsMap.spendingChart.start(e)}
                   title="Drag horizontally to swap charts"
                 >
-                  <GripHorizontal size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                  <GripHorizontal size={14} style={{ color: "var(--accent-gradient-1)" }} />
                 </div>
                 <span>Spending by Category</span>
               </div>
@@ -400,7 +454,7 @@ export default function Dashboard() {
                 onPointerDown={(e) => dragControlsMap.charts.start(e)}
                 title="Drag vertically to move the entire charts row"
               >
-                <GripVertical size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                <GripVertical size={14} style={{ color: "var(--accent-gradient-1)" }} />
               </div>
             </div>
 
@@ -443,19 +497,19 @@ export default function Dashboard() {
                       </Pie>
                       <Tooltip
                         contentStyle={{
-                          background: "rgba(4,14,2,0.96)",
-                          border: "1px solid rgba(80,160,30,0.45)",
+                          background: "var(--panel-bg)",
+                          border: "1px solid var(--panel-border)",
                           borderRadius: "5px",
                           fontSize: "0.74rem",
-                          boxShadow: "0 4px 16px rgba(0,0,0,0.8), 0 0 8px rgba(60,140,20,0.2)",
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.8), 0 0 8px var(--accent-glow-shadow)",
                           backdropFilter: "blur(14px)",
                           padding: "8px 12px",
                         }}
-                        labelStyle={{ color: "rgba(180,230,120,0.9)", fontWeight: 700, marginBottom: "2px" }}
-                        itemStyle={{ color: "rgba(200,235,160,0.85)" }}
+                        labelStyle={{ color: "var(--title-text)", fontWeight: 700, marginBottom: "2px" }}
+                        itemStyle={{ color: "var(--title-text)" }}
                         formatter={(v: number, _name: string, props: { payload?: { count?: number } }) => [
-                          <span style={{ fontFamily: "monospace", color: "#c8eea0" }}>{formatAmount(v)}</span>,
-                          <span style={{ color: "rgba(150,200,90,0.75)", fontSize: "0.68rem" }}>
+                          <span style={{ fontFamily: "monospace", color: "var(--accent-gradient-1)" }}>{formatAmount(v)}</span>,
+                          <span style={{ color: "var(--title-text)", opacity: 0.8, fontSize: "0.68rem" }}>
                             {props.payload?.count ?? ""} txn{(props.payload?.count ?? 0) !== 1 ? "s" : ""}
                           </span>,
                         ]}
@@ -489,7 +543,7 @@ export default function Dashboard() {
                         <div style={{
                           flex: 1,
                           fontSize: "0.7rem",
-                          color: "rgba(190,230,145,0.85)",
+                          color: "var(--title-text)",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
@@ -509,7 +563,7 @@ export default function Dashboard() {
                         <div style={{
                           fontSize: "0.68rem",
                           fontFamily: "monospace",
-                          color: "rgba(160,205,105,0.65)",
+                          color: "rgba(255, 255, 255, 0.55)",
                           flexShrink: 0,
                           minWidth: "60px",
                           textAlign: "right",
@@ -522,7 +576,7 @@ export default function Dashboard() {
                 </div>
               </>
             ) : (
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(130,180,80,0.45)", fontSize: "0.8rem", textAlign: "center", padding: "2rem", lineHeight: 1.6 }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255, 255, 255, 0.45)", fontSize: "0.8rem", textAlign: "center", padding: "2rem", lineHeight: 1.6 }}>
                 Add expense transactions<br />to see breakdown
               </div>
             )}
@@ -545,9 +599,9 @@ export default function Dashboard() {
             dragControls={dragControlsMap.stats}
             whileDrag={{
               scale: 1.01,
-              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px rgba(100,220,40,0.45)",
-              borderColor: "rgba(100,220,40,0.55)",
-              backgroundColor: "rgba(6,18,4,0.98)",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
+              backgroundColor: "var(--panel-bg)",
               zIndex: 50,
             }}
             className="glass-panel"
@@ -559,7 +613,7 @@ export default function Dashboard() {
                 onPointerDown={(e) => dragControlsMap.stats.start(e)}
                 title="Hold and drag to reorder stats section"
               >
-                <GripVertical size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                <GripVertical size={14} style={{ color: "var(--accent-gradient-1)" }} />
               </div>
               <span>Overview Stats</span>
             </div>
@@ -585,9 +639,9 @@ export default function Dashboard() {
             dragControls={dragControlsMap.charts}
             whileDrag={{
               scale: 1.01,
-              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px rgba(100,220,40,0.45)",
-              borderColor: "rgba(100,220,40,0.55)",
-              backgroundColor: "rgba(6,18,4,0.98)",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
+              backgroundColor: "var(--panel-bg)",
               zIndex: 50,
             }}
             style={{ display: "flex", flexDirection: "column", gap: "10px" }}
@@ -601,6 +655,147 @@ export default function Dashboard() {
             >
               {chartsOrder.map(chartId => renderChartWidget(chartId))}
             </Reorder.Group>
+          </Reorder.Item>
+        );
+      case "spendingHeatmap":
+        return (
+          <Reorder.Item
+            key="spendingHeatmap"
+            value="spendingHeatmap"
+            as="div"
+            dragListener={false}
+            dragControls={dragControlsMap.spendingHeatmap}
+            whileDrag={{
+              scale: 1.01,
+              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
+              backgroundColor: "var(--panel-bg)",
+              zIndex: 50,
+            }}
+            className="glass-panel"
+            style={{ borderRadius: "6px", overflow: "hidden", position: "relative" }}
+          >
+            <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{ cursor: "grab", display: "flex", alignItems: "center", opacity: 0.5 }}
+                  onPointerDown={(e) => dragControlsMap.spendingHeatmap.start(e)}
+                  title="Hold and drag to reorder Heatmap widget"
+                >
+                  <GripVertical size={14} style={{ color: "var(--accent-gradient-1)" }} />
+                </div>
+                <span>Spending Heatmap — Daily Expense Intensity</span>
+              </div>
+            </div>
+
+            <div style={{ padding: "14px 20px", overflowX: "auto" }}>
+              <div style={{ minWidth: "350px", position: "relative" }}>
+                {/* Month labels header */}
+                <div style={{ display: "flex", gap: "3px", paddingLeft: "32px", marginBottom: "4px" }}>
+                  {Array.from({ length: 22 }).map((_, w) => {
+                    const weekSun = addDays(startDate, w * 7);
+                    const isMonthStart = w === 0 || format(weekSun, "M") !== format(addDays(startDate, (w - 1) * 7), "M");
+                    return (
+                      <div key={w} style={{ width: "12px", fontSize: "0.58rem", color: "rgba(255,255,255,0.45)", textAlign: "center", flexShrink: 0 }}>
+                        {isMonthStart ? format(weekSun, "MMM").slice(0, 3) : ""}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  {/* Weekday labels */}
+                  <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "102px", fontSize: "0.58rem", color: "rgba(255,255,255,0.4)", width: "32px", paddingRight: "6px", textAlign: "right", flexShrink: 0 }}>
+                    <span>Sun</span>
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                  </div>
+
+                  {/* Heatmap cells container */}
+                  <div style={{ display: "grid", gridTemplateRows: "repeat(7, 12px)", gridAutoFlow: "column", gap: "3px" }}>
+                    {spendingDaysWithLevels.map((dayData, idx) => {
+                      let colorStop = "var(--heatmap-l0)";
+                      if (dayData.level === 1) colorStop = "var(--heatmap-l1)";
+                      else if (dayData.level === 2) colorStop = "var(--heatmap-l2)";
+                      else if (dayData.level === 3) colorStop = "var(--heatmap-l3)";
+                      else if (dayData.level === 4) colorStop = "var(--heatmap-l4)";
+
+                      return (
+                        <div
+                          key={idx}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const parentRect = e.currentTarget.offsetParent?.getBoundingClientRect();
+                            if (parentRect) {
+                              setHoveredCell({
+                                date: dayData.date,
+                                amount: dayData.totalSpend,
+                                x: rect.left - parentRect.left + rect.width / 2,
+                                y: rect.top - parentRect.top
+                              });
+                            }
+                          }}
+                          onMouseLeave={() => setHoveredCell(null)}
+                          style={{
+                            width: "12px",
+                            height: "12px",
+                            borderRadius: "2px",
+                            background: colorStop,
+                            border: "1px solid rgba(0,0,0,0.15)",
+                            cursor: "pointer",
+                            transition: "all 0.1s",
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Legend & Summary */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "12px" }}>
+                  <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)" }}>
+                    Total Expense (Last 22 Weeks): <strong style={{ color: "var(--accent-gradient-1)" }}>{formatAmount(totalHistoryExpense)}</strong>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.62rem", color: "rgba(255,255,255,0.45)" }}>
+                    <span>Less</span>
+                    <div style={{ width: "10px", height: "10px", borderRadius: "1.5px", background: "var(--heatmap-l0)" }} />
+                    <div style={{ width: "10px", height: "10px", borderRadius: "1.5px", background: "var(--heatmap-l1)" }} />
+                    <div style={{ width: "10px", height: "10px", borderRadius: "1.5px", background: "var(--heatmap-l2)" }} />
+                    <div style={{ width: "10px", height: "10px", borderRadius: "1.5px", background: "var(--heatmap-l3)" }} />
+                    <div style={{ width: "10px", height: "10px", borderRadius: "1.5px", background: "var(--heatmap-l4)" }} />
+                    <span>More</span>
+                  </div>
+                </div>
+
+                {/* Floating tooltip */}
+                {hoveredCell && (
+                  <div style={{
+                    position: "absolute",
+                    left: hoveredCell.x,
+                    top: hoveredCell.y - 45,
+                    transform: "translateX(-50%)",
+                    background: "rgba(10, 10, 10, 0.9)",
+                    border: "1px solid var(--panel-border)",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.6)",
+                    borderRadius: "4px",
+                    padding: "6px 10px",
+                    fontSize: "0.68rem",
+                    color: "#fff",
+                    pointerEvents: "none",
+                    whiteSpace: "nowrap",
+                    zIndex: 100,
+                    backdropFilter: "blur(10px)",
+                    transition: "left 0.08s ease, top 0.08s ease"
+                  }}>
+                    <strong style={{ color: "var(--accent-gradient-1)" }}>{formatAmount(hoveredCell.amount)}</strong> on {format(hoveredCell.date, "EEEE, MMM d, yyyy")}
+                  </div>
+                )}
+              </div>
+            </div>
           </Reorder.Item>
         );
       case "upcomingSubscriptions":
@@ -619,41 +814,41 @@ export default function Dashboard() {
               dragListener={false}
               dragControls={dragControlsMap.upcomingSubscriptions}
               whileDrag={{
-                scale: 1.01,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px rgba(100,220,40,0.45)",
-                borderColor: "rgba(100,220,40,0.55)",
-                backgroundColor: "rgba(6,18,4,0.98)",
-                zIndex: 50,
-              }}
-              className="glass-panel"
-              style={{ borderRadius: "6px", overflow: "hidden", display: "flex", flexDirection: "column" }}
-            >
-              <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div
-                    style={{ cursor: "grab", display: "flex", alignItems: "center", opacity: 0.5 }}
-                    onPointerDown={(e) => dragControlsMap.upcomingSubscriptions.start(e)}
-                    title="Hold and drag to reorder Upcoming Subscriptions"
-                  >
-                    <GripVertical size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
-                  </div>
-                  <span>Upcoming Bills & Subscriptions</span>
+              scale: 1.01,
+              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
+              backgroundColor: "var(--panel-bg)",
+              zIndex: 50,
+            }}
+            className="glass-panel"
+            style={{ borderRadius: "6px", overflow: "hidden", display: "flex", flexDirection: "column" }}
+          >
+            <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{ cursor: "grab", display: "flex", alignItems: "center", opacity: 0.5 }}
+                  onPointerDown={(e) => dragControlsMap.upcomingSubscriptions.start(e)}
+                  title="Hold and drag to reorder Upcoming Subscriptions"
+                >
+                  <GripVertical size={14} style={{ color: "var(--accent-gradient-1)" }} />
                 </div>
-                <Link href="/subscriptions">
-                  <div style={{ fontSize: "0.72rem", color: "#66c028", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-                    Manage <ExternalLink size={10} />
-                  </div>
-                </Link>
+                <span>Upcoming Bills & Subscriptions</span>
               </div>
+              <Link href="/subscriptions">
+                <div style={{ fontSize: "0.72rem", color: "var(--accent-gradient-1)", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+                  Manage <ExternalLink size={10} />
+                </div>
+              </Link>
+            </div>
 
-              <div style={{ padding: "8px 12px" }}>
-                {subsLoading ? (
-                  <div style={{ padding: "1.5rem", textAlign: "center", color: "rgba(130,180,80,0.5)", fontSize: "0.8rem", fontStyle: "italic" }}>
-                    Loading upcoming bills…
-                  </div>
-                ) : topUpcoming.length === 0 ? (
-                  <div style={{ padding: "1.5rem 1rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                    <div style={{ color: "rgba(130,180,80,0.5)", fontSize: "0.78rem" }}>No active recurring bills or subscriptions.</div>
+            <div style={{ padding: "8px 12px" }}>
+              {subsLoading ? (
+                <div style={{ padding: "1.5rem", textAlign: "center", color: "rgba(255, 255, 255, 0.45)", fontSize: "0.8rem", fontStyle: "italic" }}>
+                  Loading upcoming bills…
+                </div>
+              ) : topUpcoming.length === 0 ? (
+                <div style={{ padding: "1.5rem 1rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                  <div style={{ color: "rgba(255, 255, 255, 0.45)", fontSize: "0.78rem" }}>No active recurring bills or subscriptions.</div>
                     <Link href="/subscriptions">
                       <button className="glass-button" style={{ padding: "4px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
                         + Set Up Subscription
@@ -666,32 +861,34 @@ export default function Dashboard() {
                       const isPendingPay = payMut.isPending && payMut.variables?.id === sub.id;
                       const catColor = sub.categoryColor || "#66c028";
                       
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const due = parseISO(sub.nextDueDate);
-                      due.setHours(0, 0, 0, 0);
-                      
-                      const diffDays = differenceInDays(due, today);
-                      
-                      let dueLabel = "";
-                      let dueBadgeColor = "rgba(160,210,100,0.15)";
-                      let dueTextColor = "rgba(160,210,100,0.8)";
-                      
-                      if (diffDays === 0) {
-                        dueLabel = "Today";
-                        dueBadgeColor = "rgba(234,179,8,0.2)";
-                        dueTextColor = "#facc15";
-                      } else if (diffDays < 0) {
-                        dueLabel = "Overdue";
-                        dueBadgeColor = "rgba(239,68,68,0.2)";
-                        dueTextColor = "#f87171";
-                      } else if (diffDays === 1) {
-                        dueLabel = "Tomorrow";
-                        dueBadgeColor = "rgba(160,210,100,0.2)";
-                        dueTextColor = "#bef264";
-                      } else {
-                        dueLabel = `in ${diffDays} days`;
-                      }
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const due = parseISO(sub.nextDueDate);
+                    due.setHours(0, 0, 0, 0);
+                    
+                    const diffDays = differenceInDays(due, today);
+                    
+                    let dueLabel = "";
+                    let dueBadgeColor = "var(--panel-border)";
+                    let dueTextColor = "var(--accent-gradient-1)";
+                    
+                    if (diffDays === 0) {
+                      dueLabel = "Today";
+                      dueBadgeColor = "rgba(234,179,8,0.2)";
+                      dueTextColor = "#facc15";
+                    } else if (diffDays < 0) {
+                      dueLabel = "Overdue";
+                      dueBadgeColor = "rgba(239,68,68,0.2)";
+                      dueTextColor = "#f87171";
+                    } else if (diffDays === 1) {
+                      dueLabel = "Tomorrow";
+                      dueBadgeColor = "var(--panel-border)";
+                      dueTextColor = "var(--accent-gradient-1)";
+                    } else {
+                      dueLabel = `in ${diffDays} days`;
+                      dueBadgeColor = "rgba(255, 255, 255, 0.05)";
+                      dueTextColor = "rgba(255, 255, 255, 0.6)";
+                    }
 
                       return (
                         <div
@@ -744,11 +941,11 @@ export default function Dashboard() {
                                       whiteSpace: "nowrap",
                                     }}
                                   >
-                                    {sub.categoryName}
+                                    {sub.categoryIcon ? `${sub.categoryIcon} ` : ""}{sub.categoryName}
                                   </span>
                                 )}
                               </div>
-                              <div style={{ fontSize: "0.65rem", color: "rgba(150,200,100,0.55)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                              <div style={{ fontSize: "0.65rem", color: "rgba(255, 255, 255, 0.45)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                                 <Clock size={10} />
                                 <span>Due {format(new Date(sub.nextDueDate), "MMM d, yyyy")} ({sub.interval})</span>
                               </div>
@@ -770,9 +967,9 @@ export default function Dashboard() {
                                 gap: "4px",
                                 padding: "4px 8px",
                                 borderRadius: "4px",
-                                background: "rgba(102,192,40,0.15)",
-                                border: "1px solid rgba(102,192,40,0.3)",
-                                color: "#8ddf46",
+                                background: "rgba(255, 255, 255, 0.03)",
+                                border: "1px solid var(--panel-border)",
+                                color: "var(--accent-gradient-1)",
                                 fontSize: "0.7rem",
                                 fontWeight: 600,
                                 cursor: "pointer",
@@ -781,16 +978,16 @@ export default function Dashboard() {
                               }}
                               onMouseEnter={(e) => {
                                 if (!isPendingPay) {
-                                  e.currentTarget.style.background = "rgba(102,192,40,0.3)";
-                                  e.currentTarget.style.borderColor = "rgba(102,192,40,0.5)";
+                                  e.currentTarget.style.background = "var(--accent-border-color)";
+                                  e.currentTarget.style.borderColor = "var(--accent-border-color)";
                                   e.currentTarget.style.color = "#fff";
                                 }
                               }}
                               onMouseLeave={(e) => {
                                 if (!isPendingPay) {
-                                  e.currentTarget.style.background = "rgba(102,192,40,0.15)";
-                                  e.currentTarget.style.borderColor = "rgba(102,192,40,0.3)";
-                                  e.currentTarget.style.color = "#8ddf46";
+                                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
+                                  e.currentTarget.style.borderColor = "var(--panel-border)";
+                                  e.currentTarget.style.color = "var(--accent-gradient-1)";
                                 }
                               }}
                             >
@@ -822,9 +1019,9 @@ export default function Dashboard() {
             dragControls={dragControlsMap.recentTransactions}
             whileDrag={{
               scale: 1.01,
-              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px rgba(100,220,40,0.45)",
-              borderColor: "rgba(100,220,40,0.55)",
-              backgroundColor: "rgba(6,18,4,0.98)",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px var(--accent-glow-shadow)",
+              borderColor: "var(--accent-border-color)",
+              backgroundColor: "var(--panel-bg)",
               zIndex: 50,
             }}
             className="glass-panel"
@@ -836,7 +1033,7 @@ export default function Dashboard() {
                 onPointerDown={(e) => dragControlsMap.recentTransactions.start(e)}
                 title="Hold and drag to reorder Recent Transactions"
               >
-                <GripVertical size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                <GripVertical size={14} style={{ color: "var(--accent-gradient-1)" }} />
               </div>
               <span>Recent Transactions</span>
             </div>
@@ -854,16 +1051,16 @@ export default function Dashboard() {
                 <tbody>
                   {(!Array.isArray(recent) || recent.length === 0) ? (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: "center", color: "rgba(130,180,80,0.5)", padding: "2rem 1rem", fontStyle: "italic" }}>
+                      <td colSpan={5} style={{ textAlign: "center", color: "rgba(255, 255, 255, 0.4)", padding: "2rem 1rem", fontStyle: "italic" }}>
                         No transactions yet
                       </td>
                     </tr>
                   ) : recent.map(t => (
                     <tr key={t.id}>
-                      <td style={{ color: "rgba(160,210,100,0.75)", fontFamily: "monospace", fontSize: "0.78rem" }}>
+                      <td style={{ color: "rgba(255, 255, 255, 0.55)", fontFamily: "monospace", fontSize: "0.78rem" }}>
                         {format(new Date(t.date), "MMM d, yyyy")}
                       </td>
-                      <td style={{ fontWeight: 500, color: "rgba(215,240,190,0.9)" }}>{t.description}</td>
+                      <td style={{ fontWeight: 500, color: "rgba(255, 255, 255, 0.9)" }}>{t.description}</td>
                       <td>
                         {t.categoryName && (
                           <span style={{
@@ -876,11 +1073,11 @@ export default function Dashboard() {
                             border: `1px solid ${t.categoryColor || "#4da820"}50`,
                             letterSpacing: "0.04em",
                           }}>
-                            {t.categoryName}
+                            {t.categoryIcon ? `${t.categoryIcon} ` : ""}{t.categoryName}
                           </span>
                         )}
                       </td>
-                      <td style={{ fontSize: "0.78rem", color: "rgba(150,200,100,0.7)" }}>{t.accountName}</td>
+                      <td style={{ fontSize: "0.78rem", color: "rgba(255, 255, 255, 0.55)" }}>{t.accountName}</td>
                       <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", color: t.type === "income" ? "#6ee87a" : "#f87171", textShadow: t.type === "income" ? "0 0 8px rgba(60,200,80,0.4)" : "0 0 8px rgba(220,60,60,0.35)" }}>
                         {t.type === "income" ? "+" : "-"}{formatAmount(Math.abs(t.amount))}
                       </td>
@@ -904,13 +1101,13 @@ export default function Dashboard() {
         <div className="panel-titlebar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
           <div>Dashboard — Financial Overview</div>
           {user && (
-            <div style={{ fontSize: "0.72rem", color: "rgba(160,220,90,0.8)", fontWeight: "normal" }}>
+            <div style={{ fontSize: "0.72rem", color: "var(--accent-gradient-1)", fontWeight: "normal" }}>
               Active Session: <strong style={{ color: "#fff" }}>{user.username}</strong>
             </div>
           )}
         </div>
         <div style={{
-          background: "linear-gradient(180deg, rgba(10,35,5,0.4) 0%, rgba(5,15,2,0.6) 100%)",
+          background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.45) 100%)",
           padding: "16px 20px",
           display: "flex",
           justifyContent: "space-between",
@@ -923,14 +1120,14 @@ export default function Dashboard() {
               fontSize: "1.45rem",
               fontWeight: 800,
               margin: 0,
-              background: "linear-gradient(to bottom, #ffffff 0%, #d5f2a2 60%, #66c028 100%)",
+              background: "linear-gradient(to bottom, #ffffff 0%, var(--brand-glow-1) 60%, var(--brand-glow-2) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               filter: "drop-shadow(0 1.5px 2px rgba(0,0,0,0.5))",
             }}>
               Welcome back, {user?.username || "Guest"}!
             </h1>
-            <p style={{ fontSize: "0.8rem", color: "rgba(180,220,150,0.7)", margin: "4px 0 0" }}>
+            <p style={{ fontSize: "0.8rem", color: "rgba(255, 255, 255, 0.55)", margin: "4px 0 0" }}>
               Here is your financial status overview for today.
             </p>
           </div>

@@ -4,19 +4,23 @@ import {
   useGetRecentTransactions, getGetRecentTransactionsQueryKey,
   useGetSpendingByCategory, getGetSpendingByCategoryQueryKey,
   useGetMe, useLogout,
+  useListSubscriptions, getListSubscriptionsQueryKey,
+  usePaySubscription,
 } from "@workspace/api-client-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { useCurrency } from "@/lib/currency";
-import { format } from "date-fns";
+import { format, parseISO, differenceInDays, isToday } from "date-fns";
 import { useState } from "react";
 import { Reorder, useDragControls } from "framer-motion";
-import { GripVertical, GripHorizontal, User, LogOut } from "lucide-react";
+import { GripVertical, GripHorizontal, User, LogOut, Calendar, Check, Clock, ArrowRight, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import OnboardingTour from "@/components/OnboardingTour";
+import { useSoundEffects } from "@/lib/sound";
+import { useToast } from "@/hooks/use-toast";
 
 const PIE_FALLBACK = ["#66c028","#f87171","#facc15","#60a5fa","#c084fc","#fb923c","#34d399","#f472b6"];
 
@@ -26,6 +30,38 @@ export default function Dashboard() {
   const logoutMutation = useLogout();
   const queryClient = useQueryClient();
   const [demoLoading, setDemoLoading] = useState(false);
+
+  const { data: subscriptions, isLoading: subsLoading } = useListSubscriptions({
+    query: { queryKey: getListSubscriptionsQueryKey() },
+  });
+  const { playSuccess } = useSoundEffects();
+  const { toast } = useToast();
+
+  const payMut = usePaySubscription({
+    mutation: {
+      onSuccess: (updatedSub) => {
+        queryClient.invalidateQueries({ queryKey: getListSubscriptionsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetSummaryOverviewQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetRecentTransactionsQueryKey({ limit: 8 }) });
+        queryClient.invalidateQueries({ predicate: (q) => (q.queryKey[0] as string)?.startsWith?.("/api/summary") });
+        playSuccess();
+        toast({
+          title: "Payment Logged! 🍀",
+          description: `Logged transaction for ${updatedSub.name}. Next due date advanced to ${format(
+            new Date(updatedSub.nextDueDate),
+            "MMM d, yyyy"
+          )}.`,
+        });
+      },
+      onError: (err: any) => {
+        toast({
+          title: "Payment Failed",
+          description: err?.message || "An error occurred while logging payment.",
+          variant: "destructive",
+        });
+      },
+    },
+  });
 
   const handleLoadDemo = async () => {
     setDemoLoading(true);
@@ -63,10 +99,21 @@ export default function Dashboard() {
   const [widgetOrder, setWidgetOrder] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("clovifi_dashboard_order_v2");
-      return saved ? JSON.parse(saved) : ["stats", "charts", "recentTransactions"];
-    } catch {
-      return ["stats", "charts", "recentTransactions"];
-    }
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.includes("upcomingSubscriptions")) {
+          const rtIndex = parsed.indexOf("recentTransactions");
+          if (rtIndex !== -1) {
+            parsed.splice(rtIndex, 0, "upcomingSubscriptions");
+          } else {
+            parsed.push("upcomingSubscriptions");
+          }
+          localStorage.setItem("clovifi_dashboard_order_v2", JSON.stringify(parsed));
+        }
+        return parsed;
+      }
+    } catch (e) {}
+    return ["stats", "charts", "upcomingSubscriptions", "recentTransactions"];
   });
 
   // State for Stat Cards Order (horizontal)
@@ -122,6 +169,7 @@ export default function Dashboard() {
     charts: useDragControls(),
     trendChart: useDragControls(),
     spendingChart: useDragControls(),
+    upcomingSubscriptions: useDragControls(),
     recentTransactions: useDragControls(),
   };
 
@@ -555,6 +603,213 @@ export default function Dashboard() {
             </Reorder.Group>
           </Reorder.Item>
         );
+      case "upcomingSubscriptions":
+        {
+          const activeSubs = (Array.isArray(subscriptions) ? subscriptions : [])
+            .filter((s) => s.isActive)
+            .sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime());
+
+          const topUpcoming = activeSubs.slice(0, 4);
+
+          return (
+            <Reorder.Item
+              key="upcomingSubscriptions"
+              value="upcomingSubscriptions"
+              as="div"
+              dragListener={false}
+              dragControls={dragControlsMap.upcomingSubscriptions}
+              whileDrag={{
+                scale: 1.01,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.65), 0 0 15px rgba(100,220,40,0.45)",
+                borderColor: "rgba(100,220,40,0.55)",
+                backgroundColor: "rgba(6,18,4,0.98)",
+                zIndex: 50,
+              }}
+              className="glass-panel"
+              style={{ borderRadius: "6px", overflow: "hidden", display: "flex", flexDirection: "column" }}
+            >
+              <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div
+                    style={{ cursor: "grab", display: "flex", alignItems: "center", opacity: 0.5 }}
+                    onPointerDown={(e) => dragControlsMap.upcomingSubscriptions.start(e)}
+                    title="Hold and drag to reorder Upcoming Subscriptions"
+                  >
+                    <GripVertical size={14} style={{ color: "rgba(160,220,90,0.8)" }} />
+                  </div>
+                  <span>Upcoming Bills & Subscriptions</span>
+                </div>
+                <Link href="/subscriptions">
+                  <div style={{ fontSize: "0.72rem", color: "#66c028", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+                    Manage <ExternalLink size={10} />
+                  </div>
+                </Link>
+              </div>
+
+              <div style={{ padding: "8px 12px" }}>
+                {subsLoading ? (
+                  <div style={{ padding: "1.5rem", textAlign: "center", color: "rgba(130,180,80,0.5)", fontSize: "0.8rem", fontStyle: "italic" }}>
+                    Loading upcoming bills…
+                  </div>
+                ) : topUpcoming.length === 0 ? (
+                  <div style={{ padding: "1.5rem 1rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                    <div style={{ color: "rgba(130,180,80,0.5)", fontSize: "0.78rem" }}>No active recurring bills or subscriptions.</div>
+                    <Link href="/subscriptions">
+                      <button className="glass-button" style={{ padding: "4px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
+                        + Set Up Subscription
+                      </button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {topUpcoming.map((sub) => {
+                      const isPendingPay = payMut.isPending && payMut.variables?.id === sub.id;
+                      const catColor = sub.categoryColor || "#66c028";
+                      
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const due = parseISO(sub.nextDueDate);
+                      due.setHours(0, 0, 0, 0);
+                      
+                      const diffDays = differenceInDays(due, today);
+                      
+                      let dueLabel = "";
+                      let dueBadgeColor = "rgba(160,210,100,0.15)";
+                      let dueTextColor = "rgba(160,210,100,0.8)";
+                      
+                      if (diffDays === 0) {
+                        dueLabel = "Today";
+                        dueBadgeColor = "rgba(234,179,8,0.2)";
+                        dueTextColor = "#facc15";
+                      } else if (diffDays < 0) {
+                        dueLabel = "Overdue";
+                        dueBadgeColor = "rgba(239,68,68,0.2)";
+                        dueTextColor = "#f87171";
+                      } else if (diffDays === 1) {
+                        dueLabel = "Tomorrow";
+                        dueBadgeColor = "rgba(160,210,100,0.2)";
+                        dueTextColor = "#bef264";
+                      } else {
+                        dueLabel = `in ${diffDays} days`;
+                      }
+
+                      return (
+                        <div
+                          key={sub.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "8px 10px",
+                            borderRadius: "4px",
+                            background: "rgba(255,255,255,0.02)",
+                            border: "1px solid rgba(255,255,255,0.04)",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                fontSize: "0.68rem",
+                                fontWeight: 700,
+                                background: dueBadgeColor,
+                                color: dueTextColor,
+                                border: `1px solid ${dueTextColor}33`,
+                                fontFamily: "monospace",
+                                textAlign: "center",
+                                minWidth: "72px",
+                              }}
+                            >
+                              {dueLabel}
+                            </div>
+                            
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.9)", fontSize: "0.82rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                  {sub.name}
+                                </span>
+                                {sub.categoryName && (
+                                  <span
+                                    style={{
+                                      padding: "1px 5px",
+                                      borderRadius: "3px",
+                                      fontSize: "0.62rem",
+                                      fontWeight: 600,
+                                      background: `${catColor}15`,
+                                      color: catColor,
+                                      border: `1px solid ${catColor}30`,
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {sub.categoryName}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: "0.65rem", color: "rgba(150,200,100,0.55)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                                <Clock size={10} />
+                                <span>Due {format(new Date(sub.nextDueDate), "MMM d, yyyy")} ({sub.interval})</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginLeft: "10px" }}>
+                            <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "0.88rem", color: sub.type === "income" ? "#6ee87a" : "#f87171" }}>
+                              {sub.type === "income" ? "+" : "-"}{formatAmount(sub.amount)}
+                            </span>
+                            
+                            <button
+                              onClick={() => payMut.mutate({ id: sub.id })}
+                              disabled={isPendingPay}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "4px",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                background: "rgba(102,192,40,0.15)",
+                                border: "1px solid rgba(102,192,40,0.3)",
+                                color: "#8ddf46",
+                                fontSize: "0.7rem",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                transition: "all 0.15s",
+                                minWidth: "68px",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isPendingPay) {
+                                  e.currentTarget.style.background = "rgba(102,192,40,0.3)";
+                                  e.currentTarget.style.borderColor = "rgba(102,192,40,0.5)";
+                                  e.currentTarget.style.color = "#fff";
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isPendingPay) {
+                                  e.currentTarget.style.background = "rgba(102,192,40,0.15)";
+                                  e.currentTarget.style.borderColor = "rgba(102,192,40,0.3)";
+                                  e.currentTarget.style.color = "#8ddf46";
+                                }
+                              }}
+                            >
+                              {isPendingPay ? (
+                                "Logging..."
+                              ) : (
+                                <>
+                                  <Check size={12} /> Pay
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </Reorder.Item>
+          );
+        }
       case "recentTransactions":
         return (
           <Reorder.Item

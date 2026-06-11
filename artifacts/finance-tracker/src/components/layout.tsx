@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Receipt, Wallet, Tags, Settings, Calculator, User } from "lucide-react";
+import { LayoutDashboard, Receipt, Wallet, Tags, Settings, Calculator, User, Calendar } from "lucide-react";
 import React, { ReactNode } from "react";
 import { useCurrency } from "@/lib/currency";
 import { useGetMe, useLogout } from "@workspace/api-client-react";
@@ -14,6 +14,7 @@ const NAV_SECTIONS = [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/transactions", label: "Transactions", icon: Receipt },
       { href: "/accounts", label: "Accounts", icon: Wallet },
+      { href: "/subscriptions", label: "Subscriptions", icon: Calendar },
     ],
   },
   {
@@ -42,6 +43,7 @@ const getIconComponent = (item: any) => {
     if (item.href === "/categories") return Tags;
     if (item.href === "/settings") return Settings;
     if (item.href === "#calculator") return Calculator;
+    if (item.href === "/subscriptions") return Calendar;
   }
   return Settings;
 };
@@ -62,15 +64,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   // Stateful subitems mapping
   const [itemsMap, setItemsMap] = React.useState<Record<string, { href: string; label: string; icon: any }[]>>(() => {
-    try {
-      const saved = localStorage.getItem("clovifi_sidebar_subitems_order");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return {
+    const defaultMap = {
       Finance: [
         { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/transactions", label: "Transactions", icon: Receipt },
         { href: "/accounts", label: "Accounts", icon: Wallet },
+        { href: "/subscriptions", label: "Subscriptions", icon: Calendar },
       ],
       Manage: [
         { href: "/categories", label: "Categories", icon: Tags },
@@ -80,6 +79,21 @@ export default function Layout({ children }: { children: ReactNode }) {
         { href: "#calculator", label: "Calculator", icon: Calculator },
       ]
     };
+    try {
+      const saved = localStorage.getItem("clovifi_sidebar_subitems_order");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.Finance) {
+          const hasSub = parsed.Finance.some((item: any) => item.href === "/subscriptions");
+          if (!hasSub) {
+            parsed.Finance.push({ href: "/subscriptions", label: "Subscriptions", icon: Calendar });
+            localStorage.setItem("clovifi_sidebar_subitems_order", JSON.stringify(parsed));
+          }
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return defaultMap;
   });
 
   const handleSectionsReorder = (newOrder: string[]) => {

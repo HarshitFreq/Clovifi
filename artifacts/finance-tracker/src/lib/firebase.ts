@@ -90,3 +90,19 @@ export async function syncFirebaseUserWithBackend(user: FirebaseUser): Promise<a
     return null;
   }
 }
+
+// Helper: Complete sign-out clearing both Firebase and backend sessions
+export async function performLogout(): Promise<void> {
+  try {
+    if (auth && auth.currentUser) {
+      await signOut(auth);
+    }
+  } catch (err) {
+    console.warn("Firebase sign out notice:", err);
+  }
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch (err) {
+    console.warn("Backend logout notice:", err);
+  }
+}

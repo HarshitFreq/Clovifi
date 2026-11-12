@@ -7,18 +7,35 @@ import {
   ShieldCheck,
   Volume2,
   VolumeX,
+  LogOut,
 } from "lucide-react";
 import { useSoundEffects } from "@/lib/sound";
 import { useGetMe } from "@workspace/api-client-react";
-import { auth, onAuthStateChanged, type FirebaseUser } from "@/lib/firebase";
+import { auth, onAuthStateChanged, performLogout, type FirebaseUser } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import FirebaseAuthModal from "@/components/FirebaseAuthModal";
 import Clovifi3DVisualizer from "@/components/Clovifi3DVisualizer";
 
 export default function Landing() {
   const [, setLocation] = useLocation();
   const { playClick, playSuccess, soundEnabled, setSoundEnabled } = useSoundEffects();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: user } = useGetMe();
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+
+  const handleLogout = async () => {
+    playClick();
+    await performLogout();
+    setFirebaseUser(null);
+    await queryClient.invalidateQueries();
+    playSuccess();
+    toast({
+      title: "Signed Out",
+      description: "Returned to guest mode.",
+    });
+  };
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
@@ -133,6 +150,25 @@ export default function Landing() {
                 title="Account Settings"
               >
                 Account
+              </button>
+              <button
+                onClick={handleLogout}
+                className="toolbar-btn"
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "0.74rem",
+                  borderRadius: "4px",
+                  color: "#f87171",
+                  borderColor: "rgba(248, 113, 113, 0.28)",
+                  background: "rgba(248, 113, 113, 0.08)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+                title="Log Out"
+              >
+                <LogOut size={12} />
+                <span>Log Out</span>
               </button>
             </div>
           ) : (
@@ -288,6 +324,26 @@ export default function Landing() {
                   <ArrowRight size={15} />
                 </button>
               </Link>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "rgba(255, 255, 255, 0.45)",
+                  fontSize: "0.76rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  marginTop: "2px",
+                  transition: "color 0.15s ease",
+                }}
+                className="hover:text-red-400"
+              >
+                <LogOut size={12} />
+                <span>Log out of account</span>
+              </button>
             </div>
           ) : (
             <div

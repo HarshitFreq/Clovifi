@@ -13,8 +13,10 @@ import { useSoundEffects } from "@/lib/sound";
 import CloverLogo from "@/components/CloverLogo";
 import StockTickerWidget from "@/components/StockTickerWidget";
 import FirebaseAuthModal from "@/components/FirebaseAuthModal";
-import { auth, onAuthStateChanged, type FirebaseUser } from "@/lib/firebase";
-import { LogIn, ShieldCheck } from "lucide-react";
+import { auth, onAuthStateChanged, performLogout, type FirebaseUser } from "@/lib/firebase";
+import { LogIn, ShieldCheck, LogOut, Home } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NavItem {
   href: string;
@@ -32,12 +34,27 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const { data: user } = useGetMe();
-  const { playClick } = useSoundEffects();
+  const { playClick, playSuccess } = useSoundEffects();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleLogout = async () => {
+    playClick();
+    await performLogout();
+    setFirebaseUser(null);
+    await queryClient.invalidateQueries();
+    playSuccess();
+    toast({
+      title: "Signed Out",
+      description: "Returned to the landing page.",
+    });
+    setLocation("/");
+  };
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -114,30 +131,52 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
           </Link>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden flex items-center justify-center p-2 rounded"
-            style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            {mobileMenuOpen ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            )}
-          </button>
+          {/* Mobile Menu Toggle & Home */}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <Link
+              href="/"
+              onClick={playClick}
+              className="toolbar-btn"
+              style={{
+                padding: "4px 8px",
+                fontSize: "0.72rem",
+                borderRadius: "4px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                textDecoration: "none",
+                color: "rgba(255,255,255,0.75)",
+              }}
+              title="Return to Home Landing Page"
+            >
+              <Home size={13} />
+              <span className="hidden sm:inline">Home</span>
+            </Link>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden flex items-center justify-center p-2 rounded"
+              style={{
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              {mobileMenuOpen ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Links container */}
@@ -178,6 +217,48 @@ export default function Layout({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+
+          {/* Quick Home & Log Out on mobile menu */}
+          <div className="md:hidden flex flex-col gap-1 pt-1 mt-1 border-t border-white/10">
+            <Link href="/" onClick={playClick} style={{ textDecoration: "none" }}>
+              <div
+                className="nav-item-hover"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  color: "rgba(255,255,255,0.75)",
+                  fontSize: "0.84rem",
+                  cursor: "pointer",
+                }}
+              >
+                <Home size={16} style={{ color: "rgba(255,255,255,0.6)" }} />
+                <span>Return to Home</span>
+              </div>
+            </Link>
+            <button
+              onClick={handleLogout}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                color: "#f87171",
+                background: "rgba(248,113,113,0.08)",
+                border: "1px solid rgba(248,113,113,0.22)",
+                fontSize: "0.84rem",
+                cursor: "pointer",
+                width: "100%",
+                textAlign: "left",
+              }}
+            >
+              <LogOut size={16} style={{ color: "#f87171" }} />
+              <span>Log Out & Exit to Home</span>
+            </button>
+          </div>
         </div>
 
         {/* Compact User Profile Bar */}
@@ -250,17 +331,35 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
           </Link>
 
-          <button
-            onClick={() => {
-              playClick();
-              setIsAuthModalOpen(true);
-            }}
-            className="toolbar-btn"
-            style={{ padding: "4px 7px", fontSize: "0.64rem", borderRadius: "3px" }}
-            title="Account & Cloud Sync"
-          >
-            {firebaseUser ? <ShieldCheck size={12} style={{ color: "#6ee87a" }} /> : <LogIn size={12} />}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <button
+              onClick={() => {
+                playClick();
+                setIsAuthModalOpen(true);
+              }}
+              className="toolbar-btn"
+              style={{ padding: "4px 7px", fontSize: "0.64rem", borderRadius: "3px" }}
+              title="Account & Cloud Sync"
+            >
+              {firebaseUser ? <ShieldCheck size={12} style={{ color: "#6ee87a" }} /> : <LogIn size={12} />}
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="toolbar-btn"
+              style={{
+                padding: "4px 7px",
+                fontSize: "0.64rem",
+                borderRadius: "3px",
+                color: "#f87171",
+                borderColor: "rgba(248, 113, 113, 0.28)",
+                background: "rgba(248, 113, 113, 0.08)",
+              }}
+              title="Log Out & Exit to Home"
+            >
+              <LogOut size={12} style={{ color: "#f87171" }} />
+            </button>
+          </div>
         </div>
       </nav>
 

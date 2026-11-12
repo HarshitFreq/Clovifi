@@ -20,9 +20,10 @@ import {
   Plus, Clock, Check, ExternalLink, ChevronDown, ChevronUp,
   Flame, RefreshCw, FileSpreadsheet, Printer, WalletCards,
   TrendingUp, TrendingDown, Search, Landmark, Receipt,
-  PieChart as PieIcon, ArrowUpRight, ArrowDownLeft
+  PieChart as PieIcon, ArrowUpRight, ArrowDownLeft, LogOut, Home
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { performLogout } from "@/lib/firebase";
 import { useQueryClient } from "@tanstack/react-query";
 import TransactionModal from "@/components/TransactionModal";
 import AccountModal from "@/components/AccountModal";
@@ -46,6 +47,19 @@ export default function Dashboard() {
 
   const { playClick, playSuccess } = useSoundEffects();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  const handleLogout = async () => {
+    playClick();
+    await performLogout();
+    await queryClient.invalidateQueries();
+    playSuccess();
+    toast({
+      title: "Signed Out",
+      description: "Returned to the landing page.",
+    });
+    setLocation("/");
+  };
 
   const trendMonths = timeRange === "1M" ? 1 : timeRange === "3M" ? 3 : timeRange === "6M" ? 6 : 12;
 
@@ -322,6 +336,31 @@ export default function Dashboard() {
           >
             <RefreshCw size={12} style={{ color: "rgba(255,255,255,0.7)" }} />
             <span>Refresh</span>
+          </button>
+
+          <Link
+            href="/"
+            onClick={playClick}
+            className="toolbar-btn"
+            style={{ textDecoration: "none", color: "rgba(255,255,255,0.85)" }}
+            title="Return to Home Landing Page"
+          >
+            <Home size={12} />
+            <span>Home</span>
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="toolbar-btn"
+            style={{
+              color: "#f87171",
+              borderColor: "rgba(248, 113, 113, 0.28)",
+              background: "rgba(248, 113, 113, 0.08)",
+            }}
+            title="Log Out and return to Landing Page"
+          >
+            <LogOut size={12} style={{ color: "#f87171" }} />
+            <span>Log Out</span>
           </button>
         </div>
 

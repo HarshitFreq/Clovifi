@@ -1,6 +1,7 @@
 {
   "name": "@workspace/finance-tracker",
   "version": "0.0.0",
+  "description": "☘️ Nostalgic 2000s Frutiger Aero personal finance tracker",
   "private": true,
   "type": "module",
   "scripts": {

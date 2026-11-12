@@ -89,10 +89,16 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
       if (onSuccess) onSuccess();
     } catch (err: any) {
       console.error("Google sign in error:", err);
-      if (err?.code === "auth/invalid-api-key" || !isFirebaseConfigured) {
+      const code = err?.code || "";
+      const raw = (err?.message || "").toString();
+      if (code === "auth/popup-closed-by-user") {
+        setError("Sign-in cancelled. You can sign in anytime.");
+      } else if (code === "auth/invalid-api-key" || !isFirebaseConfigured) {
         setError(
           "Google Sign-In is unavailable. Please continue using Email & Password."
         );
+      } else if (raw.includes("The string did not match the expected pattern")) {
+        setError("Sign-in encountered a browser format issue. Please continue using Email & Password.");
       } else {
         setError(err?.message || "Failed to sign in with Google.");
       }
@@ -107,40 +113,50 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
     setError(null);
     setLoading(true);
 
-    const cleanInput = email.trim();
-    const candidateUsername = cleanInput.includes("@")
-      ? cleanInput.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "")
-      : cleanInput.toLowerCase().replace(/[^a-z0-9]/g, "");
-
     try {
-      if (isFirebaseConfigured) {
-        let user: FirebaseUser;
-        if (isRegister) {
-          const res = await createUserWithEmailAndPassword(auth, cleanInput, password);
-          user = res.user;
-        } else {
-          const res = await signInWithEmailAndPassword(auth, cleanInput, password);
-          user = res.user;
-        }
-        await syncFirebaseUserWithBackend(user);
-      } else {
-        // Fallback: Direct database authentication against PostgreSQL backend
-        if (candidateUsername.length < 3) {
-          throw new Error("Username/Email prefix must be at least 3 alphanumeric characters.");
-        }
+      const cleanInput = email.trim();
+      if (!cleanInput) {
+        throw new Error("Please enter your email or username.");
+      }
 
+      const isEmail = cleanInput.includes("@");
+      if (isEmail) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(cleanInput)) {
+          throw new Error("Please enter a valid email address (e.g. user@example.com).");
+        }
+      } else {
+        if (cleanInput.length < 3) {
+          throw new Error("Username must be at least 3 characters.");
+        }
+      }
+
+      if (password.length < 6) {
+        throw new Error("Password must be at least 6 characters long.");
+      }
+
+      const authIdentifier = isEmail
+        ? cleanInput
+        : `${cleanInput.toLowerCase().replace(/[^a-z0-9_]/g, "")}@clovifi.app`;
+      const candidateUsername = cleanInput.includes("@")
+        ? cleanInput.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "")
+        : cleanInput.toLowerCase().replace(/[^a-z0-9_]/g, "");
+
+      const fallbackToLocal = async () => {
+        if (candidateUsername.length < 3) {
+          throw new Error("Username must be at least 3 characters.");
+        }
         if (isRegister) {
-          if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^a-zA-Z0-9]/.test(password)) {
-            throw new Error(
-              "Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character (e.g. Clovifi2026!)."
-            );
-          }
           const res = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: candidateUsername, password }),
           });
-          const data = await res.json().catch(() => ({}));
+          const contentType = res.headers.get("content-type") || "";
+          let data: any = {};
+          if (contentType.includes("application/json")) {
+            data = await res.json().catch(() => ({}));
+          }
           if (!res.ok) {
             throw new Error(data.error || "Registration failed");
           }
@@ -150,11 +166,43 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: candidateUsername, password }),
           });
-          const data = await res.json().catch(() => ({}));
+          const contentType = res.headers.get("content-type") || "";
+          let data: any = {};
+          if (contentType.includes("application/json")) {
+            data = await res.json().catch(() => ({}));
+          }
           if (!res.ok) {
-            throw new Error(data.error || "Invalid username/email or password.");
+            throw new Error(data.error || "Invalid username or password.");
           }
         }
+      };
+
+      if (isFirebaseConfigured && auth) {
+        let user: FirebaseUser | null = null;
+        try {
+          if (isRegister) {
+            const res = await createUserWithEmailAndPassword(auth, authIdentifier, password);
+            user = res.user;
+          } else {
+            const res = await signInWithEmailAndPassword(auth, authIdentifier, password);
+            user = res.user;
+          }
+          await syncFirebaseUserWithBackend(user);
+        } catch (fbErr: any) {
+          // If Firebase Auth does not have email/password sign-in enabled yet, fall back seamlessly to backend auth
+          if (
+            fbErr?.code === "auth/operation-not-allowed" ||
+            fbErr?.code === "auth/configuration-not-found" ||
+            fbErr?.code === "auth/invalid-api-key"
+          ) {
+            console.warn("Firebase Auth provider unavailable, falling back to local database auth");
+            await fallbackToLocal();
+          } else {
+            throw fbErr;
+          }
+        }
+      } else {
+        await fallbackToLocal();
       }
 
       await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
@@ -168,11 +216,60 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
       if (onSuccess) onSuccess();
     } catch (err: any) {
       console.error("Auth error:", err);
-      if (err?.code === "auth/invalid-api-key") {
-        setError("Sign in error. Please try again with email and password.");
-      } else {
-        setError(err?.message || "Authentication failed.");
+      const rawMessage = (err?.message || "").toString();
+      const code = err?.code || "";
+
+      let friendlyMessage = "Authentication failed. Please check your details and try again.";
+
+      if (
+        code === "auth/email-already-in-use" ||
+        rawMessage.includes("auth/email-already-in-use") ||
+        rawMessage.includes("Username already exists")
+      ) {
+        friendlyMessage = "An account with this email/username already exists. Please sign in instead.";
+      } else if (
+        code === "auth/invalid-email" ||
+        rawMessage.includes("auth/invalid-email")
+      ) {
+        friendlyMessage = "Please enter a valid email address (e.g. user@example.com).";
+      } else if (
+        code === "auth/weak-password" ||
+        rawMessage.includes("auth/weak-password")
+      ) {
+        friendlyMessage = "Password is too weak. Please use at least 6 characters.";
+      } else if (
+        code === "auth/user-not-found" ||
+        code === "auth/wrong-password" ||
+        code === "auth/invalid-credential" ||
+        rawMessage.includes("auth/invalid-credential") ||
+        rawMessage.includes("auth/user-not-found") ||
+        rawMessage.includes("auth/wrong-password")
+      ) {
+        friendlyMessage = "Invalid email/username or password. Please verify and try again.";
+      } else if (
+        code === "auth/too-many-requests" ||
+        rawMessage.includes("auth/too-many-requests")
+      ) {
+        friendlyMessage = "Too many attempts. Please wait a moment and try again.";
+      } else if (
+        code === "auth/network-request-failed" ||
+        rawMessage.includes("auth/network-request-failed")
+      ) {
+        friendlyMessage = "Network connection problem. Please check your internet connection.";
+      } else if (
+        rawMessage.includes("The string did not match the expected pattern") ||
+        err?.name === "SyntaxError"
+      ) {
+        friendlyMessage = "Please verify your email address format (e.g. user@example.com).";
+      } else if (
+        err?.message &&
+        !err.message.includes("Firebase:") &&
+        !err.message.includes("HTTP")
+      ) {
+        friendlyMessage = err.message;
       }
+
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -398,7 +495,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
             </div>
           ) : (
             /* Email & Password Form */
-            <form onSubmit={handleEmailAuth} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <form noValidate onSubmit={handleEmailAuth} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <div>
                 <label style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", color: "var(--title-text)", marginBottom: "4px", display: "block" }}>
                   Email or Username
@@ -410,7 +507,11 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="user@example.com or myname"
+                    placeholder="user@example.com or username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoComplete={isRegister ? "username" : "username"}
                     style={{ background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: "0.8rem", width: "100%" }}
                   />
                 </div>
@@ -428,12 +529,16 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoComplete={isRegister ? "new-password" : "current-password"}
                     style={{ background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: "0.8rem", width: "100%" }}
                   />
                 </div>
                 {isRegister && (
                   <div style={{ fontSize: "0.65rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "3px" }}>
-                    Min 8 chars, 1 uppercase, 1 number & 1 symbol (e.g. Clovifi2026!)
+                    At least 6 characters
                   </div>
                 )}
               </div>

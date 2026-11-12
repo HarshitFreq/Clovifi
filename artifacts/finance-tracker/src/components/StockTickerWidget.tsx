@@ -34,12 +34,14 @@ export default function StockTickerWidget() {
     setLoading(true);
     try {
       const res = await fetch("/api/market/stocks");
-      if (!res.ok) throw new Error("HTTP error " + res.status);
-      const json = await res.json();
-      if (Array.isArray(json.data) && json.data.length > 0) {
-        setStocks(json.data);
-        const d = new Date();
-        setLastUpdated(d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+      const contentType = res.headers.get("content-type") || "";
+      if (res.ok && contentType.includes("application/json")) {
+        const json = await res.json().catch(() => null);
+        if (json && Array.isArray(json.data) && json.data.length > 0) {
+          setStocks(json.data);
+          const d = new Date();
+          setLastUpdated(d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+        }
       }
     } catch (err) {
       console.warn("Stock feed fallback:", err);

@@ -37,10 +37,9 @@ router.post("/auth/register", async (req, res) => {
     return;
   }
 
-  // Strong password complexity check: min 8 chars, 1 uppercase, 1 digit, 1 special char
-  if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^a-zA-Z0-9]/.test(password)) {
+  if (password.length < 6) {
     res.status(400).json({
-      error: "Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character."
+      error: "Password must be at least 6 characters long."
     });
     return;
   }

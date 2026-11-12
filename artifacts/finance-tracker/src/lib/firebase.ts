@@ -64,22 +64,29 @@ export {
   type FirebaseUser,
 };
 
-// Helper: Sync Firebase authenticated user session with our PostgreSQL backend
+// Helper: Sync Firebase authenticated user session with our PostgreSQL backend (best-effort)
 export async function syncFirebaseUserWithBackend(user: FirebaseUser): Promise<any> {
-  const token = await user.getIdToken();
-  const res = await fetch("/api/auth/firebase-sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      token,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || "Failed to sync Firebase session with server");
+  try {
+    const token = await user.getIdToken();
+    const res = await fetch("/api/auth/firebase-sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        token,
+      }),
+    });
+
+    const contentType = res.headers.get("content-type") || "";
+    if (res.ok && contentType.includes("application/json")) {
+      return await res.json().catch(() => null);
+    }
+    return null;
+  } catch (err) {
+    // Non-blocking: If running on static hosting or backend is offline, session is still preserved in Firebase Auth
+    console.warn("Backend session sync notice:", err);
+    return null;
   }
-  return res.json();
 }

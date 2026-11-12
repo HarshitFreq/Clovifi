@@ -92,9 +92,14 @@ export default function Settings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: clean }),
       });
+      const contentType = res.headers.get("content-type") || "";
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update profile");
+        let errMessage = "Failed to update profile";
+        if (contentType.includes("application/json")) {
+          const data = await res.json().catch(() => ({}));
+          if (data.error) errMessage = data.error;
+        }
+        throw new Error(errMessage);
       }
       playSuccess();
       toast({
@@ -114,8 +119,12 @@ export default function Settings() {
     setDemoLoading(true);
     try {
       const res = await fetch("/api/demo-data", { method: "POST" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed");
+      const contentType = res.headers.get("content-type") || "";
+      let json: any = {};
+      if (contentType.includes("application/json")) {
+        json = await res.json().catch(() => ({}));
+      }
+      if (!res.ok) throw new Error(json.error || "Failed to load sample data");
       await queryClient.invalidateQueries();
       playSuccess();
       toast({

@@ -112,43 +112,50 @@ export default function Clovifi3DVisualizer() {
       }
     `;
 
-    // --- Fragment Shader: Muted, Low-Contrast Droplet Streaks ---
+    // --- Fragment Shader: Faceted Diamond Crystal Droplet Shards ---
     const fragmentShader = `
       precision highp float;
 
-      uniform vec3 uColorHead; // Muted soft emerald
-      uniform vec3 uColorTail; // Soft dark teal mist
-      uniform vec3 uColorGlow; // Faint gentle green glow
+      uniform float uTime;
+      uniform vec3 uColorHead; // Soft muted emerald crystal
+      uniform vec3 uColorTail; // Dark subtle aqua-teal
+      uniform vec3 uColorGlow; // Gentle pastel green facet glow
 
       varying vec4 vProps;
       varying float vDist;
       varying float vSeed;
 
       void main() {
-        vec2 p = gl_PointCoord;
+        // Centered coordinates: (-0.5 to 0.5)
+        vec2 p = gl_PointCoord - vec2(0.5);
 
-        // Horizontal distance from center axis
-        float dx = abs(p.x - 0.5) * 2.0;
+        // Gentle organic tilt based on particle seed and time
+        float angle = sin(uTime * 0.7 + vSeed * 6.28) * 0.12 + (vSeed - 0.5) * 0.22;
+        float cosA = cos(angle);
+        float sinA = sin(angle);
+        vec2 pRot = vec2(p.x * cosA - p.y * sinA, p.x * sinA + p.y * cosA);
 
-        // Soft teardrop width profile: narrow at top, round bead at bottom
-        float widthProfile = mix(0.14, 0.94, smoothstep(0.05, 0.88, p.y));
-        float normDistX = dx / max(widthProfile, 0.05);
+        // Elongated diamond rhombus crystal boundary:
+        // Slender vertical aspect: horizontal factor 2.6, vertical factor 1.15
+        float diamondDist = abs(pRot.x) * 2.6 + abs(pRot.y) * 1.15;
+        if (diamondDist > 0.54) discard;
 
-        // Rounded droplet head at the bottom
-        float beadDist = length(vec2(dx * 0.85, max(0.0, p.y - 0.85) * 5.0));
-        if (normDistX > 1.0 || beadDist > 1.0 || p.y < 0.03) discard;
+        // Faceted crystal bevel lines (subtle diagonal and vertical refraction seams)
+        float centerRidge = abs(pRot.x) * 2.6;
+        float diagFacet = abs(abs(pRot.x) * 2.6 - abs(pRot.y) * 1.15);
+        float facetSeam = min(centerRidge, diagFacet);
+        float facetGlow = smoothstep(0.06, 0.0, facetSeam) * 0.35;
 
-        // Soft core along center without harsh burning highlights
-        float core = max(0.0, 1.0 - normDistX * 2.0);
-        // Linear soft vertical gradient (low contrast, no harsh exponential cutoff)
-        float intensity = mix(0.15, 0.85, p.y);
+        // Soft frosted crystal edge & glowing gem core
+        float edgeSoftness = smoothstep(0.54, 0.38, diamondDist);
+        float gemCore = max(0.0, 1.0 - diamondDist * 1.85);
 
-        // Low-contrast, muted chromatic blend
-        vec3 col = mix(uColorTail, uColorHead, intensity);
-        col += uColorGlow * core * 0.35; // gentle subtle glow, no blinding flare
+        // Harmonic low-contrast color blend
+        vec3 col = mix(uColorTail, uColorHead, gemCore * 0.75 + 0.25);
+        col += uColorGlow * (facetGlow + gemCore * 0.3);
 
-        // Low-contrast, soft translucent alpha
-        float alpha = (1.0 - normDistX) * intensity * vProps.z * 0.65;
+        // Subtle, elegant translucent alpha
+        float alpha = edgeSoftness * (0.32 + gemCore * 0.48) * vProps.z * 0.7;
         gl_FragColor = vec4(col * alpha, alpha);
       }
     `;

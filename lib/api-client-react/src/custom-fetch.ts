@@ -307,6 +307,10 @@ async function parseSuccessBody(
       return parseJsonBody(response, requestInfo);
 
     case "text": {
+      const mediaType = getMediaType(response.headers);
+      if (mediaType && mediaType.includes("text/html") && requestInfo.url.includes("/api/")) {
+        throw new ApiError(response, "Server returned HTML rather than JSON", requestInfo);
+      }
       const text = await response.text();
       return text === "" ? null : text;
     }

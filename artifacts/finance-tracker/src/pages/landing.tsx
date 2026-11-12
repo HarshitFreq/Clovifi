@@ -29,13 +29,17 @@ export default function Landing() {
     return () => unsub();
   }, []);
 
+  const validUser = (user && typeof user === "object" && typeof (user as any).username === "string")
+    ? (user as { username: string })
+    : null;
+
   const isAuthenticated = Boolean(
-    firebaseUser || (user && user.username && user.username !== "demouser")
+    firebaseUser || (validUser && validUser.username !== "demouser")
   );
   const activeName = firebaseUser
     ? firebaseUser.displayName || firebaseUser.email?.split("@")[0]
-    : user && user.username !== "demouser"
-    ? user.username
+    : validUser && validUser.username !== "demouser"
+    ? validUser.username
     : null;
 
   const openAuth = (mode: "signin" | "signup") => {

@@ -228,7 +228,7 @@ export default function Dashboard() {
   const spendingDays = daysRange.map((day) => {
     const formattedDate = format(day, "yyyy-MM-dd");
     const txsOnDay = Array.isArray(heatmapTransactions)
-      ? heatmapTransactions.filter((t) => t.date.slice(0, 10) === formattedDate)
+      ? heatmapTransactions.filter((t) => (t && typeof t.date === "string" ? t.date.slice(0, 10) : "") === formattedDate)
       : [];
     const totalSpend = txsOnDay.reduce((sum, t) => sum + Math.abs(t.amount), 0);
     return { date: day, totalSpend };

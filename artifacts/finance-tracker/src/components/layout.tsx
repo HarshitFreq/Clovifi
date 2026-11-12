@@ -49,7 +49,15 @@ export default function Layout({ children }: { children: ReactNode }) {
     return () => unsub();
   }, []);
 
-  const activeUser = user || { username: firebaseUser?.displayName || firebaseUser?.email?.split("@")[0] || "demouser" };
+  const validUser = (user && typeof user === "object" && typeof (user as any).username === "string")
+    ? (user as { username: string })
+    : null;
+
+  const currentUsername = firebaseUser
+    ? (firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User")
+    : (validUser?.username || "demouser");
+
+  const activeUser = { username: currentUsername };
 
   return (
     <div
@@ -219,7 +227,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 {firebaseUser?.photoURL ? (
                   <img src={firebaseUser.photoURL} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  activeUser.username.slice(0, 2)
+                  (activeUser.username || "CL").slice(0, 2)
                 )}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>

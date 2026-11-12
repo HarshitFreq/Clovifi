@@ -193,21 +193,47 @@ export default function Landing() {
         >
           {/* Brand Heading */}
           <h1
-            className="brand-title"
             style={{
-              fontSize: "4.2rem",
-              fontWeight: 900,
-              fontFamily: "'Comfortaa', 'Century Gothic', 'Quicksand', 'Trebuchet MS', sans-serif",
-              letterSpacing: "-0.035em",
-              lineHeight: 1,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
               margin: 0,
-              background: "linear-gradient(180deg, #ffffff 20%, #bbf7d0 70%, #4ade80 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 35px rgba(74, 222, 128, 0.4))",
+              lineHeight: 1,
             }}
           >
-            Clovifi
+            <span
+              style={{
+                fontSize: "3.4rem",
+                lineHeight: 1,
+                display: "inline-block",
+                filter: "drop-shadow(0 4px 16px rgba(74, 222, 128, 0.55)) drop-shadow(0 0 28px rgba(34, 197, 94, 0.4))",
+                userSelect: "none",
+                WebkitTextFillColor: "initial",
+                transform: "translateY(-1px)",
+              }}
+              role="img"
+              aria-label="3-petal clover"
+            >
+              ☘️
+            </span>
+            <span
+              className="brand-title"
+              style={{
+                fontSize: "4.2rem",
+                fontWeight: 900,
+                fontFamily: "'Comfortaa', 'Century Gothic', 'Quicksand', 'Trebuchet MS', sans-serif",
+                letterSpacing: "-0.035em",
+                lineHeight: 1,
+                margin: 0,
+                background: "linear-gradient(180deg, #ffffff 20%, #bbf7d0 70%, #4ade80 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 35px rgba(74, 222, 128, 0.4))",
+              }}
+            >
+              Clovifi
+            </span>
           </h1>
 
           {/* Subtitle */}

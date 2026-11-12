@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   Volume2,
   VolumeX,
-  Eye,
 } from "lucide-react";
 import { useSoundEffects } from "@/lib/sound";
 import { useGetMe } from "@workspace/api-client-react";
@@ -23,7 +22,6 @@ export default function Landing() {
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
-  const [zenMode, setZenMode] = useState(false); // Hide UI for full screensaver experience
 
   useEffect(() => {
     if (!auth) return;
@@ -62,9 +60,6 @@ export default function Landing() {
         background: "radial-gradient(circle at 50% 45%, #0d3816 0%, #061c0b 45%, #020a04 100%)",
         userSelect: "none",
       }}
-      onClick={() => {
-        if (zenMode) setZenMode(false);
-      }}
     >
       {/* ── Subtle Atmospheric Ambient Orbs (Soft, Low-Contrast) ── */}
       <div
@@ -94,23 +89,22 @@ export default function Landing() {
         }}
       />
 
-      {/* ── 3D Interactive Particle Visualizer Background (Inspired by 3d_Portfolio) ── */}
+      {/* ── 3D Interactive Connected Dots Visualizer ── */}
       <Clovifi3DVisualizer />
 
       {/* ── Minimal Top-Right Bar ── */}
-      {!zenMode && (
-        <header
-          style={{
-            position: "fixed",
-            top: "1.25rem",
-            right: "1.5rem",
-            zIndex: 30,
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            animation: "fadeIn 0.3s ease",
-          }}
-        >
+      <header
+        style={{
+          position: "fixed",
+          top: "1.25rem",
+          right: "1.5rem",
+          zIndex: 30,
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          animation: "fadeIn 0.3s ease",
+        }}
+      >
           {isAuthenticated ? (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div
@@ -173,24 +167,22 @@ export default function Landing() {
             </div>
           )}
         </header>
-      )}
 
       {/* ── Centered Minimal Hero ── */}
-      {!zenMode && (
-        <div
-          style={{
-            position: "relative",
-            zIndex: 10,
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "12px",
-            maxWidth: "420px",
-            width: "100%",
-            animation: "fadeIn 0.3s ease",
-          }}
-        >
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "12px",
+          maxWidth: "420px",
+          width: "100%",
+          animation: "fadeIn 0.3s ease",
+        }}
+      >
           {/* Brand Heading */}
           <h1
             style={{
@@ -363,18 +355,15 @@ export default function Landing() {
             </div>
           )}
         </div>
-      )}
 
-      {/* ── Discreet Bottom Controls (Sound Toggle & Zen Mode) ── */}
+      {/* ── Discreet Bottom Controls (Sound Toggle) ── */}
       <footer
         style={{
           position: "fixed",
           bottom: "1rem",
           left: "1.5rem",
-          right: "1.5rem",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
           zIndex: 25,
           pointerEvents: "none",
         }}
@@ -403,32 +392,6 @@ export default function Landing() {
         >
           {soundEnabled ? <Volume2 size={13} style={{ color: "#4ade80" }} /> : <VolumeX size={13} />}
           <span>{soundEnabled ? "Audio On" : "Muted"}</span>
-        </button>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setZenMode(!zenMode);
-            playClick();
-          }}
-          className="toolbar-btn"
-          style={{
-            pointerEvents: "auto",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-            padding: "5px 9px",
-            borderRadius: "4px",
-            fontSize: "0.7rem",
-            color: "rgba(255, 255, 255, 0.65)",
-            background: "rgba(0, 0, 0, 0.35)",
-            backdropFilter: "blur(6px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          }}
-          title={zenMode ? "Exit Screensaver View" : "Zen Screensaver View (Hide UI)"}
-        >
-          <Eye size={13} />
-          <span>{zenMode ? "Show UI" : "Screensaver"}</span>
         </button>
       </footer>
 

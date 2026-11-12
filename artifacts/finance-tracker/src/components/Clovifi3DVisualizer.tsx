@@ -14,30 +14,6 @@ interface Node3D {
   pulseSpeed: number;
 }
 
-interface Spark {
-  x: number;
-  y: number;
-  z: number;
-  vx: number;
-  vy: number;
-  vz: number;
-  alpha: number;
-  decay: number;
-  size: number;
-  color: string;
-  trail: { x: number; y: number; alpha: number }[];
-}
-
-interface Rocket {
-  x: number;
-  y: number;
-  z: number;
-  vy: number;
-  targetY: number;
-  color: string;
-  trail: { x: number; y: number; alpha: number }[];
-}
-
 export default function Clovifi3DVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -85,12 +61,12 @@ export default function Clovifi3DVisualizer() {
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerleave", handlePointerLeave, { passive: true });
 
-    // --- 1. Connected Dots Constellation Nodes ---
-    // 130 3D nodes drifting in space
-    const NODE_COUNT = 130;
+    // --- Connected Dots Constellation Nodes ---
+    // 150 3D nodes drifting smoothly in space
+    const NODE_COUNT = 150;
     const BOUND_X = width * 0.55;
     const BOUND_Y = height * 0.55;
-    const BOUND_Z = 320;
+    const BOUND_Z = 340;
     const FOV = 580; // Perspective distance
 
     // Clovifi themed emerald, mint, cyan, and starlight white palette
@@ -119,87 +95,14 @@ export default function Clovifi3DVisualizer() {
       });
     }
 
-    // --- 2. Fireworks System (Classic macOS / iTunes Visualizer style) ---
-    const sparks: Spark[] = [];
-    const rockets: Rocket[] = [];
-
-    const sparkPalette = [
-      "#4ade80", // Emerald
-      "#6ee7b7", // Mint
-      "#38bdf8", // Cyan
-      "#fef08a", // Warm Star Gold
-      "#ffffff", // White Sparkle
-    ];
-
-    const createFireworkBurst = (originX: number, originY: number, originZ = 0, count = 45) => {
-      const baseColor = sparkPalette[Math.floor(Math.random() * sparkPalette.length)];
-      for (let i = 0; i < count; i++) {
-        // Spherical distribution
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(Math.random() * 2 - 1);
-        const speed = 2.0 + Math.random() * 4.8;
-
-        const vx = Math.sin(phi) * Math.cos(theta) * speed;
-        const vy = Math.sin(phi) * Math.sin(theta) * speed * 0.85;
-        const vz = Math.cos(phi) * speed * 0.7;
-
-        sparks.push({
-          x: originX,
-          y: originY,
-          z: originZ,
-          vx,
-          vy,
-          vz,
-          alpha: 1.0,
-          decay: 0.012 + Math.random() * 0.014,
-          size: 1.4 + Math.random() * 2.0,
-          color: Math.random() < 0.4 ? "#ffffff" : baseColor,
-          trail: [],
-        });
-      }
-    };
-
-    // Launch ambient rocket
-    const launchAmbientRocket = () => {
-      const rx = (Math.random() - 0.5) * (width * 0.7);
-      const rz = (Math.random() - 0.5) * 200;
-      rockets.push({
-        x: rx,
-        y: height * 0.55 + 50,
-        z: rz,
-        vy: -5.5 - Math.random() * 3.5,
-        targetY: -height * 0.35 + Math.random() * (height * 0.4),
-        color: sparkPalette[Math.floor(Math.random() * sparkPalette.length)],
-        trail: [],
-      });
-    };
-
-    // User Interactive Click: Spawn Firework at cursor
-    const handlePointerDown = (e: MouseEvent) => {
-      // Don't intercept clicks on buttons, links, inputs
-      if ((e.target as HTMLElement)?.closest("button, a, input, select, textarea")) {
-        return;
-      }
-      const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left - width * 0.5;
-      const clickY = e.clientY - rect.top - height * 0.5;
-      createFireworkBurst(clickX, clickY, 0, 50);
-    };
-    window.addEventListener("pointerdown", handlePointerDown);
-
-    // Periodic ambient fireworks timer (every 2.8 - 4.5s)
-    let lastRocketTime = performance.now();
-    let nextRocketDelay = 2200;
-
     // --- Main Animation Loop ---
     let animId: number;
     let time = 0;
 
-    const render = (now: number) => {
+    const render = () => {
       animId = requestAnimationFrame(render);
       time += 0.016;
 
-      // Clear with soft alpha trail for pyrotechnic persistence
       ctx.clearRect(0, 0, width, height);
 
       // Smooth mouse lerping
@@ -281,7 +184,7 @@ export default function Clovifi3DVisualizer() {
       ctx.globalCompositeOperation = "lighter";
 
       // ── 2. Draw Constellation Connection Lines ──
-      const MAX_DIST_3D = 135;
+      const MAX_DIST_3D = 145;
       const MAX_DIST_SQ = MAX_DIST_3D * MAX_DIST_3D;
 
       for (let i = 0; i < projectedNodes.length; i++) {
@@ -299,7 +202,7 @@ export default function Clovifi3DVisualizer() {
 
           if (distSq < MAX_DIST_SQ) {
             const dist = Math.sqrt(distSq);
-            const lineAlpha = (1 - dist / MAX_DIST_3D) * 0.38 * Math.min(p1.scale, p2.scale);
+            const lineAlpha = (1 - dist / MAX_DIST_3D) * 0.40 * Math.min(p1.scale, p2.scale);
 
             if (lineAlpha > 0.015) {
               ctx.beginPath();
@@ -317,7 +220,7 @@ export default function Clovifi3DVisualizer() {
           const mdx = p1.sx - mouse.x;
           const mdy = p1.sy - mouse.y;
           const mouseDist = Math.sqrt(mdx * mdx + mdy * mdy);
-          const MOUSE_RADIUS = 165;
+          const MOUSE_RADIUS = 175;
 
           if (mouseDist < MOUSE_RADIUS) {
             const mouseAlpha = (1 - mouseDist / MOUSE_RADIUS) * 0.65;
@@ -354,118 +257,6 @@ export default function Clovifi3DVisualizer() {
         ctx.fill();
       }
 
-      // ── 4. Ambient Rocket Launcher ──
-      if (now - lastRocketTime > nextRocketDelay) {
-        lastRocketTime = now;
-        nextRocketDelay = 2600 + Math.random() * 2200;
-        launchAmbientRocket();
-      }
-
-      // ── 5. Update & Draw Rockets ──
-      for (let i = rockets.length - 1; i >= 0; i--) {
-        const r = rockets[i];
-        r.y += r.vy;
-        r.vy *= 0.985; // Slow down near apex
-
-        const proj = project(r.x, r.y, r.z);
-        if (proj.visible) {
-          // Add trail
-          r.trail.push({ x: proj.x, y: proj.y, alpha: 0.8 });
-          if (r.trail.length > 8) r.trail.shift();
-
-          // Render trail
-          for (let t = 0; t < r.trail.length; t++) {
-            const pt = r.trail[t];
-            pt.alpha *= 0.82;
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 1.5 * proj.scale, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(254, 240, 138, ${pt.alpha})`;
-            ctx.fill();
-          }
-
-          // Rocket head spark
-          ctx.beginPath();
-          ctx.arc(proj.x, proj.y, 2.8 * proj.scale, 0, Math.PI * 2);
-          ctx.fillStyle = "#ffffff";
-          ctx.fill();
-        }
-
-        // Apex reached: EXPLODE into fireworks burst!
-        if (r.y <= r.targetY || r.vy > -1.0) {
-          createFireworkBurst(r.x, r.y, r.z, 38 + Math.floor(Math.random() * 18));
-          rockets.splice(i, 1);
-        }
-      }
-
-      // ── 6. Update & Draw Fireworks Sparks ──
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i];
-
-        // Physics: velocity, gravity, drag
-        s.x += s.vx;
-        s.y += s.vy;
-        s.z += s.vz;
-        s.vy += 0.045; // Gentle downward gravity
-        s.vx *= 0.978;
-        s.vy *= 0.978;
-        s.vz *= 0.978;
-
-        s.alpha -= s.decay;
-
-        if (s.alpha <= 0.02) {
-          sparks.splice(i, 1);
-          continue;
-        }
-
-        const proj = project(s.x, s.y, s.z);
-        if (proj.visible) {
-          // Trail
-          s.trail.push({ x: proj.x, y: proj.y, alpha: s.alpha });
-          if (s.trail.length > 5) s.trail.shift();
-
-          // Spark trail
-          for (let t = 0; t < s.trail.length; t++) {
-            const pt = s.trail[t];
-            pt.alpha *= 0.84;
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, Math.max(0.8, s.size * 0.6 * proj.scale), 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(167, 243, 208, ${pt.alpha * 0.4})`;
-            ctx.fill();
-          }
-
-          // Spark core
-          const sparkRadius = Math.max(1.0, s.size * proj.scale);
-          ctx.beginPath();
-          ctx.arc(proj.x, proj.y, sparkRadius * 2.2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(74, 222, 128, ${s.alpha * 0.45})`;
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.arc(proj.x, proj.y, sparkRadius, 0, Math.PI * 2);
-          ctx.fillStyle = s.color;
-          ctx.fill();
-
-          // Connect nearby sparks to each other for pyrotechnic constellation blossoms
-          if (i > 0 && i % 3 === 0) {
-            const nextSpark = sparks[i - 1];
-            const dx = s.x - nextSpark.x;
-            const dy = s.y - nextSpark.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 45) {
-              const pNext = project(nextSpark.x, nextSpark.y, nextSpark.z);
-              if (pNext.visible) {
-                ctx.beginPath();
-                ctx.moveTo(proj.x, proj.y);
-                ctx.lineTo(pNext.x, pNext.y);
-                ctx.strokeStyle = `rgba(254, 240, 138, ${(s.alpha * 0.35).toFixed(3)})`;
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-              }
-            }
-          }
-        }
-      }
-
       // Reset composite operation
       ctx.globalCompositeOperation = "source-over";
     };
@@ -478,7 +269,6 @@ export default function Clovifi3DVisualizer() {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerleave", handlePointerLeave);
-      window.removeEventListener("pointerdown", handlePointerDown);
     };
   }, []);
 

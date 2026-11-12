@@ -18,6 +18,21 @@ Explore the live application deployed on Firebase Hosting:
 
 ---
 
+## 🍀 About Clovifi
+
+**Clovifi** is an open-source, privacy-first personal finance management platform crafted with the tactile, optimistic visual language of the **Frutiger Aero** era (circa 2004–2013).
+
+### Why Clovifi?
+Most modern personal finance tools suffer from two extremes: they are either sterile, monochrome spreadsheets or subscription-gated trackers cluttered with third-party tracking, affiliate credit card ads, and complex onboarding funnels.
+
+Clovifi was engineered to provide a fast, beautiful, and private alternative:
+- **Zero-Friction & Offline-First**: Your financial records belong to you. Clovifi works immediately in **Guest Mode** powered by a client-side local ledger engine (`localStorage`). You can track accounts, transactions, and recurring subscriptions completely offline with zero setup and no server dependencies.
+- **Seamless Cloud Backup**: For cross-device continuity, sign in with **Google 1-Click** or Email via **Firebase Authentication** and sync with isolated PostgreSQL ledger partitions.
+- **Frutiger Aero Aesthetics**: Bringing joy back to personal finance with frosted glassmorphism, glossy organic emerald accents, interactive canvas screensaver visualizers, and synthesized ambient water micro-interactions.
+- **Executive Financial Clarity**: Live calculation of your net worth, savings rate, recurring bills, category spending breakdowns, and live market quotes without nested menu clutter.
+
+---
+
 ## ✨ Key Features
 
 ### ☘️ Frutiger Aero Aesthetics & Experience

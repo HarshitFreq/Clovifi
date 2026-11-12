@@ -3,7 +3,8 @@ import { useCurrency, CURRENCIES } from "@/lib/currency";
 import { useSoundEffects } from "@/lib/sound";
 import {
   Check, Volume2, VolumeX, Trash2, Database, Sliders,
-  User, RefreshCw, AlertTriangle, ShieldCheck, LogIn, LogOut
+  User, RefreshCw, AlertTriangle, ShieldCheck, LogIn, LogOut,
+  Info, ExternalLink, Heart
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
@@ -497,6 +498,104 @@ export default function Settings() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. About Clovifi ── */}
+      <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
+        <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <Info size={13} style={{ color: "var(--accent-gradient-1)" }} />
+            <span>About Clovifi</span>
+          </div>
+          <span
+            style={{
+              fontSize: "0.65rem",
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: "10px",
+              background: "rgba(74, 222, 128, 0.15)",
+              color: "#4ade80",
+              border: "1px solid rgba(74, 222, 128, 0.3)",
+              letterSpacing: "0.02em",
+            }}
+          >
+            v1.2.0 • Aero Edition
+          </span>
+        </div>
+
+        <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+            <div
+              style={{
+                fontSize: "2rem",
+                lineHeight: 1,
+                padding: "8px",
+                borderRadius: "10px",
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid var(--panel-border)",
+                filter: "drop-shadow(0 2px 8px rgba(74, 222, 128, 0.3))",
+                flexShrink: 0,
+              }}
+            >
+              ☘️
+            </div>
+            <div>
+              <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>Clovifi Personal Finance</span>
+              </div>
+              <p style={{ margin: "4px 0 0 0", fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.65)", lineHeight: 1.5 }}>
+                An offline-first, privacy-respecting financial tracker crafted with nostalgic Frutiger Aero aesthetics, interactive visualizers, real-time market data, and dual-layer local &amp; cloud ledger storage.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ height: "1px", background: "var(--panel-border)", opacity: 0.5 }} />
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px", fontSize: "0.7rem" }}>
+            <div style={{ color: "rgba(255,255,255,0.5)" }}>
+              Architecture: <span style={{ color: "#fff", fontWeight: 500 }}>Dual Engine (Local + Cloud)</span>
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.5)" }}>
+              License: <span style={{ color: "#fff", fontWeight: 500 }}>Open Source (MIT)</span>
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.5)" }}>
+              Cloud &amp; Auth: <span style={{ color: "#fff", fontWeight: 500 }}>Firebase &amp; PostgreSQL</span>
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.5)" }}>
+              Author: <span style={{ color: "#fff", fontWeight: 500 }}>Harshit</span>
+            </div>
+          </div>
+
+          <div style={{ height: "1px", background: "var(--panel-border)", opacity: 0.5 }} />
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+            <a
+              href="https://github.com/HarshitFreq/Clovifi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="toolbar-btn"
+              style={{
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "6px 12px",
+                borderRadius: "4px",
+                fontSize: "0.72rem",
+                color: "rgba(255,255,255,0.85)",
+              }}
+            >
+              <span>GitHub Repository</span>
+              <ExternalLink size={11} style={{ opacity: 0.7 }} />
+            </a>
+
+            <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: "4px" }}>
+              <span>Crafted with</span>
+              <Heart size={10} style={{ color: "#4ade80", fill: "#4ade80" }} />
+              <span>for financial sovereignty</span>
+            </div>
           </div>
         </div>
       </div>

@@ -34,7 +34,7 @@ interface CurrencyContextValue {
 const CurrencyContext = createContext<CurrencyContextValue>({
   currency: "INR",
   setCurrency: () => {},
-  formatAmount: (n) => `₹${n.toFixed(2)}`,
+  formatAmount: (n) => `₹${(Number(n) || 0).toFixed(2)}`,
 });
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
@@ -48,12 +48,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   }
 
   function formatAmount(amount: number): string {
+    const num = typeof amount === "number" && !isNaN(amount) ? amount : (Number(amount) || 0);
     return new Intl.NumberFormat(undefined, {
       style: "currency",
       currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(num);
   }
 
   return (

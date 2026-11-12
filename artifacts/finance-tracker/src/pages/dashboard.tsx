@@ -1077,7 +1077,8 @@ export default function Dashboard() {
                   }}
                 >
                   {spendingData.map((entry, i) => {
-                    const pct = totalCategorySpend > 0 ? ((entry.value / totalCategorySpend) * 100).toFixed(1) : "0.0";
+                    const val = Number(entry.value) || 0;
+                    const pct = totalCategorySpend > 0 ? ((val / totalCategorySpend) * 100).toFixed(1) : "0.0";
                     return (
                       <div key={i} style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.7rem" }}>

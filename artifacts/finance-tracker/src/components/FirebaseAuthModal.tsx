@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "wouter";
 import {
   auth,
   googleProvider,
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function FirebaseAuthModal({ open, onClose, initialMode = "signin", onSuccess }: Props) {
+  const [, setLocation] = useLocation();
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [tab, setTab] = useState<"google" | "email">("email");
   const [isRegister, setIsRegister] = useState(initialMode === "signup");
@@ -86,7 +88,11 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
         description: `Welcome back, ${user.displayName || user.email}! Your personal ledger is ready.`,
       });
       onClose();
-      if (onSuccess) onSuccess();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setLocation("/dashboard");
+      }
     } catch (err: any) {
       console.error("Google sign in error:", err);
       const code = err?.code || "";
@@ -213,7 +219,11 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
         description: `Welcome to your personal financial ledger!`,
       });
       onClose();
-      if (onSuccess) onSuccess();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setLocation("/dashboard");
+      }
     } catch (err: any) {
       console.error("Auth error:", err);
       const rawMessage = (err?.message || "").toString();
@@ -586,18 +596,29 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
           <div style={{ borderTop: "1px solid var(--panel-border)", paddingTop: "10px", display: "flex", justifyContent: "center" }}>
             <button
               onClick={() => {
-                playClick();
+                playSuccess();
                 onClose();
+                setLocation("/dashboard");
+                if (onSuccess) onSuccess();
               }}
               style={{
-                background: "none",
-                border: "none",
-                color: "rgba(255, 255, 255, 0.5)",
-                fontSize: "0.72rem",
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                color: "var(--accent-gradient-1)",
+                borderRadius: "4px",
+                fontSize: "0.78rem",
+                fontWeight: 600,
                 cursor: "pointer",
+                padding: "6px 14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                transition: "all 0.15s ease",
               }}
+              className="hover:bg-white/10"
             >
-              Continue as Guest
+              <span>Explore Demo as Guest</span>
+              <span>→</span>
             </button>
           </div>
         </div>

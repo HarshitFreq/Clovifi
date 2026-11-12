@@ -404,21 +404,35 @@ export default function Landing() {
                 </button>
               </div>
 
-              <Link href="/dashboard" onClick={playSuccess} style={{ textDecoration: "none", marginTop: "4px" }}>
-                <span
-                  style={{
-                    fontSize: "0.78rem",
-                    color: "rgba(255, 255, 255, 0.45)",
-                    cursor: "pointer",
-                    transition: "color 0.15s ease",
-                    display: "inline-block",
-                    padding: "6px 10px",
-                  }}
-                  className="hover:text-white"
-                >
-                  Explore demo as guest →
-                </span>
-              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  playSuccess();
+                  setLocation("/dashboard");
+                }}
+                className="toolbar-btn"
+                style={{
+                  width: "100%",
+                  minHeight: "42px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "7px",
+                  padding: "9px 16px",
+                  borderRadius: "6px",
+                  fontSize: "0.84rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "1px dashed rgba(255, 255, 255, 0.28)",
+                  color: "rgba(255, 255, 255, 0.85)",
+                  marginTop: "4px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>Explore Demo / Guest Mode</span>
+                <ArrowRight size={14} style={{ color: "var(--accent-gradient-1)" }} />
+              </button>
             </div>
           )}
         </div>

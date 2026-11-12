@@ -38,7 +38,15 @@ export default function StockTickerWidget() {
       if (res.ok && contentType.includes("application/json")) {
         const json = await res.json().catch(() => null);
         if (json && Array.isArray(json.data) && json.data.length > 0) {
-          setStocks(json.data);
+          const normalized: StockQuote[] = json.data.map((item: any) => ({
+            symbol: String(item.symbol || ""),
+            name: String(item.name || item.symbol || ""),
+            price: Number(item.price) || 0,
+            change: Number(item.change) || 0,
+            percent: Number(item.percent ?? item.changePercent) || 0,
+            isUp: item.isUp !== undefined ? Boolean(item.isUp) : (Number(item.change) >= 0),
+          }));
+          setStocks(normalized);
           const d = new Date();
           setLastUpdated(d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
         }
@@ -220,7 +228,7 @@ export default function StockTickerWidget() {
                         lineHeight: 1.1,
                       }}
                     >
-                      ${s.price.toFixed(2)}
+                      ${(Number(s.price) || 0).toFixed(2)}
                     </div>
                     <div
                       style={{
@@ -237,7 +245,7 @@ export default function StockTickerWidget() {
                       <span>{isUp ? "▲" : "▼"}</span>
                       <span>
                         {isUp ? "+" : ""}
-                        {s.percent.toFixed(2)}%
+                        {(Number(s.percent) || 0).toFixed(2)}%
                       </span>
                     </div>
                   </div>

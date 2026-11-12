@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   ArrowRight,
@@ -15,28 +15,12 @@ import { auth, onAuthStateChanged, type FirebaseUser } from "@/lib/firebase";
 import FirebaseAuthModal from "@/components/FirebaseAuthModal";
 import Clovifi3DVisualizer from "@/components/Clovifi3DVisualizer";
 
-const BOUNCE_COLORS = [
-  "#4ade80", // Emerald
-  "#38bdf8", // Sky Blue
-  "#c084fc", // Purple
-  "#fbbf24", // Amber
-  "#f87171", // Coral Red
-  "#34d399", // Mint Green
-];
-
-interface TrailPoint {
-  x: number;
-  y: number;
-  color: string;
-}
-
 export default function Landing() {
   const [, setLocation] = useLocation();
-  const { playClick, playSuccess, soundEnabled, setSoundEnabled, spawnBubble } = useSoundEffects();
+  const { playClick, playSuccess, soundEnabled, setSoundEnabled } = useSoundEffects();
   const { data: user } = useGetMe();
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
 
-  const [colorIndex, setColorIndex] = useState(0);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
   const [zenMode, setZenMode] = useState(false); // Hide UI for full screensaver experience
@@ -55,104 +39,6 @@ export default function Landing() {
     : user && user.username !== "demouser"
     ? user.username
     : null;
-
-  // ── DVD Clover Visualizer Physics with Motion Trail ──
-  const posRef = useRef({ x: 120, y: 160, vx: 2.5, vy: 2.0 });
-  const [pos, setPos] = useState({ x: 120, y: 160 });
-  const [trail, setTrail] = useState<TrailPoint[]>([]);
-  const trailRef = useRef<TrailPoint[]>([]);
-  const animFrameRef = useRef<number | null>(null);
-  const cloverSize = 64; // px
-
-  useEffect(() => {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 2.4;
-    posRef.current.vx = Math.cos(angle) * speed || 2.2;
-    posRef.current.vy = Math.sin(angle) * speed || 1.8;
-
-    let frameCount = 0;
-
-    const updatePhysics = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      let { x, y, vx, vy } = posRef.current;
-
-      x += vx;
-      y += vy;
-
-      let bounced = false;
-
-      // Bounce horizontal walls
-      if (x <= 12) {
-        x = 12;
-        vx = Math.abs(vx);
-        bounced = true;
-      } else if (x + cloverSize >= w - 12) {
-        x = w - cloverSize - 12;
-        vx = -Math.abs(vx);
-        bounced = true;
-      }
-
-      // Bounce vertical walls
-      if (y <= 12) {
-        y = 12;
-        vy = Math.abs(vy);
-        bounced = true;
-      } else if (y + cloverSize >= h - 12) {
-        y = h - cloverSize - 12;
-        vy = -Math.abs(vy);
-        bounced = true;
-      }
-
-      if (bounced) {
-        setColorIndex((c) => (c + 1) % BOUNCE_COLORS.length);
-        try {
-          spawnBubble(x + cloverSize / 2, y + cloverSize / 2);
-        } catch {
-          // Safe fallback if audio context not ready
-        }
-      }
-
-      posRef.current = { x, y, vx, vy };
-      setPos({ x, y });
-
-      // Record motion trail every 3 frames (keep last 3 points)
-      frameCount++;
-      if (frameCount % 3 === 0) {
-        const nextTrail = [
-          { x, y, color: BOUNCE_COLORS[colorIndex] },
-          ...trailRef.current.slice(0, 2),
-        ];
-        trailRef.current = nextTrail;
-        setTrail(nextTrail);
-      }
-
-      animFrameRef.current = requestAnimationFrame(updatePhysics);
-    };
-
-    animFrameRef.current = requestAnimationFrame(updatePhysics);
-
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
-  }, [colorIndex, spawnBubble]);
-
-  const currentColor = BOUNCE_COLORS[colorIndex];
-
-  const handleCloverClick = () => {
-    playClick();
-    posRef.current.vx *= 1.4;
-    posRef.current.vy *= 1.4;
-    setColorIndex((c) => (c + 1) % BOUNCE_COLORS.length);
-    spawnBubble(pos.x + cloverSize / 2, pos.y + cloverSize / 2);
-    setTimeout(() => {
-      const curSpeed = Math.hypot(posRef.current.vx, posRef.current.vy);
-      if (curSpeed > 3.2) {
-        posRef.current.vx = (posRef.current.vx / curSpeed) * 2.4;
-        posRef.current.vy = (posRef.current.vy / curSpeed) * 2.4;
-      }
-    }, 1200);
-  };
 
   const openAuth = (mode: "signin" | "signup") => {
     playClick();
@@ -208,7 +94,7 @@ export default function Landing() {
         }}
       />
 
-      {/* ── 3D Interactive Clover Knot Particle Visualizer (Inspired by 3d_Portfolio) ── */}
+      {/* ── 3D Interactive Particle Visualizer Background (Inspired by 3d_Portfolio) ── */}
       <Clovifi3DVisualizer />
 
       {/* ── Minimal Top-Right Bar ── */}
@@ -288,60 +174,6 @@ export default function Landing() {
           )}
         </header>
       )}
-
-      {/* ── DVD Screensaver Fading Motion Trail ── */}
-      {trail.map((t, idx) => (
-        <div
-          key={`trail-${idx}`}
-          style={{
-            position: "fixed",
-            left: `${t.x}px`,
-            top: `${t.y}px`,
-            width: `${cloverSize}px`,
-            height: `${cloverSize}px`,
-            fontSize: "48px",
-            lineHeight: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: "none",
-            zIndex: 4,
-            opacity: 0.28 - idx * 0.09,
-            filter: `blur(${idx * 2 + 1}px) drop-shadow(0 0 14px ${t.color})`,
-            transform: `scale(${1 - idx * 0.08})`,
-            transition: "opacity 0.2s ease",
-          }}
-        >
-          ☘️
-        </div>
-      ))}
-
-      {/* ── Bouncing 3-Petal Clover DVD Visualizer ── */}
-      <div
-        onClick={handleCloverClick}
-        title="☘️ DVD Screensaver Clover (Click for boost!)"
-        style={{
-          position: "fixed",
-          left: `${pos.x}px`,
-          top: `${pos.y}px`,
-          width: `${cloverSize}px`,
-          height: `${cloverSize}px`,
-          fontSize: "54px",
-          lineHeight: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          userSelect: "none",
-          zIndex: 6,
-          filter: `drop-shadow(0 0 22px ${currentColor}) drop-shadow(0 0 45px ${currentColor}70)`,
-          transition: "filter 0.3s ease",
-          transform: "translateZ(0)",
-          willChange: "left, top",
-        }}
-      >
-        ☘️
-      </div>
 
       {/* ── Centered Minimal Hero ── */}
       {!zenMode && (

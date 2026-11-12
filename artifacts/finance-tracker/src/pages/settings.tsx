@@ -10,6 +10,7 @@ import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import FirebaseAuthModal from "@/components/FirebaseAuthModal";
 import { auth, onAuthStateChanged, signOut, type FirebaseUser } from "@/lib/firebase";
+import { localLedger } from "@/lib/local-ledger";
 
 const themes = [
   { id: "emerald", name: "Emerald", color: "#66c028" },
@@ -145,14 +146,15 @@ export default function Settings() {
   const handleClearAll = async () => {
     setClearing(true);
     try {
-      const res = await fetch("/api/admin/clear-all", { method: "DELETE" });
-      if (!res.ok) throw new Error("Server returned " + res.status);
+      localLedger.clearAll();
+      await fetch("/api/admin/clear-all", { method: "DELETE" }).catch(() => {});
+      await queryClient.resetQueries();
       await queryClient.invalidateQueries();
       setConfirmClear(false);
       playSuccess();
       toast({
         title: "Ledger Cleared",
-        description: "All transactions and accounts have been reset.",
+        description: "All transactions, accounts, and categories have been removed.",
       });
     } catch (err: any) {
       toast({

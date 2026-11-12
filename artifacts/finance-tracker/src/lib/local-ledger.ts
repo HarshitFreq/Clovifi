@@ -71,6 +71,7 @@ const STORAGE_KEYS = {
   TRANSACTIONS: "clovifi_local_transactions_v2",
   SUBSCRIPTIONS: "clovifi_local_subscriptions_v2",
   USER: "clovifi_local_user_v2",
+  INITIALIZED: "clovifi_local_initialized_v2",
 };
 
 const daysAgo = (n: number): string => {
@@ -238,7 +239,7 @@ class LocalLedgerEngine {
 
   public ensureInitialized(): void {
     if (typeof window === "undefined") return;
-    if (!localStorage.getItem(STORAGE_KEYS.ACCOUNTS)) {
+    if (!localStorage.getItem(STORAGE_KEYS.INITIALIZED)) {
       this.seedDemoData();
     }
   }
@@ -253,6 +254,9 @@ class LocalLedgerEngine {
     this.setItem(STORAGE_KEYS.CATEGORIES, categories);
     this.setItem(STORAGE_KEYS.TRANSACTIONS, transactions);
     this.setItem(STORAGE_KEYS.SUBSCRIPTIONS, subscriptions);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true");
+    }
 
     return {
       accounts: accounts.length,
@@ -265,13 +269,16 @@ class LocalLedgerEngine {
   public clearAll(): void {
     this.setItem(STORAGE_KEYS.TRANSACTIONS, []);
     this.setItem(STORAGE_KEYS.SUBSCRIPTIONS, []);
-    const accounts = this.getAccounts().map((a) => ({ ...a, balance: "0.00" }));
-    this.setItem(STORAGE_KEYS.ACCOUNTS, accounts);
+    this.setItem(STORAGE_KEYS.ACCOUNTS, []);
+    this.setItem(STORAGE_KEYS.CATEGORIES, []);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.INITIALIZED, "true");
+    }
   }
 
   // ── Accounts ─────────────────────────────────────────────────────────────
   public getAccounts(): LocalAccount[] {
-    return this.getItem<LocalAccount[]>(STORAGE_KEYS.ACCOUNTS, DEFAULT_ACCOUNTS);
+    return this.getItem<LocalAccount[]>(STORAGE_KEYS.ACCOUNTS, []);
   }
 
   public createAccount(data: Partial<LocalAccount>): LocalAccount {
@@ -313,7 +320,7 @@ class LocalLedgerEngine {
 
   // ── Categories ───────────────────────────────────────────────────────────
   public getCategories(): LocalCategory[] {
-    return this.getItem<LocalCategory[]>(STORAGE_KEYS.CATEGORIES, DEFAULT_CATEGORIES);
+    return this.getItem<LocalCategory[]>(STORAGE_KEYS.CATEGORIES, []);
   }
 
   public createCategory(data: Partial<LocalCategory>): LocalCategory {
@@ -345,10 +352,6 @@ class LocalLedgerEngine {
   // ── Transactions ─────────────────────────────────────────────────────────
   public getTransactions(params?: { startDate?: string; endDate?: string; type?: string; limit?: number }): LocalTransaction[] {
     let list = this.getItem<LocalTransaction[]>(STORAGE_KEYS.TRANSACTIONS, []);
-    if (list.length === 0) {
-      list = generateDefaultTransactions();
-      this.setItem(STORAGE_KEYS.TRANSACTIONS, list);
-    }
 
     if (params?.type) {
       list = list.filter((t) => t.type === params.type);
@@ -433,12 +436,7 @@ class LocalLedgerEngine {
 
   // ── Subscriptions ────────────────────────────────────────────────────────
   public getSubscriptions(): LocalSubscription[] {
-    let list = this.getItem<LocalSubscription[]>(STORAGE_KEYS.SUBSCRIPTIONS, []);
-    if (list.length === 0) {
-      list = generateDefaultSubscriptions();
-      this.setItem(STORAGE_KEYS.SUBSCRIPTIONS, list);
-    }
-    return list;
+    return this.getItem<LocalSubscription[]>(STORAGE_KEYS.SUBSCRIPTIONS, []);
   }
 
   public createSubscription(data: any): LocalSubscription {

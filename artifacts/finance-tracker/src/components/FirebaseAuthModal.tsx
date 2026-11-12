@@ -72,7 +72,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
     try {
       if (!isFirebaseConfigured) {
         throw new Error(
-          "To enable live Google 1-Click Sign-In, please provide your Firebase Web App credentials (API Key, Project ID, App ID). You can also use the Email/Password tab to create your isolated database immediately!"
+          "Google Sign-In is currently unavailable. Please use the Email & Password tab to sign in or create an account."
         );
       }
       const result = await signInWithPopup(auth, googleProvider);
@@ -82,8 +82,8 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
       await queryClient.invalidateQueries();
       playSuccess();
       toast({
-        title: "Signed In via Firebase",
-        description: `Welcome, ${user.displayName || user.email}! Your private database is loaded.`,
+        title: "Signed In",
+        description: `Welcome back, ${user.displayName || user.email}! Your personal ledger is ready.`,
       });
       onClose();
       if (onSuccess) onSuccess();
@@ -91,7 +91,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
       console.error("Google sign in error:", err);
       if (err?.code === "auth/invalid-api-key" || !isFirebaseConfigured) {
         setError(
-          "Google Sign-In requires your Firebase project credentials in .env (VITE_FIREBASE_API_KEY). You can sign up or sign in using the Email/Password tab right now!"
+          "Google Sign-In is unavailable. Please continue using Email & Password."
         );
       } else {
         setError(err?.message || "Failed to sign in with Google.");
@@ -162,14 +162,14 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
       playSuccess();
       toast({
         title: isRegister ? "Account Created" : "Signed In",
-        description: `Welcome to your private financial workspace!`,
+        description: `Welcome to your personal financial ledger!`,
       });
       onClose();
       if (onSuccess) onSuccess();
     } catch (err: any) {
       console.error("Auth error:", err);
       if (err?.code === "auth/invalid-api-key") {
-        setError("Firebase API key is demo/invalid. Switch to local database login or update .env.");
+        setError("Sign in error. Please try again with email and password.");
       } else {
         setError(err?.message || "Authentication failed.");
       }
@@ -192,7 +192,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
       playSuccess();
       toast({
         title: "Signed Out",
-        description: "Reverted to standard local workspace.",
+        description: "Returned to guest mode.",
       });
       onClose();
     } catch (err: any) {
@@ -242,7 +242,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
         >
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span style={{ fontSize: "16px", lineHeight: 1 }}>☘️</span>
-            <span style={{ fontWeight: 700, fontSize: "0.85rem" }}>Firebase Authentication</span>
+            <span style={{ fontWeight: 700, fontSize: "0.85rem" }}>Account Sign In & Sync</span>
           </div>
           <button
             onClick={() => {
@@ -278,7 +278,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <ShieldCheck size={14} style={{ color: isUserAuthenticated ? "#6ee87a" : "var(--accent-gradient-1)" }} />
               <span>
-                {isUserAuthenticated ? `Active Database: ${activeDisplayName}` : "Workspace: Guest / Demouser"}
+                {isUserAuthenticated ? `Signed In: ${activeDisplayName}` : "Guest Mode"}
               </span>
             </div>
 
@@ -323,7 +323,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
                 color: tab === "google" ? "#fff" : "rgba(255,255,255,0.5)",
               }}
             >
-              Google Auth
+              Google
             </button>
             <button
               onClick={() => {
@@ -350,7 +350,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
             /* Google Sign-in Option */
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "center", padding: "10px 0" }}>
               <div style={{ fontSize: "0.76rem", color: "rgba(255,255,255,0.6)", textAlign: "center", lineHeight: 1.5 }}>
-                Sign in with your Google Account using Firebase Auth to synchronize personal accounts and cloud receipts.
+                Sign in with your Google Account to access and synchronize your personal ledger across all your devices.
               </div>
 
               <button
@@ -451,7 +451,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
                 className="glass-button"
                 style={{ padding: "8px", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 700, marginTop: "4px" }}
               >
-                {loading ? "Processing..." : isRegister ? "Create Account & Database" : "Sign In to Database"}
+                {loading ? "Processing..." : isRegister ? "Create Free Account" : "Sign In"}
               </button>
             </form>
           )}
@@ -475,7 +475,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
             </div>
           )}
 
-          {/* Quick Guest / Demouser option */}
+          {/* Quick Guest option */}
           <div style={{ borderTop: "1px solid var(--panel-border)", paddingTop: "10px", display: "flex", justifyContent: "center" }}>
             <button
               onClick={() => {
@@ -490,7 +490,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
                 cursor: "pointer",
               }}
             >
-              Continue using Local Workspace (demouser)
+              Continue as Guest
             </button>
           </div>
         </div>

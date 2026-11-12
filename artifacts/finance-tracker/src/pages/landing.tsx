@@ -239,7 +239,7 @@ export default function Landing() {
                 }}
               >
                 <ShieldCheck size={14} />
-                <span>Private Database: <strong>{activeName}</strong></span>
+                <span>Personal Account: <strong>{activeName}</strong></span>
               </div>
 
               <Link href="/dashboard" onClick={playSuccess} style={{ textDecoration: "none", width: "100%", maxWidth: "240px" }}>
@@ -331,7 +331,7 @@ export default function Landing() {
                   }}
                   className="hover:text-white"
                 >
-                  Continue as guest to demo workspace →
+                  Explore demo as guest →
                 </span>
               </Link>
             </div>
@@ -373,7 +373,7 @@ export default function Landing() {
             backdropFilter: "blur(6px)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
           }}
-          title={soundEnabled ? "Mute Aero Sound Effects" : "Enable Aero Sound Effects"}
+          title={soundEnabled ? "Mute Sound Effects" : "Enable Sound Effects"}
         >
           {soundEnabled ? <Volume2 size={13} style={{ color: "#4ade80" }} /> : <VolumeX size={13} />}
           <span>{soundEnabled ? "Audio On" : "Muted"}</span>

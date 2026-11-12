@@ -231,7 +231,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   {firebaseUser ? (firebaseUser.displayName || firebaseUser.email?.split("@")[0]) : activeUser.username}
                 </div>
                 <div style={{ fontSize: "0.62rem", color: firebaseUser ? "#6ee87a" : "var(--accent-gradient-1)", opacity: 0.85 }}>
-                  {firebaseUser ? "Firebase Linked" : "Active Workspace"}
+                  {firebaseUser ? "Cloud Synced" : (activeUser.username === "demouser" ? "Guest Mode" : "Personal Vault")}
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             }}
             className="toolbar-btn"
             style={{ padding: "4px 7px", fontSize: "0.64rem", borderRadius: "3px" }}
-            title="Firebase Authentication"
+            title="Account & Cloud Sync"
           >
             {firebaseUser ? <ShieldCheck size={12} style={{ color: "#6ee87a" }} /> : <LogIn size={12} />}
           </button>

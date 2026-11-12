@@ -106,7 +106,7 @@ export default function Dashboard() {
     playSuccess();
     toast({
       title: "Ledger Synchronized",
-      description: "All accounts, balances, and reports refreshed from database.",
+      description: "All accounts, balances, and reports have been refreshed.",
     });
   };
 

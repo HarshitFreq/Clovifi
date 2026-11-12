@@ -634,7 +634,7 @@ button:active, .glass-button:active, .currency-btn:active {
   padding: 8px 14px;
   display: flex;
   align-items: center;
-  justifyContent: space-between;
+  justify-content: space-between;
   user-select: none;
 }
 
@@ -777,7 +777,7 @@ button:active, .glass-button:active, .currency-btn:active {
   padding: 8px 12px;
   display: flex;
   align-items: center;
-  justifyContent: space-between;
+  justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
 }

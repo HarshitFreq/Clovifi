@@ -297,7 +297,7 @@ export default function Settings() {
                 Display Name
               </div>
               <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>
-                Active workspace identity label
+                Personal account username
               </div>
             </div>
 
@@ -337,14 +337,14 @@ export default function Settings() {
 
           <div style={{ height: "1px", background: "var(--panel-border)", opacity: 0.5 }} />
 
-          {/* Firebase Cloud Authentication */}
+          {/* Cloud Account Authentication */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
             <div>
               <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
-                Firebase Cloud Account
+                Cloud Backup & Sync
               </div>
               <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>
-                {firebaseUser ? `Linked: ${firebaseUser.email || firebaseUser.displayName}` : "Sign in with Google or Email via Firebase Auth"}
+                {firebaseUser ? `Synced: ${firebaseUser.email || firebaseUser.displayName}` : "Sign in with Google or Email to backup and sync your ledger"}
               </div>
             </div>
 
@@ -366,9 +366,9 @@ export default function Settings() {
               }}
             >
               {firebaseUser ? (
-                <><ShieldCheck size={12} /> Manage Firebase</>
+                <><ShieldCheck size={12} /> Manage Account</>
               ) : (
-                <><LogIn size={12} /> Sign In with Firebase</>
+                <><LogIn size={12} /> Sign In & Sync</>
               )}
             </button>
           </div>
@@ -385,7 +385,7 @@ export default function Settings() {
       <div className="glass-panel" style={{ borderRadius: "6px", overflow: "hidden" }}>
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <Database size={13} style={{ color: "var(--accent-gradient-1)" }} />
-          <span>Data Management</span>
+          <span>Data & Records</span>
         </div>
 
         <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -396,7 +396,7 @@ export default function Settings() {
                 Reset to Sample Data
               </div>
               <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>
-                Re-seeds the ledger with clean demonstration records
+                Loads sample transactions and categories to explore features
               </div>
             </div>
 

@@ -1,53 +1,115 @@
 # ☘️ Clovifi — Personal Finance Tracker
 
-A Frutiger Aero–inspired personal finance tracker featuring real-time stock ticker feeds, interactive DVD screensaver visualizer, PostgreSQL ledger partitioning, and Firebase Authentication & Hosting.
+A modern, Frutiger Aero–inspired personal finance management platform featuring interactive visualizers, real-time market feeds, dual-ledger architecture (Local Storage + Cloud PostgreSQL), and Firebase Authentication & Hosting.
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Frontend](https://img.shields.io/badge/frontend-React%2019%20%7C%20Vite-brightgreen.svg)]()
-[![Backend](https://img.shields.io/badge/backend-Express%20%7C%20PostgreSQL-blue.svg)]()
-[![Firebase](https://img.shields.io/badge/firebase-Auth%20%7C%20Hosting-orange.svg)]()
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg?style=for-the-badge&logo=firebase)](https://clovifi-11.web.app)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Frontend](https://img.shields.io/badge/frontend-React%2019%20%7C%20Vite-61DAFB.svg?style=for-the-badge&logo=react)](artifacts/finance-tracker)
+[![Backend](https://img.shields.io/badge/backend-Express%20%7C%20PostgreSQL-336791.svg?style=for-the-badge&logo=postgresql)](artifacts/api-server)
 
 ---
 
-## ✨ Features
+## 🌐 Live Application
 
-- **☘️ Frutiger Aero Aesthetics**: Glassmorphic frosted panels, specular edge reflections, synthesized ambient water sound effects, and organic emerald accents.
-- **☘️ DVD Screensaver Visualizer**: Dynamic 3-petal clover bouncing visualizer on the landing page with neon motion trails, reactive wall bounces, and Zen mode.
-- **🔒 Dedicated Database Isolation**: Each user who signs up or logs in accesses their own isolated database partition in PostgreSQL for accounts, transactions, and categories.
-- **📈 Real-Time Stock Feed**: Live stock ticker widget displaying price quotes and daily deltas for major tickers (AAPL, NVDA, MSFT, GOOGL, AMZN).
-- **🔥 Firebase Cloud Authentication**: Seamless support for Google 1-Click Sign-In and Email/Password with backend session synchronization.
-- **🚀 Firebase Hosting Ready**: Pre-configured `firebase.json` and `.firebaserc` for 1-step deployment.
+Explore the live application deployed on Firebase Hosting:
+👉 **[https://clovifi-11.web.app](https://clovifi-11.web.app)**
+
+> **Tip:** You can enter immediately using **Guest / Demo Mode** from the landing page without signing up, or sign in using **Google 1-Click** / Email via Firebase Authentication.
+
+---
+
+## ✨ Key Features
+
+### ☘️ Frutiger Aero Aesthetics & Experience
+- **Nostalgic Skeuomorphic & Aero Polish**: Glossy glassmorphic panels, specular edge highlights, organic emerald gradients, and synthesized ambient water sound effects.
+- **Interactive Clover DVD Screensaver**: 3-petal neon clover bouncing visualizer on the landing page with dynamic trajectory trails, wall collision physics, and an interactive Zen mode.
+- **Theme Personalization**: Multiple aero-inspired color themes (Emerald, Sapphire, etc.) with real-time CSS variable switching.
+
+### 📊 Executive Financial Dashboard
+- **Net Worth & Cash Flow Summary**: Instant calculation of total net worth, monthly income, monthly expenses, and net savings rate.
+- **Account Ledger Overview**: Multi-account tracking across Checking, Savings, Credit Cards, and Investment accounts with real-time balance aggregation.
+- **Time-Horizon Filtering**: Effortlessly filter metrics and ledger entries by **This Week**, **This Month**, **This Quarter**, or **This Year**.
+- **Quick Action Bar**: Fast access to `+ New Transaction`, `Add Account`, `Export CSV`, and `Print Report`.
+
+### 💳 Ledger, Transactions & Subscriptions
+- **Granular Transaction Management**: Log, edit, filter, and delete transactions with custom categories, payment methods, transaction dates, and notes.
+- **Recurring Subscriptions Tracker**: Track active recurring services, projected monthly billing totals, and upcoming renewal deadlines.
+- **Visual Analytics & Breakdown**: Category expense distributions with interactive charts (powered by Recharts), spending velocity indicators, and tooltips.
+
+### 📈 Real-Time Stock Feed
+- **Live Market Ticker**: Integrated market widget displaying streaming stock quotes and daily deltas for major tickers (`AAPL`, `NVDA`, `MSFT`, `GOOGL`, `AMZN`).
+
+### 🛡️ Dual-Storage Architecture & Privacy Controls
+- **Client-Side Local Ledger**: Zero-friction, offline-first Guest Mode powered by `localLedger` in `localStorage`. Operates standalone without requiring a database connection.
+- **Cloud PostgreSQL & Express Ledger**: Multi-tenant database partitioning with isolated accounts and secure authentication for registered users.
+- **Complete Data Control**:
+  - **Clear All Data**: Cleanly wipes all accounts, transactions, and categories down to `₹0.00` without auto-reseeding.
+  - **Load Sample Data**: Re-seeds a rich, realistic sample financial portfolio at any time for testing or demonstration.
+  - **Export CSV & Print Reports**: Export full transaction history to CSV or generate clean printable financial summaries.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Wouter, Radix UI, TanStack Query, Lucide Icons
-- **Backend**: Node.js, Express, Drizzle ORM, PostgreSQL, bcryptjs, cookie-parser
-- **Cloud & Auth**: Firebase Auth, Firebase Hosting, Google Analytics
+| Area | Technologies |
+|---|---|
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4, Wouter (Router), Radix UI primitives, Lucide Icons |
+| **State & Data Fetching** | TanStack Query v5, Local Storage Engine (`localLedger`), Orval OpenAPI client |
+| **Data Visualization** | Recharts, Custom Canvas Particle & Screensaver Physics Engine |
+| **Backend API** | Node.js, Express, Drizzle ORM, PostgreSQL, bcryptjs, cookie-parser |
+| **Cloud & Deployment** | Firebase Authentication (Google 1-Click + Email/Password), Firebase Hosting |
+
+---
+
+## 📁 Repository Structure
+
+```text
+Clovifi/
+├── artifacts/
+│   ├── finance-tracker/       # React 19 + Vite frontend application
+│   │   ├── src/
+│   │   │   ├── components/    # Navigation, Modals, Clover Screensaver, Stock Feed
+│   │   │   ├── lib/           # localLedger, Firebase Auth, Audio synthesis, Utils
+│   │   │   ├── pages/         # Landing, Dashboard, Accounts, Transactions, Subscriptions, Settings
+│   │   │   └── App.tsx        # Application shell, routing & query client setup
+│   │   └── vite.config.ts     # Vite configuration
+│   └── api-server/            # Express + Drizzle ORM backend API server
+│       ├── src/               # Auth routes, ledger routes, PostgreSQL schema & migrations
+│       └── dist/              # Compiled backend bundle
+├── lib/
+│   ├── api-client-react/      # Generated typed React Query hooks
+│   └── api-spec/              # OpenAPI 3.0 API specifications
+├── firebase.json              # Firebase Hosting configuration & SPA rewrites
+├── .firebaserc                # Firebase target project mapping (`clovifi-11`)
+└── README.md                  # Project documentation
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone the repository
+### 1. Prerequisites
+- **Node.js** v20+ and **npm** v10+
+- *(Optional)* PostgreSQL instance (if running the backend API server locally)
+
+### 2. Clone the Repository
 ```bash
 git clone https://github.com/HarshitFreq/Clovifi.git
 cd Clovifi
 ```
 
-### 2. Install dependencies
+### 3. Install Dependencies
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
-Copy the sample environment configuration:
+### 4. Configure Environment Variables
+Create a `.env` file in the root or inside `artifacts/finance-tracker`:
 ```bash
 cp .env.example .env
 ```
 
-Add your Firebase configuration keys if you wish to enable Google 1-Click Sign-In:
+Add your Firebase configuration keys to enable Firebase Authentication:
 ```env
 VITE_FIREBASE_API_KEY=AIzaSy...
 VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
@@ -58,30 +120,61 @@ VITE_FIREBASE_APP_ID=1:123456789012:web:abcdef
 VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXX
 ```
 
-### 4. Run locally
-```bash
-# Start backend API server (port 8080)
-npm run dev --workspace=@workspace/api-server
+### 5. Run Locally
 
-# In a separate terminal, start frontend dev server (port 19051)
+#### Option A: Frontend Standalone (Guest / Demo Mode)
+The frontend includes a full client-side ledger engine that works right away without needing a database:
+```bash
 npm run dev --workspace=@workspace/finance-tracker
 ```
+Open [http://localhost:19051](http://localhost:19051) in your browser.
 
-Open your browser at `http://localhost:19051/` to access the application.
+#### Option B: Full Stack (Frontend + Backend API + PostgreSQL)
+```bash
+# Terminal 1: Start the backend API server (port 8080)
+DATABASE_URL="postgresql://localhost/aerofinance" npm run dev --workspace=@workspace/api-server
+
+# Terminal 2: Start the frontend Vite development server (port 19051)
+npm run dev --workspace=@workspace/finance-tracker
+```
 
 ---
 
 ## 🌐 Deploy to Firebase Hosting
 
+To build and deploy the production bundle to Firebase Hosting:
+
 ```bash
-# 1. Build the production bundle
+# Build the frontend and deploy in one command:
+npm run deploy:firebase
+```
+
+Or step-by-step:
+```bash
+# 1. Typecheck & build the production bundle
+npm run typecheck
 npm run build:frontend
 
 # 2. Deploy to Firebase Hosting
-npx firebase-tools deploy --only hosting
+npx --yes firebase-tools deploy --only hosting
 ```
 
 ---
 
+## 📜 Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run build:frontend` | Compiles and optimizes the React frontend into `artifacts/finance-tracker/dist/public` |
+| `npm run typecheck` | Runs TypeScript type checking across all workspaces and packages |
+| `npm run deploy:firebase` | Builds the frontend and deploys hosting artifacts to Firebase |
+| `npm run dev --workspace=@workspace/finance-tracker` | Starts the Vite frontend dev server at `http://localhost:19051` |
+| `npm run dev --workspace=@workspace/api-server` | Starts the Express API backend server at `http://localhost:8080` |
+
+---
+
 ## 📄 License
-MIT © [Harshit](https://github.com/HarshitFreq)
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+Developed with ☘️ by [Harshit](https://github.com/HarshitFreq).

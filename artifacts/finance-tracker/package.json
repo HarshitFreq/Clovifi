@@ -76,8 +76,10 @@
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/three": "^0.187.0",
     "bcrypt": "^6.0.0",
     "express-rate-limit": "^8.5.2",
-    "firebase": "^13.3.0"
+    "firebase": "^13.3.0",
+    "three": "^0.187.0"
   }
 }

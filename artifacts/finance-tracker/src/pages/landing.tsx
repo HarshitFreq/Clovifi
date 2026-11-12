@@ -13,6 +13,7 @@ import { useSoundEffects } from "@/lib/sound";
 import { useGetMe } from "@workspace/api-client-react";
 import { auth, onAuthStateChanged, type FirebaseUser } from "@/lib/firebase";
 import FirebaseAuthModal from "@/components/FirebaseAuthModal";
+import Clovifi3DVisualizer from "@/components/Clovifi3DVisualizer";
 
 const BOUNCE_COLORS = [
   "#4ade80", // Emerald
@@ -206,6 +207,9 @@ export default function Landing() {
           transform: "translate(20%, 20%)",
         }}
       />
+
+      {/* ── 3D Interactive Clover Knot Particle Visualizer (Inspired by 3d_Portfolio) ── */}
+      <Clovifi3DVisualizer />
 
       {/* ── Minimal Top-Right Bar ── */}
       {!zenMode && (

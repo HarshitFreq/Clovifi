@@ -1,6 +1,6 @@
 # ☘️ Clovifi — Personal Finance Tracker
 
-A modern, Frutiger Aero–inspired personal finance management platform featuring interactive visualizers, real-time market feeds, dual-ledger architecture (Local Storage + Cloud PostgreSQL), and Firebase Authentication & Hosting.
+A nostalgic 2000s era Frutiger Aero–themed personal finance website featuring interactive visualizers, real-time market feeds, dual-ledger architecture (Local Storage + Cloud PostgreSQL), and Firebase Authentication & Hosting.
 
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg?style=for-the-badge&logo=firebase)](https://clovifi-11.web.app)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
@@ -20,12 +20,12 @@ Explore the live application deployed on Firebase Hosting:
 
 ## 🍀 About Clovifi
 
-**Clovifi** is an open-source, privacy-first personal finance management platform crafted with the tactile, optimistic visual language of the **Frutiger Aero** era (circa 2004–2013).
+**Clovifi** is an open-source, privacy-first personal finance tracker styled as a nostalgic 2000s era website with the iconic, tactile aesthetic of the **Frutiger Aero** era (circa 2004–2013).
 
 ### Why Clovifi?
-Most modern personal finance tools suffer from two extremes: they are either sterile, monochrome spreadsheets or subscription-gated trackers cluttered with third-party tracking, affiliate credit card ads, and complex onboarding funnels.
+Conventional personal finance tools suffer from two extremes: they are either sterile, monochrome spreadsheets or subscription-gated trackers cluttered with intrusive ads, third-party trackers, and complex paywalls.
 
-Clovifi was engineered to provide a fast, beautiful, and private alternative:
+Clovifi was created to provide a nostalgic, fast, and privacy-respecting alternative:
 - **Zero-Friction & Offline-First**: Your financial records belong to you. Clovifi works immediately in **Guest Mode** powered by a client-side local ledger engine (`localStorage`). You can track accounts, transactions, and recurring subscriptions completely offline with zero setup and no server dependencies.
 - **Seamless Cloud Backup**: For cross-device continuity, sign in with **Google 1-Click** or Email via **Firebase Authentication** and sync with isolated PostgreSQL ledger partitions.
 - **Frutiger Aero Aesthetics**: Bringing joy back to personal finance with frosted glassmorphism, glossy organic emerald accents, interactive canvas screensaver visualizers, and synthesized ambient water micro-interactions.

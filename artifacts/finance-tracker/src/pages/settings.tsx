@@ -546,7 +546,7 @@ export default function Settings() {
                 <span>Clovifi Personal Finance</span>
               </div>
               <p style={{ margin: "4px 0 0 0", fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.65)", lineHeight: 1.5 }}>
-                An offline-first, privacy-respecting financial tracker crafted with nostalgic Frutiger Aero aesthetics, interactive visualizers, real-time market data, and dual-layer local &amp; cloud ledger storage.
+                An offline-first, privacy-respecting financial tracker crafted with nostalgic 2000s era Frutiger Aero aesthetics, interactive visualizers, real-time market data, and dual-layer local &amp; cloud ledger storage.
               </p>
             </div>
           </div>

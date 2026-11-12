@@ -118,100 +118,66 @@ export default function Landing() {
       {/* ── 3D Interactive Connected Dots Visualizer ── */}
       <Clovifi3DVisualizer />
 
-      {/* ── Minimal Top-Right Bar ── */}
-      <header
-        style={{
-          position: "fixed",
-          top: "max(1rem, env(safe-area-inset-top))",
-          right: "max(1rem, env(safe-area-inset-right))",
-          zIndex: 30,
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          animation: "fadeIn 0.3s ease",
-        }}
-      >
-          {isAuthenticated ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div
-                className="glass-panel"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  fontSize: "0.78rem",
-                  color: "#fff",
-                }}
-              >
-                <span style={{ fontSize: "14px" }}>☘️</span>
-                <span style={{ fontWeight: 600 }}>{activeName}</span>
-              </div>
-              <button
-                onClick={() => openAuth("signin")}
-                className="toolbar-btn"
-                style={{ padding: "6px 12px", fontSize: "0.74rem", borderRadius: "4px" }}
-                title="Account Settings"
-              >
-                Account
-              </button>
-              <button
-                onClick={handleLogout}
-                className="toolbar-btn"
-                style={{
-                  padding: "6px 12px",
-                  fontSize: "0.74rem",
-                  borderRadius: "4px",
-                  color: "#f87171",
-                  borderColor: "rgba(248, 113, 113, 0.28)",
-                  background: "rgba(248, 113, 113, 0.08)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-                title="Log Out"
-              >
-                <LogOut size={12} />
-                <span>Log Out</span>
-              </button>
+      {/* ── Minimal Top-Right Bar (Only shown when authenticated) ── */}
+      {isAuthenticated && (
+        <header
+          style={{
+            position: "fixed",
+            top: "max(1rem, env(safe-area-inset-top))",
+            right: "max(1rem, env(safe-area-inset-right))",
+            zIndex: 30,
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            animation: "fadeIn 0.3s ease",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              className="glass-panel"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                fontSize: "0.78rem",
+                color: "#fff",
+              }}
+            >
+              <span style={{ fontSize: "14px" }}>☘️</span>
+              <span style={{ fontWeight: 600 }}>{activeName}</span>
             </div>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <button
-                onClick={() => openAuth("signin")}
-                style={{
-                  background: "rgba(255, 255, 255, 0.06)",
-                  border: "1px solid rgba(255, 255, 255, 0.16)",
-                  backdropFilter: "blur(8px)",
-                  color: "#fff",
-                  padding: "6px 14px",
-                  borderRadius: "5px",
-                  fontSize: "0.78rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-                className="hover:bg-white/10"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => openAuth("signup")}
-                className="glass-button"
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: "5px",
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Sign Up
-              </button>
-            </div>
-          )}
+            <button
+              onClick={() => openAuth("signin")}
+              className="toolbar-btn"
+              style={{ padding: "6px 12px", fontSize: "0.74rem", borderRadius: "4px" }}
+              title="Account Settings"
+            >
+              Account
+            </button>
+            <button
+              onClick={handleLogout}
+              className="toolbar-btn"
+              style={{
+                padding: "6px 12px",
+                fontSize: "0.74rem",
+                borderRadius: "4px",
+                color: "#f87171",
+                borderColor: "rgba(248, 113, 113, 0.28)",
+                background: "rgba(248, 113, 113, 0.08)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+              title="Log Out"
+            >
+              <LogOut size={12} />
+              <span>Log Out</span>
+            </button>
+          </div>
         </header>
+      )}
 
       {/* ── Centered Minimal Hero ── */}
       <div

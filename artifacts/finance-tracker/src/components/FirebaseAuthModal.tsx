@@ -213,7 +213,7 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "1rem",
+        padding: "0.75rem",
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -224,6 +224,8 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
         style={{
           width: "100%",
           maxWidth: "400px",
+          maxHeight: "92dvh",
+          overflowY: "auto",
           borderRadius: "8px",
           overflow: "hidden",
           boxShadow: "0 24px 64px rgba(0,0,0,0.85), inset 0 1px 0 var(--panel-border)",

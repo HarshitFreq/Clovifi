@@ -58,16 +58,34 @@ export default function Clovifi3DVisualizer() {
       mouse.targetY = height * 0.45;
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        mouse.targetX = e.touches[0].clientX;
+        mouse.targetY = e.touches[0].clientY;
+        mouse.active = true;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      mouse.active = false;
+      mouse.targetX = width * 0.5;
+      mouse.targetY = height * 0.45;
+    };
+
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerleave", handlePointerLeave, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchstart", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     // --- Connected Dots Constellation Nodes ---
-    // 150 3D nodes drifting smoothly in space
-    const NODE_COUNT = 150;
-    const BOUND_X = width * 0.55;
-    const BOUND_Y = height * 0.55;
-    const BOUND_Z = 340;
-    const FOV = 580; // Perspective distance
+    // Scaled for performance on mobile (65 nodes) vs desktop (140 nodes)
+    const isMobile = width < 768;
+    const NODE_COUNT = isMobile ? 65 : 140;
+    const BOUND_X = width * (isMobile ? 0.65 : 0.55);
+    const BOUND_Y = height * (isMobile ? 0.65 : 0.55);
+    const BOUND_Z = isMobile ? 260 : 340;
+    const FOV = isMobile ? 480 : 580; // Perspective distance
 
     // Clovifi themed emerald, mint, cyan, and starlight white palette
     const nodePalette = [
@@ -184,7 +202,7 @@ export default function Clovifi3DVisualizer() {
       ctx.globalCompositeOperation = "lighter";
 
       // ── 2. Draw Constellation Connection Lines ──
-      const MAX_DIST_3D = 145;
+      const MAX_DIST_3D = isMobile ? 115 : 145;
       const MAX_DIST_SQ = MAX_DIST_3D * MAX_DIST_3D;
 
       for (let i = 0; i < projectedNodes.length; i++) {
@@ -220,7 +238,7 @@ export default function Clovifi3DVisualizer() {
           const mdx = p1.sx - mouse.x;
           const mdy = p1.sy - mouse.y;
           const mouseDist = Math.sqrt(mdx * mdx + mdy * mdy);
-          const MOUSE_RADIUS = 175;
+          const MOUSE_RADIUS = isMobile ? 135 : 175;
 
           if (mouseDist < MOUSE_RADIUS) {
             const mouseAlpha = (1 - mouseDist / MOUSE_RADIUS) * 0.65;
@@ -269,6 +287,9 @@ export default function Clovifi3DVisualizer() {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchstart", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 

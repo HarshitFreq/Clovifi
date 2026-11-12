@@ -497,8 +497,11 @@ export default function Dashboard() {
             {/* Trend Summary Metric Strip */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "8px",
                 borderTop: "1px solid var(--panel-border)",
                 background: "rgba(0,0,0,0.2)",
                 padding: "8px 14px",

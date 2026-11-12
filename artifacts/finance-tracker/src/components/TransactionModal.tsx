@@ -26,6 +26,7 @@ const OVERLAY: React.CSSProperties = {
   background: "rgba(0,0,0,0.72)",
   display: "flex", alignItems: "center", justifyContent: "center",
   backdropFilter: "blur(6px)",
+  padding: "0.75rem",
   animation: "fadeIn 0.15s ease",
 };
 
@@ -36,7 +37,8 @@ const MODAL: React.CSSProperties = {
   borderRadius: "8px",
   width: "100%",
   maxWidth: "460px",
-  overflow: "hidden",
+  maxHeight: "92dvh",
+  overflowY: "auto",
   animation: "slideUp 0.2s ease",
 };
 

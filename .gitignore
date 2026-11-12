@@ -47,6 +47,13 @@ Thumbs.db
 .env.*.local
 !.env.example
 
+# Firebase cache
+.firebase/
+.firebaserc.bak
+
+# GitHub Actions workflows (requires explicit user workflow OAuth permissions to push)
+.github/
+
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 

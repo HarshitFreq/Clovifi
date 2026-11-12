@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { TrendingUp, TrendingDown, RefreshCw, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, Activity, ChevronDown, ChevronUp } from "lucide-react";
 import { useSoundEffects } from "@/lib/sound";
 
 export interface StockQuote {
@@ -23,6 +23,9 @@ export default function StockTickerWidget() {
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("Just now");
   const [flashingSymbol, setFlashingSymbol] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return typeof window !== "undefined" && window.innerWidth < 768;
+  });
   const { playClick } = useSoundEffects();
   const mountedRef = useRef(true);
 
@@ -135,108 +138,131 @@ export default function StockTickerWidget() {
           >
             Live
           </span>
+          <button
+            onClick={() => {
+              playClick();
+              setIsCollapsed(!isCollapsed);
+            }}
+            className="md:hidden"
+            style={{
+              background: "none",
+              border: "none",
+              color: "rgba(255,255,255,0.7)",
+              cursor: "pointer",
+              padding: "2px 4px",
+              display: "flex",
+              alignItems: "center",
+            }}
+            title={isCollapsed ? "Expand Stocks" : "Collapse Stocks"}
+          >
+            {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+          </button>
         </div>
       </div>
 
-      {/* Stock List */}
-      <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: "3px" }}>
-        {stocks.map((s) => {
-          const isUp = s.change >= 0;
-          return (
-            <div
-              key={s.symbol}
-              className="nav-item-hover"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "5px 8px",
-                borderRadius: "4px",
-                background: "rgba(255, 255, 255, 0.02)",
-                border: "1px solid rgba(255, 255, 255, 0.04)",
-                transition: "all 0.15s ease",
-              }}
-            >
-              {/* Left Symbol & Name */}
-              <div style={{ minWidth: 0 }}>
+      {/* Stock List (Collapsible on mobile) */}
+      {!isCollapsed && (
+        <>
+          <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: "3px" }}>
+            {stocks.map((s) => {
+              const isUp = s.change >= 0;
+              return (
                 <div
-                  style={{
-                    fontFamily: "monospace",
-                    fontWeight: 700,
-                    fontSize: "0.78rem",
-                    color: "rgba(255, 255, 255, 0.95)",
-                    lineHeight: 1.1,
-                  }}
-                >
-                  {s.symbol}
-                </div>
-                <div
-                  style={{
-                    fontSize: "0.6rem",
-                    color: "rgba(255, 255, 255, 0.4)",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {s.name}
-                </div>
-              </div>
-
-              {/* Right Price & Delta */}
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
-                <div
-                  style={{
-                    fontFamily: "monospace",
-                    fontWeight: 700,
-                    fontSize: "0.78rem",
-                    color: "#fff",
-                    lineHeight: 1.1,
-                  }}
-                >
-                  ${s.price.toFixed(2)}
-                </div>
-                <div
+                  key={s.symbol}
+                  className="nav-item-hover"
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "flex-end",
-                    gap: "2px",
-                    fontFamily: "monospace",
-                    fontSize: "0.62rem",
-                    fontWeight: 700,
-                    color: isUp ? "#6ee87a" : "#f87171",
+                    justifyContent: "space-between",
+                    padding: "5px 8px",
+                    borderRadius: "4px",
+                    background: "rgba(255, 255, 255, 0.02)",
+                    border: "1px solid rgba(255, 255, 255, 0.04)",
+                    transition: "all 0.15s ease",
                   }}
                 >
-                  <span>{isUp ? "▲" : "▼"}</span>
-                  <span>
-                    {isUp ? "+" : ""}
-                    {s.percent.toFixed(2)}%
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  {/* Left Symbol & Name */}
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontWeight: 700,
+                        fontSize: "0.78rem",
+                        color: "rgba(255, 255, 255, 0.95)",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {s.symbol}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.6rem",
+                        color: "rgba(255, 255, 255, 0.4)",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                  </div>
 
-      {/* Footer Info */}
-      <div
-        style={{
-          borderTop: "1px solid var(--panel-border)",
-          background: "rgba(0, 0, 0, 0.2)",
-          padding: "5px 10px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          fontSize: "0.6rem",
-          color: "rgba(255, 255, 255, 0.4)",
-          fontFamily: "monospace",
-        }}
-      >
-        <span>NASDAQ Feed</span>
-        <span>{lastUpdated}</span>
-      </div>
+                  {/* Right Price & Delta */}
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontWeight: 700,
+                        fontSize: "0.78rem",
+                        color: "#fff",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      ${s.price.toFixed(2)}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        gap: "2px",
+                        fontFamily: "monospace",
+                        fontSize: "0.62rem",
+                        fontWeight: 700,
+                        color: isUp ? "#6ee87a" : "#f87171",
+                      }}
+                    >
+                      <span>{isUp ? "▲" : "▼"}</span>
+                      <span>
+                        {isUp ? "+" : ""}
+                        {s.percent.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer Info */}
+          <div
+            style={{
+              borderTop: "1px solid var(--panel-border)",
+              background: "rgba(0, 0, 0, 0.2)",
+              padding: "5px 10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "0.6rem",
+              color: "rgba(255, 255, 255, 0.4)",
+              fontFamily: "monospace",
+            }}
+          >
+            <span>NASDAQ Feed</span>
+            <span>{lastUpdated}</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

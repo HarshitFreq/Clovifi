@@ -901,4 +901,36 @@ button:active, .glass-button:active, .currency-btn:active {
   background-attachment: fixed;
 }
 
+/* ─── Mobile Touch & Responsive Optimizations ─────────────── */
+@media (max-width: 768px) {
+  /* Prevent iOS Safari unwanted auto-zoom on input focus */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Remove tap highlight gray box on touch screens */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Enable smooth touch inertia scrolling */
+  [style*="overflow-x: auto"],
+  [style*="overflow-y: auto"],
+  [style*="overflowX: auto"],
+  [style*="overflowY: auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Touch-friendly buttons */
+  .toolbar-btn {
+    min-height: 34px;
+  }
+}
+
 

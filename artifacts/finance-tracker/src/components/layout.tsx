@@ -54,7 +54,12 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div
       className="min-h-[100dvh] flex flex-col md:flex-row-reverse"
-      style={{ maxWidth: "1400px", margin: "0 auto", padding: "1rem", gap: "12px" }}
+      style={{
+        maxWidth: "1400px",
+        margin: "0 auto",
+        padding: "max(0.6rem, env(safe-area-inset-top)) max(0.6rem, env(safe-area-inset-right)) max(0.6rem, env(safe-area-inset-bottom)) max(0.6rem, env(safe-area-inset-left))",
+        gap: "10px",
+      }}
     >
       {/* ── Sidebar (Right on desktop) ── */}
       <aside

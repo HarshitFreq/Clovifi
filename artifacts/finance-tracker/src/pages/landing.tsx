@@ -55,7 +55,7 @@ export default function Landing() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "1.5rem",
+        padding: "max(1.25rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))",
         boxSizing: "border-box",
         background: "radial-gradient(circle at 50% 45%, #0d3816 0%, #061c0b 45%, #020a04 100%)",
         userSelect: "none",
@@ -67,8 +67,8 @@ export default function Landing() {
           position: "absolute",
           top: "15%",
           left: "20%",
-          width: "480px",
-          height: "480px",
+          width: "min(480px, 80vw)",
+          height: "min(480px, 80vw)",
           background: "radial-gradient(circle, rgba(74, 222, 128, 0.06) 0%, rgba(34, 197, 94, 0.02) 50%, transparent 70%)",
           filter: "blur(70px)",
           pointerEvents: "none",
@@ -80,8 +80,8 @@ export default function Landing() {
           position: "absolute",
           bottom: "10%",
           right: "15%",
-          width: "540px",
-          height: "540px",
+          width: "min(540px, 85vw)",
+          height: "min(540px, 85vw)",
           background: "radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, rgba(14, 165, 233, 0.015) 50%, transparent 75%)",
           filter: "blur(80px)",
           pointerEvents: "none",
@@ -96,12 +96,12 @@ export default function Landing() {
       <header
         style={{
           position: "fixed",
-          top: "1.25rem",
-          right: "1.5rem",
+          top: "max(1rem, env(safe-area-inset-top))",
+          right: "max(1rem, env(safe-area-inset-right))",
           zIndex: 30,
           display: "flex",
           alignItems: "center",
-          gap: "10px",
+          gap: "8px",
           animation: "fadeIn 0.3s ease",
         }}
       >
@@ -178,67 +178,69 @@ export default function Landing() {
           flexDirection: "column",
           alignItems: "center",
           gap: "12px",
-          maxWidth: "420px",
+          maxWidth: "min(440px, 94vw)",
           width: "100%",
           animation: "fadeIn 0.3s ease",
         }}
       >
-          {/* Brand Heading */}
-          <h1
+        {/* Brand Heading */}
+        <h1
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "clamp(8px, 2.5vw, 14px)",
+            margin: 0,
+            lineHeight: 1,
+            flexWrap: "nowrap",
+          }}
+        >
+          <span
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "12px",
-              margin: 0,
+              fontSize: "clamp(2.0rem, 7vw, 3.4rem)",
               lineHeight: 1,
+              display: "inline-block",
+              filter: "drop-shadow(0 4px 16px rgba(74, 222, 128, 0.55)) drop-shadow(0 0 28px rgba(34, 197, 94, 0.4))",
+              userSelect: "none",
+              WebkitTextFillColor: "initial",
+              transform: "translateY(-1px)",
+              flexShrink: 0,
             }}
+            role="img"
+            aria-label="3-petal clover"
           >
-            <span
-              style={{
-                fontSize: "3.4rem",
-                lineHeight: 1,
-                display: "inline-block",
-                filter: "drop-shadow(0 4px 16px rgba(74, 222, 128, 0.55)) drop-shadow(0 0 28px rgba(34, 197, 94, 0.4))",
-                userSelect: "none",
-                WebkitTextFillColor: "initial",
-                transform: "translateY(-1px)",
-              }}
-              role="img"
-              aria-label="3-petal clover"
-            >
-              ☘️
-            </span>
-            <span
-              className="brand-title"
-              style={{
-                fontSize: "4.2rem",
-                fontWeight: 900,
-                fontFamily: "'Comfortaa', 'Century Gothic', 'Quicksand', 'Trebuchet MS', sans-serif",
-                letterSpacing: "-0.035em",
-                lineHeight: 1,
-                margin: 0,
-                background: "linear-gradient(180deg, #ffffff 20%, #bbf7d0 70%, #4ade80 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 35px rgba(74, 222, 128, 0.4))",
-              }}
-            >
-              Clovifi
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <div
+            ☘️
+          </span>
+          <span
+            className="brand-title"
             style={{
-              fontSize: "1.05rem",
-              color: "rgba(255, 255, 255, 0.75)",
-              fontWeight: 600,
-              letterSpacing: "0.03em",
+              fontSize: "clamp(2.6rem, 9.5vw, 4.2rem)",
+              fontWeight: 900,
+              fontFamily: "'Comfortaa', 'Century Gothic', 'Quicksand', 'Trebuchet MS', sans-serif",
+              letterSpacing: "-0.035em",
+              lineHeight: 1,
+              margin: 0,
+              background: "linear-gradient(180deg, #ffffff 20%, #bbf7d0 70%, #4ade80 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 35px rgba(74, 222, 128, 0.4))",
             }}
           >
-            Personal Finance Tracker
-          </div>
+            Clovifi
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <div
+          style={{
+            fontSize: "clamp(0.88rem, 3.2vw, 1.05rem)",
+            color: "rgba(255, 255, 255, 0.75)",
+            fontWeight: 600,
+            letterSpacing: "0.03em",
+          }}
+        >
+          Personal Finance Tracker
+        </div>
 
           {/* Actions */}
           {isAuthenticated ? (
@@ -260,11 +262,12 @@ export default function Landing() {
                 <span>Personal Account: <strong>{activeName}</strong></span>
               </div>
 
-              <Link href="/dashboard" onClick={playSuccess} style={{ textDecoration: "none", width: "100%", maxWidth: "240px" }}>
+              <Link href="/dashboard" onClick={playSuccess} style={{ textDecoration: "none", width: "100%", maxWidth: "260px" }}>
                 <button
                   className="glass-button"
                   style={{
                     width: "100%",
+                    minHeight: "44px",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -291,7 +294,7 @@ export default function Landing() {
                 gap: "10px",
                 marginTop: "10px",
                 width: "100%",
-                maxWidth: "320px",
+                maxWidth: "340px",
               }}
             >
               <div style={{ display: "flex", gap: "10px", width: "100%" }}>
@@ -300,18 +303,19 @@ export default function Landing() {
                   className="glass-button"
                   style={{
                     flex: 1,
+                    minHeight: "44px",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "6px",
                     padding: "11px 18px",
                     borderRadius: "6px",
-                    fontSize: "0.86rem",
+                    fontSize: "0.88rem",
                     fontWeight: 700,
                     cursor: "pointer",
                   }}
                 >
-                  <UserPlus size={14} />
+                  <UserPlus size={15} />
                   <span>Sign Up</span>
                 </button>
 
@@ -320,13 +324,14 @@ export default function Landing() {
                   className="toolbar-btn"
                   style={{
                     flex: 1,
+                    minHeight: "44px",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "6px",
                     padding: "11px 18px",
                     borderRadius: "6px",
-                    fontSize: "0.86rem",
+                    fontSize: "0.88rem",
                     fontWeight: 600,
                     cursor: "pointer",
                     background: "rgba(255, 255, 255, 0.08)",
@@ -334,7 +339,7 @@ export default function Landing() {
                     color: "#fff",
                   }}
                 >
-                  <LogIn size={14} />
+                  <LogIn size={15} />
                   <span>Sign In</span>
                 </button>
               </div>
@@ -342,10 +347,12 @@ export default function Landing() {
               <Link href="/dashboard" onClick={playSuccess} style={{ textDecoration: "none", marginTop: "4px" }}>
                 <span
                   style={{
-                    fontSize: "0.75rem",
+                    fontSize: "0.78rem",
                     color: "rgba(255, 255, 255, 0.45)",
                     cursor: "pointer",
                     transition: "color 0.15s ease",
+                    display: "inline-block",
+                    padding: "6px 10px",
                   }}
                   className="hover:text-white"
                 >
@@ -360,8 +367,8 @@ export default function Landing() {
       <footer
         style={{
           position: "fixed",
-          bottom: "1rem",
-          left: "1.5rem",
+          bottom: "max(1rem, env(safe-area-inset-bottom))",
+          left: "max(1rem, env(safe-area-inset-left))",
           display: "flex",
           alignItems: "center",
           zIndex: 25,
@@ -380,9 +387,10 @@ export default function Landing() {
             display: "inline-flex",
             alignItems: "center",
             gap: "5px",
-            padding: "5px 9px",
+            padding: "6px 12px",
+            minHeight: "36px",
             borderRadius: "4px",
-            fontSize: "0.7rem",
+            fontSize: "0.72rem",
             color: "rgba(255, 255, 255, 0.65)",
             background: "rgba(0, 0, 0, 0.35)",
             backdropFilter: "blur(6px)",

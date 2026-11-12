@@ -13,6 +13,7 @@ import type { Transaction } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useSoundEffects } from "@/lib/sound";
+import { X } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -146,7 +147,7 @@ export default function TransactionModal({ open, onClose, transaction }: Props) 
       <div style={MODAL}>
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{isEdit ? "Edit Transaction" : "Add Transaction"}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", display: "flex", alignItems: "center" }}><X size={15} /></button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "13px" }}>

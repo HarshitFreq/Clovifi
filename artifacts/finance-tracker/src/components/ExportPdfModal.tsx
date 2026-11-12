@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { listTransactions } from "@workspace/api-client-react";
 import { useCurrency } from "@/lib/currency";
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { X } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -417,7 +418,7 @@ export default function ExportPdfModal({ open, onClose }: Props) {
         {/* Title bar */}
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Export PDF Statement</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem", lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", display: "flex", alignItems: "center" }}><X size={15} /></button>
         </div>
 
         <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>

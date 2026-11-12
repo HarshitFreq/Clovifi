@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronDown, Check, X } from "lucide-react";
+import { Search, ChevronDown, Check, X, FileText } from "lucide-react";
 import {
   useListTransactions,
   getListTransactionsQueryKey,
@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { useCurrency } from "@/lib/currency";
 import TransactionModal from "@/components/TransactionModal";
 import ExportPdfModal from "@/components/ExportPdfModal";
+import CategoryGlyph from "@/components/CategoryGlyph";
 
 export default function Transactions() {
   const { formatAmount } = useCurrency();
@@ -38,8 +39,8 @@ export default function Transactions() {
   // helper to get human readable text for active capsule values
   const getTypeText = () => {
     if (selectedType === "all") return "All Types";
-    if (selectedType === "expense") return "📉 Expenses";
-    if (selectedType === "income") return "📈 Income";
+    if (selectedType === "expense") return "Expenses";
+    if (selectedType === "income") return "Income";
     return "Types";
   };
 
@@ -175,8 +176,9 @@ export default function Transactions() {
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Transactions — All Records</span>
           <div style={{ display: "flex", gap: "8px" }}>
-            <button className="glass-button" onClick={() => setExportOpen(true)} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem", background: "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)", borderColor: "var(--panel-border)", color: "rgba(255,255,255,0.85)" }}>
-              📄 Export PDF
+            <button className="glass-button" onClick={() => setExportOpen(true)} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem", background: "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)", borderColor: "var(--panel-border)", color: "rgba(255,255,255,0.85)", display: "flex", alignItems: "center", gap: "4px" }}>
+              <FileText size={12} />
+              <span>Export PDF</span>
             </button>
             <button className="glass-button" onClick={openAdd} style={{ padding: "3px 12px", borderRadius: "4px", fontSize: "0.72rem" }}>
               + Add Transaction
@@ -341,8 +343,8 @@ export default function Transactions() {
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "200px", overflowY: "auto", padding: "4px 0" }}>
                     {activeCapsule === "type" && [
                       { value: "all", label: "All Types" },
-                      { value: "expense", label: "📉 Expenses" },
-                      { value: "income", label: "📈 Income" }
+                      { value: "expense", label: "Expenses" },
+                      { value: "income", label: "Income" }
                     ].map(opt => (
                       <MenuOptionItem 
                         key={opt.value} 
@@ -512,6 +514,9 @@ export default function Transactions() {
                     <td>
                       {t.categoryName ? (
                         <span style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
                           padding: "2px 8px",
                           borderRadius: "3px",
                           fontSize: "0.7rem",
@@ -521,7 +526,8 @@ export default function Transactions() {
                           border: `1px solid ${t.categoryColor || "#4da820"}50`,
                           letterSpacing: "0.04em",
                         }}>
-                          {t.categoryIcon ? `${t.categoryIcon} ` : ""}{t.categoryName}
+                          <CategoryGlyph icon={t.categoryIcon} name={t.categoryName} color={t.categoryColor || "#66c028"} size={11} />
+                          <span>{t.categoryName}</span>
                         </span>
                       ) : (
                         <span style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.3)", fontStyle: "italic" }}>Uncategorized</span>

@@ -1,0 +1,242 @@
+import React, { useState, useEffect, useRef } from "react";
+import { TrendingUp, TrendingDown, RefreshCw, Activity } from "lucide-react";
+import { useSoundEffects } from "@/lib/sound";
+
+export interface StockQuote {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  percent: number;
+  isUp: boolean;
+  updatedAt?: string;
+}
+
+export default function StockTickerWidget() {
+  const [stocks, setStocks] = useState<StockQuote[]>([
+    { symbol: "AAPL", name: "Apple", price: 355.63, change: 0.27, percent: 0.08, isUp: true },
+    { symbol: "NVDA", name: "Nvidia", price: 165.62, change: -8.10, percent: -4.66, isUp: false },
+    { symbol: "MSFT", name: "Microsoft", price: 528.24, change: 7.12, percent: 1.37, isUp: true },
+    { symbol: "GOOGL", name: "Alphabet", price: 301.43, change: 7.98, percent: 2.72, isUp: true },
+    { symbol: "AMZN", name: "Amazon", price: 268.93, change: 2.76, percent: 1.04, isUp: true },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>("Just now");
+  const [flashingSymbol, setFlashingSymbol] = useState<string | null>(null);
+  const { playClick } = useSoundEffects();
+  const mountedRef = useRef(true);
+
+  const fetchStocks = async (isManual = false) => {
+    if (isManual) playClick();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/market/stocks");
+      if (!res.ok) throw new Error("HTTP error " + res.status);
+      const json = await res.json();
+      if (Array.isArray(json.data) && json.data.length > 0) {
+        setStocks(json.data);
+        const d = new Date();
+        setLastUpdated(d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+      }
+    } catch (err) {
+      console.warn("Stock feed fallback:", err);
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    mountedRef.current = true;
+    fetchStocks();
+    const interval = setInterval(() => {
+      fetchStocks();
+    }, 25000); // 25s auto-refresh
+    return () => {
+      mountedRef.current = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  return (
+    <div
+      className="glass-panel"
+      style={{
+        borderRadius: "8px",
+        overflow: "hidden",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Titlebar */}
+      <div
+        className="panel-titlebar"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "8px 12px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          {/* Glowing pulse indicator */}
+          <span
+            style={{
+              width: "7px",
+              height: "7px",
+              borderRadius: "50%",
+              background: "#34d399",
+              boxShadow: "0 0 8px #34d399",
+              display: "inline-block",
+              animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+            }}
+          />
+          <Activity size={13} style={{ color: "var(--accent-gradient-1)" }} />
+          <span style={{ fontWeight: 700, fontSize: "0.78rem", letterSpacing: "0.02em" }}>
+            Live Stocks
+          </span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <button
+            onClick={() => fetchStocks(true)}
+            disabled={loading}
+            title="Refresh Live Stock Quotes"
+            style={{
+              background: "none",
+              border: "none",
+              color: "rgba(255,255,255,0.6)",
+              cursor: "pointer",
+              padding: "2px",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <RefreshCw
+              size={11}
+              className={loading ? "animate-spin" : ""}
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            />
+          </button>
+          <span
+            style={{
+              fontSize: "0.58rem",
+              fontWeight: 700,
+              padding: "1px 5px",
+              borderRadius: "3px",
+              background: "rgba(74, 222, 128, 0.15)",
+              color: "#4ade80",
+              border: "1px solid rgba(74, 222, 128, 0.3)",
+              fontFamily: "monospace",
+              textTransform: "uppercase",
+            }}
+          >
+            Live
+          </span>
+        </div>
+      </div>
+
+      {/* Stock List */}
+      <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: "3px" }}>
+        {stocks.map((s) => {
+          const isUp = s.change >= 0;
+          return (
+            <div
+              key={s.symbol}
+              className="nav-item-hover"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "5px 8px",
+                borderRadius: "4px",
+                background: "rgba(255, 255, 255, 0.02)",
+                border: "1px solid rgba(255, 255, 255, 0.04)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {/* Left Symbol & Name */}
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontWeight: 700,
+                    fontSize: "0.78rem",
+                    color: "rgba(255, 255, 255, 0.95)",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {s.symbol}
+                </div>
+                <div
+                  style={{
+                    fontSize: "0.6rem",
+                    color: "rgba(255, 255, 255, 0.4)",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {s.name}
+                </div>
+              </div>
+
+              {/* Right Price & Delta */}
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontWeight: 700,
+                    fontSize: "0.78rem",
+                    color: "#fff",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  ${s.price.toFixed(2)}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    gap: "2px",
+                    fontFamily: "monospace",
+                    fontSize: "0.62rem",
+                    fontWeight: 700,
+                    color: isUp ? "#6ee87a" : "#f87171",
+                  }}
+                >
+                  <span>{isUp ? "▲" : "▼"}</span>
+                  <span>
+                    {isUp ? "+" : ""}
+                    {s.percent.toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer Info */}
+      <div
+        style={{
+          borderTop: "1px solid var(--panel-border)",
+          background: "rgba(0, 0, 0, 0.2)",
+          padding: "5px 10px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: "0.6rem",
+          color: "rgba(255, 255, 255, 0.4)",
+          fontFamily: "monospace",
+        }}
+      >
+        <span>NASDAQ Feed</span>
+        <span>{lastUpdated}</span>
+      </div>
+    </div>
+  );
+}

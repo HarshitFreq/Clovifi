@@ -1,173 +1,107 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Receipt, Wallet, Tags, Settings, User, Calendar } from "lucide-react";
-import React, { ReactNode } from "react";
-import { useCurrency } from "@/lib/currency";
-import { useGetMe, useLogout } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Reorder } from "framer-motion";
+import {
+  LayoutDashboard,
+  Receipt,
+  Wallet,
+  Calendar,
+  Tags,
+  Settings as SettingsIcon,
+} from "lucide-react";
+import React, { ReactNode, useState, useEffect } from "react";
+import { useGetMe } from "@workspace/api-client-react";
+import { useSoundEffects } from "@/lib/sound";
+import CloverLogo from "@/components/CloverLogo";
+import StockTickerWidget from "@/components/StockTickerWidget";
+import FirebaseAuthModal from "@/components/FirebaseAuthModal";
+import { auth, onAuthStateChanged, type FirebaseUser } from "@/lib/firebase";
+import { LogIn, ShieldCheck } from "lucide-react";
 
-const NAV_SECTIONS = [
-  {
-    label: "Finance",
-    items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/transactions", label: "Transactions", icon: Receipt },
-      { href: "/accounts", label: "Accounts", icon: Wallet },
-      { href: "/subscriptions", label: "Subscriptions", icon: Calendar },
-    ],
-  },
-  {
-    label: "Manage",
-    items: [
-      { href: "/categories", label: "Categories", icon: Tags },
-    ],
-  },
-  {
-    label: "App",
-    items: [
-      { href: "/settings", label: "Settings", icon: Settings },
-    ],
-  },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/transactions", label: "Transactions", icon: Receipt },
+  { href: "/accounts", label: "Accounts", icon: Wallet },
+  { href: "/subscriptions", label: "Subscriptions", icon: Calendar },
+  { href: "/categories", label: "Categories", icon: Tags },
+  { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
-
-const getIconComponent = (item: any) => {
-  if (item && item.icon && typeof item.icon === "function") {
-    return item.icon;
-  }
-  if (item && item.href) {
-    if (item.href === "/") return LayoutDashboard;
-    if (item.href === "/transactions") return Receipt;
-    if (item.href === "/accounts") return Wallet;
-    if (item.href === "/categories") return Tags;
-    if (item.href === "/settings") return Settings;
-    if (item.href === "/subscriptions") return Calendar;
-  }
-  return Settings;
-};
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-  const { currency } = useCurrency();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const { data: user } = useGetMe();
+  const { playClick } = useSoundEffects();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Stateful sidebar section sorting list
-  const [sections, setSections] = React.useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem("clovifi_sidebar_sections_order");
-      return saved ? JSON.parse(saved) : ["Finance", "Manage", "App"];
-    } catch {
-      return ["Finance", "Manage", "App"];
-    }
-  });
+  useEffect(() => {
+    if (!auth) return;
+    const unsub = onAuthStateChanged(auth, (u) => setFirebaseUser(u));
+    return () => unsub();
+  }, []);
 
-  // Stateful subitems mapping
-  const [itemsMap, setItemsMap] = React.useState<Record<string, { href: string; label: string; icon: any }[]>>(() => {
-    const defaultMap = {
-      Finance: [
-        { href: "/", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/transactions", label: "Transactions", icon: Receipt },
-        { href: "/accounts", label: "Accounts", icon: Wallet },
-        { href: "/subscriptions", label: "Subscriptions", icon: Calendar },
-      ],
-      Manage: [
-        { href: "/categories", label: "Categories", icon: Tags },
-      ],
-      App: [
-        { href: "/settings", label: "Settings", icon: Settings },
-      ]
-    };
-    try {
-      const saved = localStorage.getItem("clovifi_sidebar_subitems_order");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Filter out calculator option from any saved section arrangement
-        Object.keys(parsed).forEach(key => {
-          if (Array.isArray(parsed[key])) {
-            parsed[key] = parsed[key].filter((item: any) => item.href !== "#calculator");
-          }
-        });
-        if (parsed.Finance) {
-          const hasSub = parsed.Finance.some((item: any) => item.href === "/subscriptions");
-          if (!hasSub) {
-            parsed.Finance.push({ href: "/subscriptions", label: "Subscriptions", icon: Calendar });
-          }
-          localStorage.setItem("clovifi_sidebar_subitems_order", JSON.stringify(parsed));
-          return parsed;
-        }
-      }
-    } catch (e) {}
-    return defaultMap;
-  });
-
-  const handleSectionsReorder = (newOrder: string[]) => {
-    setSections(newOrder);
-    try {
-      localStorage.setItem("clovifi_sidebar_sections_order", JSON.stringify(newOrder));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleSubitemsReorder = (sectionLabel: string, newOrder: any[]) => {
-    const updated = { ...itemsMap, [sectionLabel]: newOrder };
-    setItemsMap(updated);
-    try {
-      localStorage.setItem("clovifi_sidebar_subitems_order", JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const activeUser = user || { username: firebaseUser?.displayName || firebaseUser?.email?.split("@")[0] || "demouser" };
 
   return (
     <div
-      className="min-h-[100dvh] flex flex-col md:flex-row"
-      style={{ maxWidth: "1400px", margin: "0 auto", padding: "1rem", gap: "10px" }}
+      className="min-h-[100dvh] flex flex-col md:flex-row-reverse"
+      style={{ maxWidth: "1400px", margin: "0 auto", padding: "1rem", gap: "12px" }}
     >
-      {/* ── Sidebar ── */}
-      <nav
-        className="glass-panel flex-shrink-0 flex flex-col w-full md:w-[200px]"
+      {/* ── Sidebar (Right on desktop) ── */}
+      <aside
+        className="flex-shrink-0 flex flex-col w-full md:w-[220px] gap-3"
         style={{
-          borderRadius: "6px",
-          overflow: "hidden",
-          height: "fit-content",
           position: "sticky",
           top: "1rem",
+          height: "fit-content",
         }}
       >
-        {/* Logo / header */}
+        <nav
+          className="glass-panel flex flex-col w-full"
+          style={{
+            borderRadius: "8px",
+            overflow: "hidden",
+          }}
+        >
+        {/* Brand Header */}
         <div
           style={{
             background: "linear-gradient(to bottom, var(--title-bg-1) 0%, var(--title-bg-2) 100%)",
             borderBottom: "1px solid var(--title-border)",
-            padding: "12px 10px",
+            padding: "14px 14px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "10px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "24px", lineHeight: 1 }}>🍀</span>
+          <Link href="/dashboard" className="flex items-center gap-2.5 no-underline" onClick={playClick}>
+            <span style={{ fontSize: "26px", lineHeight: 1, filter: "drop-shadow(0 0 10px rgba(74,222,128,0.55))", display: "inline-block" }}>
+              ☘️
+            </span>
             <div
               className="brand-title"
               style={{
-                fontWeight: 900,
-                fontSize: "1.45rem",
-                fontFamily: "'Segoe UI', 'Trebuchet MS', sans-serif",
-                letterSpacing: "0.01em",
+                fontWeight: 800,
+                fontSize: "1.42rem",
+                fontFamily: "'Comfortaa', 'Century Gothic', 'Quicksand', 'Trebuchet MS', 'Lucida Grande', sans-serif",
+                letterSpacing: "-0.01em",
                 lineHeight: 1,
-                paddingBottom: "2px",
               }}
             >
               Clovifi
             </div>
-          </div>
+          </Link>
 
-          {/* Hamburger Menu Toggle (Only visible on mobile) */}
+          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden flex items-center justify-center p-2 rounded"
@@ -193,226 +127,141 @@ export default function Layout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {/* Collapsible links container */}
-        <div className={`${mobileMenuOpen ? "flex" : "hidden"} md:flex flex-col`} style={{ flex: 1 }}>
-          {/* Nav sections */}
-          <Reorder.Group
-            as="div"
-            axis="y"
-            values={sections}
-            onReorder={handleSectionsReorder}
-            style={{ padding: "6px 0", flex: 1 }}
-          >
-          {sections.map((secLabel: string) => {
-            const currentItems = itemsMap[secLabel] || [];
+        {/* Links container */}
+        <div className={`${mobileMenuOpen ? "flex" : "hidden"} md:flex flex-col`} style={{ padding: "8px 6px", gap: "2px" }}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = location === item.href;
+            const Icon = item.icon;
+
             return (
-              <Reorder.Item
-                key={secLabel}
-                value={secLabel}
-                as="div"
-                style={{ cursor: "grab" }}
-              >
+              <Link key={item.href} href={item.href} onClick={playClick}>
                 <div
+                  className={isActive ? "nav-active" : "nav-item-hover"}
                   style={{
-                    padding: "8px 10px 3px",
-                    fontSize: "0.62rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--accent-gradient-1)",
-                    opacity: 0.75,
-                    textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    border: "1px solid transparent",
+                    transition: "all 0.12s ease",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.75)",
+                    fontSize: "0.84rem",
+                    fontWeight: isActive ? 600 : 500,
+                    cursor: "pointer",
                   }}
                 >
-                  {secLabel}
+                  <Icon
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      flexShrink: 0,
+                      color: isActive ? "#fff" : "rgba(255, 255, 255, 0.6)",
+                      filter: isActive ? "drop-shadow(0 1px 3px rgba(0,0,0,0.6))" : "none",
+                    }}
+                  />
+                  <span>{item.label}</span>
                 </div>
-                <Reorder.Group
-                  as="div"
-                  axis="y"
-                  values={currentItems}
-                  onReorder={(newOrder) => handleSubitemsReorder(secLabel, newOrder)}
-                >
-                  {currentItems.map((item) => {
-                    const isActive = location === item.href;
-                    const Icon = getIconComponent(item);
-
-
-
-                    return (
-                      <Reorder.Item
-                        key={item.href}
-                        value={item}
-                        as="div"
-                        style={{ cursor: "grab" }}
-                      >
-                        <Link href={item.href}>
-                          <div
-                            className={isActive ? "nav-active" : "nav-item-hover"}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              padding: "6px 10px",
-                              margin: "1px 5px",
-                              borderRadius: "4px",
-                              border: "1px solid transparent",
-                              transition: "all 0.15s",
-                              color: isActive ? "#fff" : "rgba(255,255,255,0.75)",
-                              fontSize: "0.8rem",
-                              fontWeight: isActive ? 600 : 400,
-                            }}
-                          >
-                            <Icon
-                              style={{
-                                width: "13px",
-                                height: "13px",
-                                flexShrink: 0,
-                                color: isActive ? "#fff" : "rgba(255, 255, 255, 0.55)",
-                                filter: isActive ? "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" : "none",
-                              }}
-                            />
-                            {item.label}
-                          </div>
-                        </Link>
-                      </Reorder.Item>
-                    );
-                  })}
-                </Reorder.Group>
-              </Reorder.Item>
+              </Link>
             );
           })}
-        </Reorder.Group>
         </div>
 
+        {/* Compact User Profile Bar */}
+        <div
+          style={{
+            borderTop: "1px solid var(--panel-border)",
+            padding: "10px 12px",
+            background: "rgba(0, 0, 0, 0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "8px",
+          }}
+        >
+          <Link href="/settings" style={{ minWidth: 0, flex: 1, textDecoration: "none" }} onClick={playClick}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: "pointer",
+                borderRadius: "5px",
+                padding: "4px 6px",
+                transition: "background 0.15s",
+              }}
+              className="hover:bg-white/5"
+              title="Profile & Settings"
+            >
+              <div
+                style={{
+                  width: "26px",
+                  height: "26px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, var(--accent-gradient-1), var(--accent-gradient-3))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "0.75rem",
+                  textTransform: "uppercase",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.4)",
+                  flexShrink: 0,
+                  overflow: "hidden",
+                }}
+              >
+                {firebaseUser?.photoURL ? (
+                  <img src={firebaseUser.photoURL} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  activeUser.username.slice(0, 2)
+                )}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div
+                  style={{
+                    fontSize: "0.76rem",
+                    fontWeight: 600,
+                    color: "#fff",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {firebaseUser ? (firebaseUser.displayName || firebaseUser.email?.split("@")[0]) : activeUser.username}
+                </div>
+                <div style={{ fontSize: "0.62rem", color: firebaseUser ? "#6ee87a" : "var(--accent-gradient-1)", opacity: 0.85 }}>
+                  {firebaseUser ? "Firebase Linked" : "Active Workspace"}
+                </div>
+              </div>
+            </div>
+          </Link>
 
+          <button
+            onClick={() => {
+              playClick();
+              setIsAuthModalOpen(true);
+            }}
+            className="toolbar-btn"
+            style={{ padding: "4px 7px", fontSize: "0.64rem", borderRadius: "3px" }}
+            title="Firebase Authentication"
+          >
+            {firebaseUser ? <ShieldCheck size={12} style={{ color: "#6ee87a" }} /> : <LogIn size={12} />}
+          </button>
+        </div>
       </nav>
 
-      {/* ── Main content ── */}
+      {/* ── Live Stock Data (Just below the nav tab) ── */}
+      <StockTickerWidget />
+
+      {/* ── Firebase Auth Modal ── */}
+      <FirebaseAuthModal open={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+    </aside>
+
+      {/* ── Main Content View ── */}
       <main className="flex-1 min-w-0 flex flex-col gap-3">
         {children}
       </main>
-
-    </div>
-  );
-}
-
-function UserProfileCard() {
-  const { data: user } = useGetMe();
-  const logoutMutation = useLogout();
-  const queryClient = useQueryClient();
-
-  if (!user) return null;
-
-  const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
-      queryClient.clear();
-      window.location.reload();
-    } catch (e) {
-      console.error("Logout failed:", e);
-    }
-  };
-
-  return (
-    <div
-      style={{
-        borderTop: "1px solid var(--panel-border)",
-        padding: "12px 10px",
-        background: "rgba(0, 0, 0, 0.35)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "8px",
-      }}
-    >
-      <Link href="/settings">
-        <div
-          title="Edit Profile Settings"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            cursor: "pointer",
-            padding: "6px",
-            borderRadius: "4px",
-            border: "1px solid transparent",
-            transition: "all 0.15s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
-            e.currentTarget.style.borderColor = "var(--panel-border)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.borderColor = "transparent";
-          }}
-        >
-          <div
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--accent-gradient-1), var(--accent-gradient-3))",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: "0.85rem",
-              textTransform: "uppercase",
-              border: "1px solid rgba(255,255,255,0.3)",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.4)",
-            }}
-          >
-            {user.username.slice(0, 2)}
-          </div>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div
-              style={{
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "#fff",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <span>{user.username}</span>
-              <User style={{ width: "10px", height: "10px", color: "var(--accent-gradient-1)" }} />
-            </div>
-            <div style={{ fontSize: "0.6rem", color: "var(--title-text)" }}>Edit Profile</div>
-          </div>
-        </div>
-      </Link>
-      <button
-        onClick={handleLogout}
-        disabled={logoutMutation.isPending}
-        style={{
-          width: "100%",
-          padding: "5px",
-          borderRadius: "4px",
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.15)",
-          color: "#fff",
-          fontSize: "0.7rem",
-          fontWeight: 600,
-          cursor: "pointer",
-          transition: "all 0.15s",
-          textAlign: "center",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(239,68,68,0.2)";
-          e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-          e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-        }}
-      >
-        {logoutMutation.isPending ? "Logging out..." : "Log Out"}
-      </button>
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useListCategories, getListCategoriesQueryKey } from "@workspace/api-client-react";
 import type { Category } from "@workspace/api-client-react";
 import CategoryModal from "@/components/CategoryModal";
+import CategoryGlyph from "@/components/CategoryGlyph";
+import { Edit3 } from "lucide-react";
 
 const TYPE_COLORS: Record<string, string> = {
   expense: "#f87171",
@@ -96,26 +98,12 @@ export default function Categories() {
                           onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
                           onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}28`; }}
                         >
-                          <div style={{
-                            width: "20px",
-                            height: "20px",
-                            borderRadius: "4px",
-                            background: `${parent.color}20`,
-                            border: `1px solid ${parent.color}60`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "0.85rem",
-                            flexShrink: 0,
-                            boxShadow: `0 0 6px ${parent.color}30`
-                          }}>
-                            {parent.icon || null}
-                          </div>
+                          <CategoryGlyph icon={parent.icon} name={parent.name} color={parent.color} size={12} badge />
                           <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "rgba(255, 255, 255, 0.9)" }}>{parent.name}</div>
                           <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[parent.type] || "#66c028", opacity: 0.8 }}>
                             {parent.type}
                           </div>
-                          <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
+                          <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)", display: "flex", alignItems: "center" }}><Edit3 size={11} /></div>
                         </div>
 
                         {(expenseTree.childrenMap[parent.id] || []).map(child => (
@@ -138,23 +126,9 @@ export default function Categories() {
                             onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0, 0, 0, 0.15)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}15`; }}
                           >
                             <span style={{ color: "rgba(255, 255, 255, 0.2)", fontSize: "0.85rem", transform: "translateY(-2px)" }}>↳</span>
-                            <div style={{
-                              width: "18px",
-                              height: "18px",
-                              borderRadius: "4px",
-                              background: `${child.color}15`,
-                              border: `1px solid ${child.color}50`,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "0.78rem",
-                              flexShrink: 0,
-                              boxShadow: `0 0 5px ${child.color}20`
-                            }}>
-                              {child.icon || null}
-                            </div>
+                            <CategoryGlyph icon={child.icon} name={child.name} color={child.color} size={11} badge />
                             <div style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.85)" }}>{child.name}</div>
-                            <div style={{ fontSize: "0.58rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
+                            <div style={{ fontSize: "0.58rem", color: "rgba(255, 255, 255, 0.3)", display: "flex", alignItems: "center" }}><Edit3 size={11} /></div>
                           </div>
                         ))}
                       </div>
@@ -178,26 +152,12 @@ export default function Categories() {
                         onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
                         onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}28`; }}
                       >
-                        <div style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "4px",
-                          background: `${cat.color}20`,
-                          border: `1px solid ${cat.color}60`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "0.85rem",
-                          flexShrink: 0,
-                          boxShadow: `0 0 6px ${cat.color}30`
-                        }}>
-                          {cat.icon || null}
-                        </div>
+                        <CategoryGlyph icon={cat.icon} name={cat.name} color={cat.color} size={12} badge />
                         <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.9)" }}>{cat.name}</div>
                         <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[cat.type] || "#66c028", opacity: 0.8 }}>
                           {cat.type}
                         </div>
-                        <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
+                        <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)", display: "flex", alignItems: "center" }}><Edit3 size={11} /></div>
                       </div>
                     ))}
                   </>
@@ -233,26 +193,12 @@ export default function Categories() {
                           onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
                           onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${parent.color}28`; }}
                         >
-                          <div style={{
-                            width: "20px",
-                            height: "20px",
-                            borderRadius: "4px",
-                            background: `${parent.color}20`,
-                            border: `1px solid ${parent.color}60`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "0.85rem",
-                            flexShrink: 0,
-                            boxShadow: `0 0 6px ${parent.color}30`
-                          }}>
-                            {parent.icon || null}
-                          </div>
+                          <CategoryGlyph icon={parent.icon} name={parent.name} color={parent.color} size={12} badge />
                           <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 600, color: "rgba(255, 255, 255, 0.9)" }}>{parent.name}</div>
                           <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[parent.type] || "#66c028", opacity: 0.8 }}>
                             {parent.type}
                           </div>
-                          <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
+                          <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)", display: "flex", alignItems: "center" }}><Edit3 size={11} /></div>
                         </div>
 
                         {(incomeTree.childrenMap[parent.id] || []).map(child => (
@@ -275,23 +221,9 @@ export default function Categories() {
                             onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0, 0, 0, 0.15)"; (e.currentTarget as HTMLElement).style.borderColor = `${child.color}15`; }}
                           >
                             <span style={{ color: "rgba(255, 255, 255, 0.2)", fontSize: "0.85rem", transform: "translateY(-2px)" }}>↳</span>
-                            <div style={{
-                              width: "18px",
-                              height: "18px",
-                              borderRadius: "4px",
-                              background: `${child.color}15`,
-                              border: `1px solid ${child.color}50`,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "0.78rem",
-                              flexShrink: 0,
-                              boxShadow: `0 0 5px ${child.color}20`
-                            }}>
-                              {child.icon || null}
-                            </div>
+                            <CategoryGlyph icon={child.icon} name={child.name} color={child.color} size={11} badge />
                             <div style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.85)" }}>{child.name}</div>
-                            <div style={{ fontSize: "0.58rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
+                            <div style={{ fontSize: "0.58rem", color: "rgba(255, 255, 255, 0.3)", display: "flex", alignItems: "center" }}><Edit3 size={11} /></div>
                           </div>
                         ))}
                       </div>
@@ -315,26 +247,12 @@ export default function Categories() {
                         onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-border-color)"; }}
                         onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.02)"; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}28`; }}
                       >
-                        <div style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "4px",
-                          background: `${cat.color}20`,
-                          border: `1px solid ${cat.color}60`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "0.85rem",
-                          flexShrink: 0,
-                          boxShadow: `0 0 6px ${cat.color}30`
-                        }}>
-                          {cat.icon || null}
-                        </div>
+                        <CategoryGlyph icon={cat.icon} name={cat.name} color={cat.color} size={12} badge />
                         <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 500, color: "rgba(255, 255, 255, 0.9)" }}>{cat.name}</div>
                         <div style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: TYPE_COLORS[cat.type] || "#66c028", opacity: 0.8 }}>
                           {cat.type}
                         </div>
-                        <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)" }}>✎</div>
+                        <div style={{ fontSize: "0.6rem", color: "rgba(255, 255, 255, 0.3)", display: "flex", alignItems: "center" }}><Edit3 size={11} /></div>
                       </div>
                     ))}
                   </>

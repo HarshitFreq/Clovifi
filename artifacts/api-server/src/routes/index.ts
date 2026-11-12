@@ -8,6 +8,7 @@ import summaryRouter from "./summary";
 import adminRouter from "./admin";
 import subscriptionsRouter from "./subscriptions";
 import demoRouter from "./demo";
+import marketRouter from "./market";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -15,6 +16,7 @@ const router: IRouter = Router();
 // Public routes
 router.use(healthRouter);
 router.use(authRouter);
+router.use(marketRouter);
 
 // Require authentication for all endpoints below this line
 router.use(requireAuth);

@@ -11,6 +11,8 @@
   ],
   "scripts": {
     "build": "npm run typecheck && npm run build --workspaces --if-present",
+    "build:frontend": "PORT=19051 BASE_PATH=/ npm run build --workspace=@workspace/finance-tracker",
+    "deploy:firebase": "npm run build:frontend && npx --yes firebase-tools deploy --only hosting",
     "typecheck:libs": "tsc --build",
     "typecheck": "npm run typecheck:libs && npm run typecheck --workspaces --if-present"
   },

@@ -3,6 +3,8 @@ import { useListAccounts, getListAccountsQueryKey } from "@workspace/api-client-
 import type { Account } from "@workspace/api-client-react";
 import { useCurrency } from "@/lib/currency";
 import AccountModal from "@/components/AccountModal";
+import { AccountTypeGlyph } from "@/components/CategoryGlyph";
+import { Edit3 } from "lucide-react";
 
 const TYPE_LABELS: Record<string, string> = {
   checking: "Checking",
@@ -72,24 +74,31 @@ export default function Accounts() {
 
                 <div style={{ padding: "12px 14px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--title-text)", marginBottom: "2px" }}>{acc.name}</div>
-                      <div style={{
-                        display: "inline-block",
-                        padding: "1px 7px",
-                        borderRadius: "3px",
-                        fontSize: "0.62rem",
-                        fontWeight: 700,
-                        letterSpacing: "0.07em",
-                        textTransform: "uppercase",
-                        background: `${acc.color || "#4da820"}25`,
-                        color: acc.color || "#66c028",
-                        border: `1px solid ${acc.color || "#4da820"}40`,
-                      }}>
-                        {TYPE_LABELS[acc.type] || acc.type}
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                      <div style={{ marginTop: "2px" }}>
+                        <AccountTypeGlyph type={acc.type} color={acc.color || "#66c028"} size={16} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--title-text)", marginBottom: "2px" }}>{acc.name}</div>
+                        <div style={{
+                          display: "inline-block",
+                          padding: "1px 7px",
+                          borderRadius: "3px",
+                          fontSize: "0.62rem",
+                          fontWeight: 700,
+                          letterSpacing: "0.07em",
+                          textTransform: "uppercase",
+                          background: `${acc.color || "#4da820"}25`,
+                          color: acc.color || "#66c028",
+                          border: `1px solid ${acc.color || "#4da820"}40`,
+                        }}>
+                          {TYPE_LABELS[acc.type] || acc.type}
+                        </div>
                       </div>
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "2px" }}>✎ edit</div>
+                    <div style={{ fontSize: "0.65rem", color: "rgba(255, 255, 255, 0.45)", marginTop: "2px", display: "flex", alignItems: "center", gap: "3px" }}>
+                      <Edit3 size={11} /> Edit
+                    </div>
                   </div>
 
                   <div style={{

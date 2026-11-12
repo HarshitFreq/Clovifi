@@ -34,7 +34,9 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
+import CategoryGlyph from "@/components/CategoryGlyph";
 
 export default function Subscriptions() {
   const qc = useQueryClient();
@@ -123,7 +125,7 @@ export default function Subscriptions() {
         invalidateAll();
         playSuccess();
         toast({
-          title: "Payment Logged! 🍀",
+          title: "Payment Recorded",
           description: `Logged transaction for ${updatedSub.name}. Next due date advanced to ${format(
             new Date(updatedSub.nextDueDate),
             "MMM d, yyyy"
@@ -425,6 +427,9 @@ export default function Subscriptions() {
                         {sub.categoryName ? (
                           <span
                             style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
                               padding: "2px 6px",
                               borderRadius: "3px",
                               fontSize: "0.68rem",
@@ -434,7 +439,8 @@ export default function Subscriptions() {
                               border: `1px solid ${catColor}40`,
                             }}
                           >
-                            {sub.categoryName}
+                            <CategoryGlyph icon={sub.categoryIcon} name={sub.categoryName} color={catColor} size={11} />
+                            <span>{sub.categoryName}</span>
                           </span>
                         ) : (
                           <span style={{ fontSize: "0.7rem", color: "rgba(255, 255, 255, 0.35)", fontStyle: "italic" }}>
@@ -544,7 +550,7 @@ export default function Subscriptions() {
             {/* Title Bar */}
             <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span>{editingSub ? "Edit Subscription" : "Add Subscription"}</span>
-              <button onClick={() => setModalOpen(false)} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+              <button onClick={() => setModalOpen(false)} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", display: "flex", alignItems: "center" }}><X size={15} /></button>
             </div>
 
             {/* Form */}
@@ -557,7 +563,7 @@ export default function Subscriptions() {
                   className={type === "expense" ? "nav-active" : "currency-btn"}
                   style={{ padding: "6px", borderRadius: "4px", fontSize: "0.76rem", fontWeight: 700, border: "1px solid transparent" }}
                 >
-                  📉 Recurring Expense
+                  Recurring Expense
                 </button>
                 <button
                   type="button"
@@ -565,7 +571,7 @@ export default function Subscriptions() {
                   className={type === "income" ? "nav-active" : "currency-btn"}
                   style={{ padding: "6px", borderRadius: "4px", fontSize: "0.76rem", fontWeight: 700, border: "1px solid transparent" }}
                 >
-                  📈 Recurring Income
+                  Recurring Income
                 </button>
               </div>
 

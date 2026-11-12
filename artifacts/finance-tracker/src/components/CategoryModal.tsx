@@ -9,6 +9,8 @@ import {
 import type { Category } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSoundEffects } from "@/lib/sound";
+import { X, Ban } from "lucide-react";
+import CategoryGlyph, { CATEGORY_GLYPH_OPTIONS } from "@/components/CategoryGlyph";
 
 const CATEGORY_TYPES = [
   { value: "expense", label: "Expense" },
@@ -137,7 +139,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
       <div style={MODAL}>
         <div className="panel-titlebar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{isEdit ? "Edit Category" : "Add Category"}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255, 255, 255, 0.6)", cursor: "pointer", display: "flex", alignItems: "center" }}><X size={15} /></button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -201,12 +203,12 @@ export default function CategoryModal({ open, onClose, category }: Props) {
           </div>
 
           <div>
-            <label style={labelStyle}>Category Icon (Emoji)</label>
+            <label style={labelStyle}>Category Glyph / Icon</label>
             <div style={{
               display: "flex",
               gap: "6px",
               flexWrap: "wrap",
-              maxHeight: "92px",
+              maxHeight: "96px",
               overflowY: "auto",
               padding: "8px",
               background: "rgba(0,0,0,0.3)",
@@ -217,6 +219,7 @@ export default function CategoryModal({ open, onClose, category }: Props) {
               <button
                 type="button"
                 onClick={() => setIcon("")}
+                title="No custom icon"
                 style={{
                   fontSize: "0.6rem",
                   fontWeight: 700,
@@ -239,39 +242,42 @@ export default function CategoryModal({ open, onClose, category }: Props) {
               >
                 None
               </button>
-              {["🍔", "🚗", "🏠", "🛒", "🔌", "🍿", "🎮", "🩺", "🎓", "🎁", "✈️", "👔", "💸", "📈", "💰", "🏦", "🏷️", "🧹", "🧴", "🍎", "🍕", "☕", "🍺", "🚲", "🚇", "🎭", "🐾", "🪴", "🛠️", "📞"].map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setIcon(emoji)}
-                  style={{
-                    fontSize: "1.1rem",
-                    padding: "4px",
-                    borderRadius: "4px",
-                    background: icon === emoji ? "rgba(255, 255, 255, 0.12)" : "transparent",
-                    border: icon === emoji ? "1px solid var(--accent-gradient-1)" : "1px solid transparent",
-                    cursor: "pointer",
-                    width: "30px",
-                    height: "30px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: icon === emoji ? "0 0 6px var(--accent-glow-shadow)" : "none",
-                    transition: "all 0.1s",
-                    flexShrink: 0
-                  }}
-                >
-                  {emoji}
-                </button>
-              ))}
+              {CATEGORY_GLYPH_OPTIONS.map((opt) => {
+                const GlyphIcon = opt.icon;
+                const isSelected = icon === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setIcon(opt.id)}
+                    title={opt.label}
+                    style={{
+                      padding: "4px",
+                      borderRadius: "4px",
+                      background: isSelected ? "rgba(255, 255, 255, 0.16)" : "transparent",
+                      border: isSelected ? "1px solid var(--accent-gradient-1)" : "1px solid rgba(255,255,255,0.08)",
+                      cursor: "pointer",
+                      width: "30px",
+                      height: "30px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: isSelected ? "0 0 6px var(--accent-glow-shadow)" : "none",
+                      transition: "all 0.1s",
+                      flexShrink: 0,
+                      color: isSelected ? "var(--accent-gradient-1)" : "rgba(255,255,255,0.75)"
+                    }}
+                  >
+                    <GlyphIcon size={15} strokeWidth={2} />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Live preview */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "5px", background: "rgba(0, 0, 0, 0.25)", border: `1px solid ${color}28` }}>
-            <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", boxShadow: `0 0 8px ${color}80`, flexShrink: 0 }}>
-              {icon || null}
-            </div>
+            <CategoryGlyph icon={icon} name={name} color={color} size={15} badge />
             <span style={{ fontSize: "0.82rem", color: "rgba(255, 255, 255, 0.85)", flex: 1 }}>{name || "Category preview"}</span>
             <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color, opacity: 0.85 }}>{type}</span>
           </div>

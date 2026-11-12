@@ -1,5 +1,42 @@
 import React, { useEffect, useRef } from "react";
-import * as THREE from "three";
+
+interface Node3D {
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+  radius: number;
+  color: string;
+  glow: string;
+  phase: number;
+  pulseSpeed: number;
+}
+
+interface Spark {
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+  alpha: number;
+  decay: number;
+  size: number;
+  color: string;
+  trail: { x: number; y: number; alpha: number }[];
+}
+
+interface Rocket {
+  x: number;
+  y: number;
+  z: number;
+  vy: number;
+  targetY: number;
+  color: string;
+  trail: { x: number; y: number; alpha: number }[];
+}
 
 export default function Clovifi3DVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -7,352 +44,441 @@ export default function Clovifi3DVisualizer() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    // --- Renderer Setup ---
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: false,
-      alpha: true,
-      powerPreference: "high-performance",
-    });
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const getDPR = () => Math.min(window.devicePixelRatio || 1, 2);
-    renderer.setPixelRatio(getDPR());
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0.0);
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
 
-    // --- Scene & Camera ---
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 0, 12.5);
-    camera.lookAt(0, 0, 0);
+    // --- Interactive Mouse State ---
+    const mouse = {
+      x: width * 0.5,
+      y: height * 0.45,
+      targetX: width * 0.5,
+      targetY: height * 0.45,
+      active: false,
+    };
 
-    // --- Mouse & Interactive Celestial Gaze ---
-    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     const handlePointerMove = (e: PointerEvent) => {
-      mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+      mouse.targetX = e.clientX;
+      mouse.targetY = e.clientY;
+      mouse.active = true;
     };
+
+    const handlePointerLeave = () => {
+      mouse.active = false;
+      mouse.targetX = width * 0.5;
+      mouse.targetY = height * 0.45;
+    };
+
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerleave", handlePointerLeave, { passive: true });
 
-    // --- Cosmic Space Particles Setup ---
-    // 1. Spiral Galaxy Disk: 4,200 particles across 3 spiral arms (Clovifi Shamrock Galaxy)
-    // 2. Deep Field Starfield & Nebula Dust: 2,300 volumetric stars
-    const galaxyCount = 4200;
-    const starfieldCount = 2300;
-    const totalCount = galaxyCount + starfieldCount;
+    // --- 1. Connected Dots Constellation Nodes ---
+    // 130 3D nodes drifting in space
+    const NODE_COUNT = 130;
+    const BOUND_X = width * 0.55;
+    const BOUND_Y = height * 0.55;
+    const BOUND_Z = 320;
+    const FOV = 580; // Perspective distance
 
-    const positions = new Float32Array(totalCount * 3);
-    const cosmicData = new Float32Array(totalCount * 4); // x: radius, y: baseAngle, z: orbitSpeed, w: isBright
-    const colors = new Float32Array(totalCount * 3);
-    const props = new Float32Array(totalCount * 4); // x: size, y: twinkleSpeed, z: opacity, w: seed
+    // Clovifi themed emerald, mint, cyan, and starlight white palette
+    const nodePalette = [
+      { color: "rgba(74, 222, 128, 0.95)", glow: "rgba(74, 222, 128, 0.45)" }, // Emerald
+      { color: "rgba(110, 231, 183, 0.95)", glow: "rgba(110, 231, 183, 0.45)" }, // Mint
+      { color: "rgba(56, 189, 248, 0.90)", glow: "rgba(56, 189, 248, 0.40)" }, // Cosmic Cyan
+      { color: "rgba(240, 253, 244, 0.98)", glow: "rgba(240, 253, 244, 0.50)" }, // Starlight White
+    ];
 
-    // 3 arms for Clovifi signature celestial theme
-    const arms = 3;
-
-    for (let i = 0; i < galaxyCount; i++) {
-      // Radius distribution: concentrated near core, expanding to halo
-      const r = 0.6 + Math.pow(Math.random(), 1.7) * 14.0;
-      const armIndex = i % arms;
-      const armAngle = (armIndex * 2 * Math.PI) / arms;
-      
-      // Logarithmic spiral curve
-      const spiralCurvature = 0.58 * Math.log(r + 1.0);
-      const scatterAngle = (Math.random() - 0.5) * (0.32 + 0.16 * Math.sqrt(r));
-      const theta = armAngle + spiralCurvature * 2.9 + scatterAngle;
-
-      // Vertical thickness flares softly at outer rim
-      const diskHeight = (Math.random() - 0.5) * (0.35 + 0.08 * r);
-      const x = Math.cos(theta) * r;
-      const z = Math.sin(theta) * r;
-      const y = diskHeight;
-
-      positions[i * 3 + 0] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-
-      // Differential orbit speed: inner core faster, outer arms sweep peacefully
-      const orbitSpeed = (0.042 / Math.sqrt(r + 0.7)) * (0.92 + Math.random() * 0.16);
-      const isBright = Math.random() < 0.055 ? 1.0 : 0.0;
-
-      cosmicData[i * 4 + 0] = r;
-      cosmicData[i * 4 + 1] = theta;
-      cosmicData[i * 4 + 2] = orbitSpeed;
-      cosmicData[i * 4 + 3] = isBright;
-
-      // Colors: core has soft starlight/mint, arms have rich emerald and celestial teal
-      const colorMix = Math.random();
-      if (isBright > 0.5) {
-        // Bright stellar anchor beacon (pure starlight silver/mint)
-        colors[i * 3 + 0] = 0.90;
-        colors[i * 3 + 1] = 0.98;
-        colors[i * 3 + 2] = 0.94;
-      } else if (r < 2.8) {
-        // Galactic core stardust (pale mint starlight)
-        colors[i * 3 + 0] = 0.42 + 0.35 * Math.random();
-        colors[i * 3 + 1] = 0.85 + 0.12 * Math.random();
-        colors[i * 3 + 2] = 0.65 + 0.25 * Math.random();
-      } else if (colorMix < 0.62) {
-        // Emerald spiral arm dust
-        colors[i * 3 + 0] = 0.12 + 0.14 * Math.random();
-        colors[i * 3 + 1] = 0.65 + 0.22 * Math.random();
-        colors[i * 3 + 2] = 0.36 + 0.14 * Math.random();
-      } else {
-        // Celestial cyan / aqua dust
-        colors[i * 3 + 0] = 0.08 + 0.10 * Math.random();
-        colors[i * 3 + 1] = 0.52 + 0.22 * Math.random();
-        colors[i * 3 + 2] = 0.64 + 0.26 * Math.random();
-      }
-
-      // Props: x: size, y: twinkleSpeed, z: opacity, w: seed
-      props[i * 4 + 0] = isBright > 0.5 ? 38.0 + Math.random() * 28.0 : 16.0 + Math.random() * 24.0;
-      props[i * 4 + 1] = 0.8 + Math.random() * 2.2;
-      props[i * 4 + 2] = isBright > 0.5 ? 0.72 : (0.24 + Math.random() * 0.38);
-      props[i * 4 + 3] = Math.random();
+    const nodes: Node3D[] = [];
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const p = nodePalette[Math.floor(Math.random() * nodePalette.length)];
+      nodes.push({
+        x: (Math.random() - 0.5) * BOUND_X * 2,
+        y: (Math.random() - 0.5) * BOUND_Y * 2,
+        z: (Math.random() - 0.5) * BOUND_Z * 2,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        vz: (Math.random() - 0.5) * 0.35,
+        radius: 1.8 + Math.random() * 2.2,
+        color: p.color,
+        glow: p.glow,
+        phase: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.8 + Math.random() * 1.5,
+      });
     }
 
-    // Deep Field Background Stars & Nebula
-    for (let j = 0; j < starfieldCount; j++) {
-      const idx = galaxyCount + j;
+    // --- 2. Fireworks System (Classic macOS / iTunes Visualizer style) ---
+    const sparks: Spark[] = [];
+    const rockets: Rocket[] = [];
 
-      // Volumetric sphere / deep celestial halo
-      const u = Math.random();
-      const v = Math.random();
-      const phi = u * 2.0 * Math.PI;
-      const costheta = v * 2.0 - 1.0;
-      const sintheta = Math.sqrt(Math.max(0.0, 1.0 - costheta * costheta));
-      const rad = 7.0 + Math.cbrt(Math.random()) * 24.0;
+    const sparkPalette = [
+      "#4ade80", // Emerald
+      "#6ee7b7", // Mint
+      "#38bdf8", // Cyan
+      "#fef08a", // Warm Star Gold
+      "#ffffff", // White Sparkle
+    ];
 
-      const x = rad * sintheta * Math.cos(phi);
-      const y = rad * costheta * 0.82;
-      const z = rad * sintheta * Math.sin(phi);
+    const createFireworkBurst = (originX: number, originY: number, originZ = 0, count = 45) => {
+      const baseColor = sparkPalette[Math.floor(Math.random() * sparkPalette.length)];
+      for (let i = 0; i < count; i++) {
+        // Spherical distribution
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        const speed = 2.0 + Math.random() * 4.8;
 
-      positions[idx * 3 + 0] = x;
-      positions[idx * 3 + 1] = y;
-      positions[idx * 3 + 2] = z;
+        const vx = Math.sin(phi) * Math.cos(theta) * speed;
+        const vy = Math.sin(phi) * Math.sin(theta) * speed * 0.85;
+        const vz = Math.cos(phi) * speed * 0.7;
 
-      const isBeacon = Math.random() < 0.038 ? 1.0 : 0.0;
-      cosmicData[idx * 4 + 0] = rad;
-      cosmicData[idx * 4 + 1] = phi;
-      cosmicData[idx * 4 + 2] = 0.004 * (Math.random() - 0.5); // Very slow drift
-      cosmicData[idx * 4 + 3] = isBeacon;
-
-      if (isBeacon > 0.5) {
-        colors[idx * 3 + 0] = 0.92;
-        colors[idx * 3 + 1] = 0.98;
-        colors[idx * 3 + 2] = 0.96;
-      } else {
-        const starType = Math.random();
-        if (starType < 0.52) {
-          // Soft emerald star
-          colors[idx * 3 + 0] = 0.18 + Math.random() * 0.18;
-          colors[idx * 3 + 1] = 0.62 + Math.random() * 0.24;
-          colors[idx * 3 + 2] = 0.38 + Math.random() * 0.18;
-        } else if (starType < 0.82) {
-          // Cosmic cyan star
-          colors[idx * 3 + 0] = 0.12 + Math.random() * 0.10;
-          colors[idx * 3 + 1] = 0.56 + Math.random() * 0.20;
-          colors[idx * 3 + 2] = 0.74 + Math.random() * 0.20;
-        } else {
-          // Silver starlight
-          colors[idx * 3 + 0] = 0.82;
-          colors[idx * 3 + 1] = 0.92;
-          colors[idx * 3 + 2] = 0.88;
-        }
+        sparks.push({
+          x: originX,
+          y: originY,
+          z: originZ,
+          vx,
+          vy,
+          vz,
+          alpha: 1.0,
+          decay: 0.012 + Math.random() * 0.014,
+          size: 1.4 + Math.random() * 2.0,
+          color: Math.random() < 0.4 ? "#ffffff" : baseColor,
+          trail: [],
+        });
       }
-
-      props[idx * 4 + 0] = isBeacon > 0.5 ? 32.0 + Math.random() * 24.0 : 10.0 + Math.random() * 20.0;
-      props[idx * 4 + 1] = 0.5 + Math.random() * 2.8;
-      props[idx * 4 + 2] = isBeacon > 0.5 ? 0.68 : (0.16 + Math.random() * 0.32);
-      props[idx * 4 + 3] = Math.random();
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("aCosmicData", new THREE.BufferAttribute(cosmicData, 4));
-    geometry.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
-    geometry.setAttribute("aProps", new THREE.BufferAttribute(props, 4));
-
-    // --- Vertex Shader: 3D Cosmic Celestial Galaxy & Starfield ---
-    const vertexShader = `
-      attribute vec4 aCosmicData;
-      attribute vec3 aColor;
-      attribute vec4 aProps;
-
-      uniform float uTime;
-      uniform float uDPR;
-      uniform vec2 uMouse;
-
-      varying vec3 vColor;
-      varying vec4 vProps;
-      varying float vDist;
-      varying float vIsBright;
-
-      void main() {
-        vColor = aColor;
-        vProps = aProps;
-        vIsBright = aCosmicData.w;
-
-        float r = aCosmicData.x;
-        float baseAngle = aCosmicData.y;
-        float speed = aCosmicData.z;
-
-        vec3 p = position;
-
-        // Galaxy Disk Particles (speed > 0.005)
-        if (abs(speed) > 0.005) {
-          float currentAngle = baseAngle + uTime * speed;
-          p.x = cos(currentAngle) * r;
-          p.z = sin(currentAngle) * r;
-
-          // Natural galactic inclination: pitch ~32 deg, yaw ~-18 deg
-          float pitch = 0.56;
-          float cosP = cos(pitch);
-          float sinP = sin(pitch);
-          float py = p.y * cosP - p.z * sinP;
-          float pz = p.y * sinP + p.z * cosP;
-          p.y = py;
-          p.z = pz;
-
-          float yaw = -0.32;
-          float cosY = cos(yaw);
-          float sinY = sin(yaw);
-          float px = p.x * cosY + p.z * sinY;
-          pz = -p.x * sinY + p.z * cosY;
-          p.x = px;
-          p.z = pz;
-
-          // Center the galactic core slightly lower to frame the Clovifi typography
-          p.y -= 1.2;
-          p.z -= 2.2;
-        } else {
-          // Subtle celestial drift for background field stars
-          float drift = uTime * speed;
-          p.x += sin(drift + aProps.w * 6.28) * 0.35;
-          p.y += cos(drift * 0.8 + aProps.w * 6.28) * 0.25;
-        }
-
-        // Smooth interactive parallax gaze
-        p.x += uMouse.x * (0.75 + p.z * 0.025);
-        p.y += uMouse.y * (0.55 + p.z * 0.025);
-
-        vec4 mvPos = modelViewMatrix * vec4(p, 1.0);
-        vDist = -mvPos.z;
-
-        // Subtle organic starlight twinkle
-        float twinkle = 0.82 + 0.18 * sin(uTime * aProps.y + aProps.w * 62.8);
-        float pSize = aProps.x * twinkle;
-
-        // Attenuate point size smoothly with distance
-        gl_PointSize = (pSize * uDPR * 22.0) / max(vDist, 1.0);
-        gl_Position = projectionMatrix * mvPos;
-      }
-    `;
-
-    // --- Fragment Shader: Luminous Star Core & 4-Point Cosmic Diffraction Spikes ---
-    const fragmentShader = `
-      precision highp float;
-
-      varying vec3 vColor;
-      varying vec4 vProps;
-      varying float vDist;
-      varying float vIsBright;
-
-      void main() {
-        vec2 p = gl_PointCoord - vec2(0.5);
-        float d = length(p);
-        if (d > 0.5) discard;
-
-        // Luminous stellar core (Gaussian falloff)
-        float core = exp(-24.0 * d * d);
-        // Soft cosmic halo & interstellar gas haze
-        float halo = exp(-5.2 * d);
-
-        // Diffraction cross for bright celestial beacon stars (James Webb / Hubble style glint)
-        float spikes = 0.0;
-        if (vIsBright > 0.5) {
-          float spikeH = (0.012 / (abs(p.y) + 0.014)) * smoothstep(0.48, 0.0, abs(p.x));
-          float spikeV = (0.012 / (abs(p.x) + 0.014)) * smoothstep(0.48, 0.0, abs(p.y));
-          spikes = (spikeH + spikeV) * 0.42;
-        }
-
-        // Combined stellar intensity
-        float intensity = core * 0.95 + halo * 0.38 + spikes;
-
-        // Color blend: core radiates bright starlight mint-silver, bleeding outwards to emerald/cyan
-        vec3 starlightCore = vec3(0.94, 1.0, 0.96);
-        vec3 finalColor = mix(vColor, starlightCore, core * 0.75 + spikes * 0.5);
-
-        // Low-contrast, gentle alpha so it never overwhelms content
-        float alpha = clamp(intensity * vProps.z * 0.82, 0.0, 1.0);
-        if (alpha < 0.01) discard;
-
-        gl_FragColor = vec4(finalColor * alpha, alpha);
-      }
-    `;
-
-    // Shader Material with Additive Blending
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uDPR: { value: getDPR() },
-        uMouse: { value: new THREE.Vector2(0, 0) },
-      },
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
-
-    // --- Window Resize Handler ---
-    const handleResize = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setPixelRatio(getDPR());
-      renderer.setSize(w, h);
-      material.uniforms.uDPR.value = getDPR();
     };
-    window.addEventListener("resize", handleResize);
 
-    // --- Animation Loop ---
+    // Launch ambient rocket
+    const launchAmbientRocket = () => {
+      const rx = (Math.random() - 0.5) * (width * 0.7);
+      const rz = (Math.random() - 0.5) * 200;
+      rockets.push({
+        x: rx,
+        y: height * 0.55 + 50,
+        z: rz,
+        vy: -5.5 - Math.random() * 3.5,
+        targetY: -height * 0.35 + Math.random() * (height * 0.4),
+        color: sparkPalette[Math.floor(Math.random() * sparkPalette.length)],
+        trail: [],
+      });
+    };
+
+    // User Interactive Click: Spawn Firework at cursor
+    const handlePointerDown = (e: MouseEvent) => {
+      // Don't intercept clicks on buttons, links, inputs
+      if ((e.target as HTMLElement)?.closest("button, a, input, select, textarea")) {
+        return;
+      }
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left - width * 0.5;
+      const clickY = e.clientY - rect.top - height * 0.5;
+      createFireworkBurst(clickX, clickY, 0, 50);
+    };
+    window.addEventListener("pointerdown", handlePointerDown);
+
+    // Periodic ambient fireworks timer (every 2.8 - 4.5s)
+    let lastRocketTime = performance.now();
+    let nextRocketDelay = 2200;
+
+    // --- Main Animation Loop ---
     let animId: number;
-    const clock = new THREE.Clock();
+    let time = 0;
 
-    const animate = () => {
-      animId = requestAnimationFrame(animate);
+    const render = (now: number) => {
+      animId = requestAnimationFrame(render);
+      time += 0.016;
 
-      const elapsed = clock.getElapsedTime();
+      // Clear with soft alpha trail for pyrotechnic persistence
+      ctx.clearRect(0, 0, width, height);
 
       // Smooth mouse lerping
-      mouse.x += (mouse.targetX - mouse.x) * 0.035;
-      mouse.y += (mouse.targetY - mouse.y) * 0.035;
-      material.uniforms.uMouse.value.set(mouse.x, mouse.y);
-      material.uniforms.uTime.value = elapsed;
+      mouse.x += (mouse.targetX - mouse.x) * 0.04;
+      mouse.y += (mouse.targetY - mouse.y) * 0.04;
 
-      // Subtle, gentle camera drift with interactive gaze
-      camera.position.x = mouse.x * 0.55;
-      camera.position.y = mouse.y * 0.40;
-      camera.lookAt(0, -0.6, 0);
+      // 3D Parallax Tilt Angles based on cursor
+      const rotY = ((mouse.x / width) * 2 - 1) * 0.22;
+      const rotX = -((mouse.y / height) * 2 - 1) * 0.18;
+      const cosY = Math.cos(rotY);
+      const sinY = Math.sin(rotY);
+      const cosX = Math.cos(rotX);
+      const sinX = Math.sin(rotX);
 
-      renderer.render(scene, camera);
+      // Center offset
+      const cx = width * 0.5;
+      const cy = height * 0.5;
+
+      // Project 3D point to 2D screen coordinates
+      const project = (px: number, py: number, pz: number) => {
+        // Rotate around Y
+        const x1 = px * cosY + pz * sinY;
+        const z1 = -px * sinY + pz * cosY;
+        // Rotate around X
+        const y1 = py * cosX - z1 * sinX;
+        const z2 = py * sinX + z1 * cosX;
+
+        const scale = FOV / (FOV + z2);
+        return {
+          x: cx + x1 * scale,
+          y: cy + y1 * scale,
+          z: z2,
+          scale,
+          visible: scale > 0.1 && scale < 2.5,
+        };
+      };
+
+      // ── 1. Update and Project Nodes ──
+      const projectedNodes: {
+        sx: number;
+        sy: number;
+        z: number;
+        scale: number;
+        node: Node3D;
+      }[] = [];
+
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+
+        // Drift motion
+        n.x += n.vx;
+        n.y += n.vy;
+        n.z += n.vz;
+
+        // Wrap around boundaries
+        const bx = BOUND_X + 80;
+        const by = BOUND_Y + 80;
+        const bz = BOUND_Z;
+        if (n.x < -bx) n.x = bx;
+        if (n.x > bx) n.x = -bx;
+        if (n.y < -by) n.y = by;
+        if (n.y > by) n.y = -by;
+        if (n.z < -bz) n.z = bz;
+        if (n.z > bz) n.z = -bz;
+
+        const proj = project(n.x, n.y, n.z);
+        if (proj.visible) {
+          projectedNodes.push({
+            sx: proj.x,
+            sy: proj.y,
+            z: proj.z,
+            scale: proj.scale,
+            node: n,
+          });
+        }
+      }
+
+      // Additive blending for luminous glow
+      ctx.globalCompositeOperation = "lighter";
+
+      // ── 2. Draw Constellation Connection Lines ──
+      const MAX_DIST_3D = 135;
+      const MAX_DIST_SQ = MAX_DIST_3D * MAX_DIST_3D;
+
+      for (let i = 0; i < projectedNodes.length; i++) {
+        const p1 = projectedNodes[i];
+        const n1 = p1.node;
+
+        for (let j = i + 1; j < projectedNodes.length; j++) {
+          const p2 = projectedNodes[j];
+          const n2 = p2.node;
+
+          const dx = n1.x - n2.x;
+          const dy = n1.y - n2.y;
+          const dz = n1.z - n2.z;
+          const distSq = dx * dx + dy * dy + dz * dz;
+
+          if (distSq < MAX_DIST_SQ) {
+            const dist = Math.sqrt(distSq);
+            const lineAlpha = (1 - dist / MAX_DIST_3D) * 0.38 * Math.min(p1.scale, p2.scale);
+
+            if (lineAlpha > 0.015) {
+              ctx.beginPath();
+              ctx.moveTo(p1.sx, p1.sy);
+              ctx.lineTo(p2.sx, p2.sy);
+              ctx.strokeStyle = `rgba(74, 222, 128, ${lineAlpha.toFixed(3)})`;
+              ctx.lineWidth = Math.max(0.6, 1.1 * Math.min(p1.scale, p2.scale));
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Connection to Interactive Mouse Cursor
+        if (mouse.active) {
+          const mdx = p1.sx - mouse.x;
+          const mdy = p1.sy - mouse.y;
+          const mouseDist = Math.sqrt(mdx * mdx + mdy * mdy);
+          const MOUSE_RADIUS = 165;
+
+          if (mouseDist < MOUSE_RADIUS) {
+            const mouseAlpha = (1 - mouseDist / MOUSE_RADIUS) * 0.65;
+            ctx.beginPath();
+            ctx.moveTo(p1.sx, p1.sy);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(167, 243, 208, ${mouseAlpha.toFixed(3)})`;
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
+
+            // Gentle elastic pull towards cursor
+            n1.vx += (mouse.x - cx - n1.x) * 0.00008;
+            n1.vy += (mouse.y - cy - n1.y) * 0.00008;
+          }
+        }
+      }
+
+      // ── 3. Draw Constellation Dot Nodes ──
+      for (let i = 0; i < projectedNodes.length; i++) {
+        const { sx, sy, scale, node: n } = projectedNodes[i];
+        const pulse = 0.85 + 0.15 * Math.sin(time * n.pulseSpeed + n.phase);
+        const r = Math.max(1.0, n.radius * scale * pulse);
+
+        // Soft outer radial glow halo
+        ctx.beginPath();
+        ctx.arc(sx, sy, r * 2.8, 0, Math.PI * 2);
+        ctx.fillStyle = n.glow;
+        ctx.fill();
+
+        // Crisp luminous core dot
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fillStyle = n.color;
+        ctx.fill();
+      }
+
+      // ── 4. Ambient Rocket Launcher ──
+      if (now - lastRocketTime > nextRocketDelay) {
+        lastRocketTime = now;
+        nextRocketDelay = 2600 + Math.random() * 2200;
+        launchAmbientRocket();
+      }
+
+      // ── 5. Update & Draw Rockets ──
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        r.y += r.vy;
+        r.vy *= 0.985; // Slow down near apex
+
+        const proj = project(r.x, r.y, r.z);
+        if (proj.visible) {
+          // Add trail
+          r.trail.push({ x: proj.x, y: proj.y, alpha: 0.8 });
+          if (r.trail.length > 8) r.trail.shift();
+
+          // Render trail
+          for (let t = 0; t < r.trail.length; t++) {
+            const pt = r.trail[t];
+            pt.alpha *= 0.82;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 1.5 * proj.scale, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(254, 240, 138, ${pt.alpha})`;
+            ctx.fill();
+          }
+
+          // Rocket head spark
+          ctx.beginPath();
+          ctx.arc(proj.x, proj.y, 2.8 * proj.scale, 0, Math.PI * 2);
+          ctx.fillStyle = "#ffffff";
+          ctx.fill();
+        }
+
+        // Apex reached: EXPLODE into fireworks burst!
+        if (r.y <= r.targetY || r.vy > -1.0) {
+          createFireworkBurst(r.x, r.y, r.z, 38 + Math.floor(Math.random() * 18));
+          rockets.splice(i, 1);
+        }
+      }
+
+      // ── 6. Update & Draw Fireworks Sparks ──
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+
+        // Physics: velocity, gravity, drag
+        s.x += s.vx;
+        s.y += s.vy;
+        s.z += s.vz;
+        s.vy += 0.045; // Gentle downward gravity
+        s.vx *= 0.978;
+        s.vy *= 0.978;
+        s.vz *= 0.978;
+
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0.02) {
+          sparks.splice(i, 1);
+          continue;
+        }
+
+        const proj = project(s.x, s.y, s.z);
+        if (proj.visible) {
+          // Trail
+          s.trail.push({ x: proj.x, y: proj.y, alpha: s.alpha });
+          if (s.trail.length > 5) s.trail.shift();
+
+          // Spark trail
+          for (let t = 0; t < s.trail.length; t++) {
+            const pt = s.trail[t];
+            pt.alpha *= 0.84;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, Math.max(0.8, s.size * 0.6 * proj.scale), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(167, 243, 208, ${pt.alpha * 0.4})`;
+            ctx.fill();
+          }
+
+          // Spark core
+          const sparkRadius = Math.max(1.0, s.size * proj.scale);
+          ctx.beginPath();
+          ctx.arc(proj.x, proj.y, sparkRadius * 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(74, 222, 128, ${s.alpha * 0.45})`;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(proj.x, proj.y, sparkRadius, 0, Math.PI * 2);
+          ctx.fillStyle = s.color;
+          ctx.fill();
+
+          // Connect nearby sparks to each other for pyrotechnic constellation blossoms
+          if (i > 0 && i % 3 === 0) {
+            const nextSpark = sparks[i - 1];
+            const dx = s.x - nextSpark.x;
+            const dy = s.y - nextSpark.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 45) {
+              const pNext = project(nextSpark.x, nextSpark.y, nextSpark.z);
+              if (pNext.visible) {
+                ctx.beginPath();
+                ctx.moveTo(proj.x, proj.y);
+                ctx.lineTo(pNext.x, pNext.y);
+                ctx.strokeStyle = `rgba(254, 240, 138, ${(s.alpha * 0.35).toFixed(3)})`;
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+              }
+            }
+          }
+        }
+      }
+
+      // Reset composite operation
+      ctx.globalCompositeOperation = "source-over";
     };
 
-    animId = requestAnimationFrame(animate);
+    animId = requestAnimationFrame(render);
 
     // --- Cleanup ---
     return () => {
       cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("resize", handleResize);
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
+      window.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("pointerdown", handlePointerDown);
     };
   }, []);
 
@@ -366,7 +492,7 @@ export default function Clovifi3DVisualizer() {
         height: "100%",
         pointerEvents: "none",
         zIndex: 1,
-        opacity: 0.58, // Perfectly balanced calm, low-contrast cosmic background
+        opacity: 0.72,
         transition: "opacity 0.6s ease",
       }}
     />

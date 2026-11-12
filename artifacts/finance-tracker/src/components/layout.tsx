@@ -14,7 +14,7 @@ import CloverLogo from "@/components/CloverLogo";
 import StockTickerWidget from "@/components/StockTickerWidget";
 import FirebaseAuthModal from "@/components/FirebaseAuthModal";
 import { auth, onAuthStateChanged, performLogout, type FirebaseUser } from "@/lib/firebase";
-import { LogIn, ShieldCheck, LogOut, Home } from "lucide-react";
+import { ShieldCheck, LogOut, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -143,14 +143,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                 borderRadius: "4px",
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "4px",
+                justifyContent: "center",
                 textDecoration: "none",
                 color: "rgba(255,255,255,0.75)",
               }}
               title="Return to Home Landing Page"
             >
               <Home size={13} />
-              <span className="hidden sm:inline">Home</span>
             </Link>
 
             <button
@@ -332,18 +331,6 @@ export default function Layout({ children }: { children: ReactNode }) {
           </Link>
 
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <button
-              onClick={() => {
-                playClick();
-                setIsAuthModalOpen(true);
-              }}
-              className="toolbar-btn"
-              style={{ padding: "4px 7px", fontSize: "0.64rem", borderRadius: "3px" }}
-              title="Account & Cloud Sync"
-            >
-              {firebaseUser ? <ShieldCheck size={12} style={{ color: "#6ee87a" }} /> : <LogIn size={12} />}
-            </button>
-
             <button
               onClick={handleLogout}
               className="toolbar-btn"

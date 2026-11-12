@@ -1,16 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-// Color palettes inspired by 3d_Portfolio with rich Emerald, Aqua, and Solar Gold accents
-const PALETTES = [
-  {
-    name: "Emerald Infinity",
-    primary: new THREE.Vector3(0.12, 0.94, 0.48),    // Neon Emerald
-    secondary: new THREE.Vector3(0.18, 0.82, 0.98),  // Sky Cyan
-    highlight: new THREE.Vector3(0.98, 0.94, 0.68),  // Starlight Gold
-  },
-];
-
 export default function Clovifi3DVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -33,19 +23,11 @@ export default function Clovifi3DVisualizer() {
 
     // --- Scene & Camera ---
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-    const baseCamZ = 8.8;
-    camera.position.set(0, 0, baseCamZ);
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 10.0);
     camera.lookAt(0, 0, 0);
 
-    // Group containing the 3D particle visualizer sculpture
-    const group = new THREE.Group();
-    group.position.set(0, 0, -0.2);
-    group.rotation.set(-0.2, 0.4, 0.05);
-    group.scale.set(1.4, 1.4, 1.4);
-    scene.add(group);
-
-    // --- Mouse & Gaze Camera Tracking ---
+    // --- Mouse & Interactive Wind Force ---
     const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     const handlePointerMove = (e: PointerEvent) => {
       mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -53,166 +35,123 @@ export default function Clovifi3DVisualizer() {
     };
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
 
-    // --- Dynamic Mobius Torus Ribbon Particle Geometry ---
-    // 32,000 sparkling diamond particles distributed along an infinite Mobius loop
-    const particleCount = 32000;
+    // --- 3D Raindrop Particles Setup ---
+    // 5,500 large luminous rain droplets and streaks distributed across 3D space
+    const particleCount = 5500;
     const positions = new Float32Array(particleCount * 3);
-    const origins = new Float32Array(particleCount * 3);
-    const ribbonOffsets = new Float32Array(particleCount * 3);
-    const speeds = new Float32Array(particleCount);
-    const randoms = new Float32Array(particleCount * 4);
+    const velocities = new Float32Array(particleCount * 3);
+    const properties = new Float32Array(particleCount * 4); // x: size, y: tail length, z: opacity, w: seed
 
     for (let i = 0; i < particleCount; i++) {
-      // Parametric angle t along the infinite ribbon loop
-      const t = Math.random() * Math.PI * 2;
-      const ribbonWidth = (Math.random() - 0.5) * 0.48;
-      const ribbonThick = (Math.random() - 0.5) * 0.22;
-      const ribbonAngle = Math.random() * Math.PI * 2;
+      // 3D volume distribution
+      positions[i * 3 + 0] = (Math.random() - 0.5) * 26.0; // wide horizontal coverage
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 26.0; // vertical height span
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 14.0; // 3D depth
 
-      // Mobius torus knot spine equation
-      const R = 2.25 + 0.42 * Math.cos(2.0 * t);
-      const x = R * Math.cos(t);
-      const y = R * Math.sin(t) * 0.95;
-      const z = 0.85 * Math.sin(2.0 * t);
+      // Velocity: downward fall speed (4.0 to 9.5) and slight horizontal drift
+      velocities[i * 3 + 0] = (Math.random() - 0.5) * 0.4;
+      velocities[i * 3 + 1] = 4.2 + Math.random() * 5.2; // fall speed
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
 
-      positions[i * 3 + 0] = x;
-      positions[i * 3 + 1] = y;
-      positions[i * 3 + 2] = z;
-
-      origins[i * 3 + 0] = t; // store loop parameter t
-      origins[i * 3 + 1] = ribbonWidth;
-      origins[i * 3 + 2] = ribbonThick;
-
-      ribbonOffsets[i * 3 + 0] = Math.cos(ribbonAngle);
-      ribbonOffsets[i * 3 + 1] = Math.sin(ribbonAngle);
-      ribbonOffsets[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
-
-      speeds[i] = 0.18 + Math.random() * 0.28;
-
-      randoms[i * 4 + 0] = Math.random();
-      randoms[i * 4 + 1] = Math.random();
-      randoms[i * 4 + 2] = Math.random();
-      randoms[i * 4 + 3] = Math.random();
+      // Properties:
+      // x: size (much larger: 42 to 95 pixels for bold, glowing visibility)
+      properties[i * 4 + 0] = 45.0 + Math.random() * 50.0;
+      // y: aspect stretch
+      properties[i * 4 + 1] = 1.6 + Math.random() * 1.8;
+      // z: opacity
+      properties[i * 4 + 2] = 0.55 + Math.random() * 0.45;
+      // w: random phase
+      properties[i * 4 + 3] = Math.random();
     }
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("aOrigin", new THREE.BufferAttribute(origins, 3));
-    geometry.setAttribute("aRibbon", new THREE.BufferAttribute(ribbonOffsets, 3));
-    geometry.setAttribute("aSpeed", new THREE.BufferAttribute(speeds, 1));
-    geometry.setAttribute("aRandom", new THREE.BufferAttribute(randoms, 4));
+    geometry.setAttribute("aVelocity", new THREE.BufferAttribute(velocities, 3));
+    geometry.setAttribute("aProps", new THREE.BufferAttribute(properties, 4));
 
-    // --- Vertex Shader: Mobius Ribbon Stream & Perspective Attenuation ---
+    // --- Vertex Shader: Continuous 3D Rainfall & Interactive Wind ---
     const vertexShader = `
-      attribute vec3 aOrigin;
-      attribute vec3 aRibbon;
-      attribute float aSpeed;
-      attribute vec4 aRandom;
+      attribute vec3 aVelocity;
+      attribute vec4 aProps;
 
       uniform float uTime;
       uniform float uDPR;
       uniform vec2 uMouse;
 
-      varying vec4 vRandom;
+      varying vec4 vProps;
       varying float vDist;
-      varying float vPhase;
-
-      // 3D curl noise turbulence
-      vec3 curlNoise(vec3 p) {
-        float x = sin(p.y * 2.8 + uTime * 0.4) + cos(p.z * 2.2);
-        float y = sin(p.z * 2.8 + uTime * 0.3) + cos(p.x * 2.2);
-        float z = sin(p.x * 2.8 + uTime * 0.5) + cos(p.y * 2.2);
-        return vec3(x, y, z) * 0.12;
-      }
+      varying float vSeed;
 
       void main() {
-        vRandom = aRandom;
+        vProps = aProps;
+        vSeed = aProps.w;
 
-        // Streaming along the infinite Mobius loop
-        float t = aOrigin.x + uTime * aSpeed * 0.45;
-        float rw = aOrigin.y;
-        float rh = aOrigin.z;
-
-        // Torus knot with organic breathing pulsation
-        float scalePulse = 1.0 + 0.045 * sin(uTime * 1.5 + t * 2.0);
-        float R = (2.25 + 0.42 * cos(2.0 * t)) * scalePulse;
+        // Total vertical rainfall span: 26 units (-13 to +13)
+        float spanY = 26.0;
+        float fallDistance = position.y - uTime * aVelocity.y;
         
-        float x = R * cos(t);
-        float y = R * sin(t) * 0.95;
-        float z = 0.85 * sin(2.0 * t);
+        // Wrap smoothly from top (+13) to bottom (-13)
+        float curY = mod(fallDistance + 13.0, spanY) - 13.0;
 
-        // Dynamic Mobius twist
-        float twist = t * 1.5 + uTime * 0.3;
-        vec3 normal = vec3(
-          cos(twist) * rw - sin(twist) * rh,
-          sin(twist) * rw + cos(twist) * rh,
-          sin(t * 3.0) * rw * 0.5
-        );
+        // Gentle horizontal sway + interactive wind gust from mouse
+        float windSway = sin(uTime * 1.5 + curY * 0.25 + aProps.w * 6.28) * 0.35;
+        float mouseWind = uMouse.x * 1.2;
+        float curX = position.x + windSway + mouseWind * (0.5 + curY * 0.04);
+        float curZ = position.z;
 
-        vec3 p = vec3(x, y, z) + normal;
-
-        // Micro curl turbulence
-        p += curlNoise(p * 0.5) * mix(0.04, 0.15, aRandom.z);
-
-        // Interactive pointer responsiveness
-        p.xy += uMouse * 0.22 * sin(length(p) * 1.8 - uTime * 1.2);
-
-        vPhase = 0.5 + 0.5 * sin(2.0 * t);
+        vec3 p = vec3(curX, curY, curZ);
 
         vec4 mvPos = modelViewMatrix * vec4(p, 1.0);
         vDist = -mvPos.z;
 
-        // Diamond star sizing with perspective attenuation
-        float pulse = 0.85 + 0.45 * sin(uTime * 3.8 + aRandom.x * 22.0);
-        gl_PointSize = (21.0 * uDPR * pulse) / max(vDist, 1.0);
+        // Increased particle size with distance attenuation
+        float size = aProps.x * (1.0 + 0.15 * sin(uTime * 3.5 + aProps.w * 12.0));
+        gl_PointSize = (size * uDPR * 26.0) / max(vDist, 1.2);
         gl_Position = projectionMatrix * mvPos;
       }
     `;
 
-    // --- Fragment Shader: Faceted Diamond Starlight Flares ---
+    // --- Fragment Shader: Luminous Cascading Raindroplet Streaks ---
     const fragmentShader = `
       precision highp float;
 
-      uniform float uTime;
-      uniform vec3 uColorPrimary;
-      uniform vec3 uColorSecondary;
-      uniform vec3 uColorHighlight;
+      uniform vec3 uColorHead; // Bright emerald leading bead
+      uniform vec3 uColorTail; // Sky cyan mist tail
+      uniform vec3 uColorGlow; // Golden starlight core
 
-      varying vec4 vRandom;
+      varying vec4 vProps;
       varying float vDist;
-      varying float vPhase;
+      varying float vSeed;
 
       void main() {
-        vec2 coord = gl_PointCoord - vec2(0.5);
-        float dist = length(coord);
+        // PointCoord (0..1, 0..1): y=0 is top (tail), y=1 is bottom (leading droplet head)
+        vec2 p = gl_PointCoord;
 
-        // Faceted 4-point diamond star flare shape
-        float diamond = abs(coord.x) + abs(coord.y);
-        if (diamond > 0.5 && dist > 0.5) discard;
+        // Horizontal distance from center axis
+        float dx = abs(p.x - 0.5) * 2.0;
 
-        // Starlight diffraction cross spikes
-        float flareX = max(0.0, 1.0 - abs(coord.x) * 4.5) * max(0.0, 1.0 - abs(coord.y) * 16.0);
-        float flareY = max(0.0, 1.0 - abs(coord.y) * 4.5) * max(0.0, 1.0 - abs(coord.x) * 16.0);
-        float flare = (flareX + flareY) * 0.75;
+        // Raindrop teardrop width profile: narrow at top, round bead at bottom
+        float widthProfile = mix(0.12, 0.95, smoothstep(0.05, 0.85, p.y));
+        float normDistX = dx / max(widthProfile, 0.05);
 
-        // Glowing core and diamond edge
-        float core = max(0.0, 1.0 - dist * 3.0);
-        float soft = max(0.0, 1.0 - diamond * 2.0);
+        // Rounded droplet head at the bottom
+        float beadDist = length(vec2(dx * 0.85, max(0.0, p.y - 0.82) * 5.2));
+        if (normDistX > 1.0 || beadDist > 1.0 || p.y < 0.02) discard;
 
-        // Harmonic gradient between emerald, sky cyan, and golden sunlight
-        vec3 col = mix(uColorPrimary, uColorSecondary, vPhase);
-        col = mix(col, uColorHighlight, pow(vRandom.y, 3.5) * 0.75);
+        // Glowing core along the center
+        float core = max(0.0, 1.0 - normDistX * 2.6);
+        // Vertical gradient: intense bright bead at the bottom, soft glowing tail above
+        float intensity = pow(p.y, 1.35);
 
-        // Sparkling brilliance
-        float sparkle = 0.88 + 0.5 * sin(uTime * 4.2 + vRandom.x * 32.0 + vRandom.w * 18.0);
-        col = col * sparkle + uColorHighlight * (core * 0.7 + flare * 0.55);
+        // Chromatic color blend: Cyan tail -> Emerald droplet -> Golden luminous highlight
+        vec3 col = mix(uColorTail, uColorHead, intensity);
+        col += uColorGlow * core * intensity * 1.4;
 
-        float alpha = (soft + flare * 0.4 + core) * mix(0.4, 0.95, vRandom.z);
+        float alpha = (1.0 - normDistX) * intensity * vProps.z;
         gl_FragColor = vec4(col * alpha, alpha);
       }
     `;
 
-    const activePalette = PALETTES[0];
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -220,17 +159,17 @@ export default function Clovifi3DVisualizer() {
         uTime: { value: 0 },
         uDPR: { value: getDPR() },
         uMouse: { value: new THREE.Vector2(0, 0) },
-        uColorPrimary: { value: activePalette.primary },
-        uColorSecondary: { value: activePalette.secondary },
-        uColorHighlight: { value: activePalette.highlight },
+        uColorHead: { value: new THREE.Vector3(0.12, 0.95, 0.52) }, // Emerald Neon
+        uColorTail: { value: new THREE.Vector3(0.18, 0.78, 0.98) }, // Sky Cyan
+        uColorGlow: { value: new THREE.Vector3(0.98, 0.95, 0.75) }, // Golden sunlight core
       },
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
-    const pointsMesh = new THREE.Points(geometry, material);
-    group.add(pointsMesh);
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
 
     // --- Window Resize Handler ---
     const handleResize = () => {
@@ -251,7 +190,6 @@ export default function Clovifi3DVisualizer() {
     const animate = () => {
       animId = requestAnimationFrame(animate);
 
-      const delta = clock.getDelta();
       const elapsed = clock.getElapsedTime();
 
       // Smooth mouse lerping
@@ -260,15 +198,10 @@ export default function Clovifi3DVisualizer() {
       material.uniforms.uMouse.value.set(mouse.x, mouse.y);
       material.uniforms.uTime.value = elapsed;
 
-      // Interactive 3D gaze camera tilt
-      camera.position.x = mouse.x * 0.75;
-      camera.position.y = mouse.y * 0.55;
+      // Slight perspective camera sway with wind
+      camera.position.x = mouse.x * 0.6;
+      camera.position.y = mouse.y * 0.4;
       camera.lookAt(0, 0, 0);
-
-      // Continuous slow 3D rotation
-      group.rotation.y += 0.24 * delta;
-      group.rotation.x = -0.2 + 0.12 * Math.sin(elapsed * 0.32) + mouse.y * 0.18;
-      group.rotation.z = 0.08 * Math.cos(elapsed * 0.22) - mouse.x * 0.12;
 
       renderer.render(scene, camera);
     };
@@ -296,7 +229,7 @@ export default function Clovifi3DVisualizer() {
         height: "100%",
         pointerEvents: "none",
         zIndex: 1,
-        opacity: 0.88,
+        opacity: 0.92,
         transition: "opacity 0.6s ease",
       }}
     />

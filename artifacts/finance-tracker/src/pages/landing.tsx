@@ -66,7 +66,7 @@ export default function Landing() {
         if (zenMode) setZenMode(false);
       }}
     >
-      {/* ── Atmospheric Ambient Glowing Orbs ── */}
+      {/* ── Subtle Atmospheric Ambient Orbs (Soft, Low-Contrast) ── */}
       <div
         style={{
           position: "absolute",
@@ -74,8 +74,8 @@ export default function Landing() {
           left: "20%",
           width: "480px",
           height: "480px",
-          background: "radial-gradient(circle, rgba(74, 222, 128, 0.14) 0%, rgba(34, 197, 94, 0.04) 50%, transparent 70%)",
-          filter: "blur(60px)",
+          background: "radial-gradient(circle, rgba(74, 222, 128, 0.06) 0%, rgba(34, 197, 94, 0.02) 50%, transparent 70%)",
+          filter: "blur(70px)",
           pointerEvents: "none",
           transform: "translate(-50%, -50%)",
         }}
@@ -87,8 +87,8 @@ export default function Landing() {
           right: "15%",
           width: "540px",
           height: "540px",
-          background: "radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(14, 165, 233, 0.03) 50%, transparent 75%)",
-          filter: "blur(70px)",
+          background: "radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, rgba(14, 165, 233, 0.015) 50%, transparent 75%)",
+          filter: "blur(80px)",
           pointerEvents: "none",
           transform: "translate(20%, 20%)",
         }}

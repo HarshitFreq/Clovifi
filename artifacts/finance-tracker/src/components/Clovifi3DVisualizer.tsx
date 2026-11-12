@@ -27,7 +27,7 @@ export default function Clovifi3DVisualizer() {
     camera.position.set(0, 0, 10.0);
     camera.lookAt(0, 0, 0);
 
-    // --- Mouse & Interactive Wind Force ---
+    // --- Mouse & Interactive Subtle Breeze ---
     const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     const handlePointerMove = (e: PointerEvent) => {
       mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -35,31 +35,31 @@ export default function Clovifi3DVisualizer() {
     };
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
 
-    // --- 3D Raindrop Particles Setup ---
-    // 5,500 large luminous rain droplets and streaks distributed across 3D space
-    const particleCount = 5500;
+    // --- 3D Slow, Low-Contrast Raindrop Setup ---
+    // 4,500 soft, slow-falling translucent droplets
+    const particleCount = 4500;
     const positions = new Float32Array(particleCount * 3);
     const velocities = new Float32Array(particleCount * 3);
-    const properties = new Float32Array(particleCount * 4); // x: size, y: tail length, z: opacity, w: seed
+    const properties = new Float32Array(particleCount * 4); // x: size, y: aspect stretch, z: opacity, w: seed
 
     for (let i = 0; i < particleCount; i++) {
       // 3D volume distribution
-      positions[i * 3 + 0] = (Math.random() - 0.5) * 26.0; // wide horizontal coverage
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 26.0; // vertical height span
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 14.0; // 3D depth
+      positions[i * 3 + 0] = (Math.random() - 0.5) * 26.0;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 26.0;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 14.0;
 
-      // Velocity: downward fall speed (4.0 to 9.5) and slight horizontal drift
-      velocities[i * 3 + 0] = (Math.random() - 0.5) * 0.4;
-      velocities[i * 3 + 1] = 4.2 + Math.random() * 5.2; // fall speed
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
+      // Slow, peaceful fall speed: 0.85 to 1.95 units/sec (gentle tranquil drift)
+      velocities[i * 3 + 0] = (Math.random() - 0.5) * 0.15;
+      velocities[i * 3 + 1] = 0.85 + Math.random() * 1.1;
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
 
       // Properties:
-      // x: size (much larger: 42 to 95 pixels for bold, glowing visibility)
-      properties[i * 4 + 0] = 45.0 + Math.random() * 50.0;
+      // x: size (large soft droplet: 40 to 80 px)
+      properties[i * 4 + 0] = 42.0 + Math.random() * 42.0;
       // y: aspect stretch
-      properties[i * 4 + 1] = 1.6 + Math.random() * 1.8;
-      // z: opacity
-      properties[i * 4 + 2] = 0.55 + Math.random() * 0.45;
+      properties[i * 4 + 1] = 1.4 + Math.random() * 1.5;
+      // z: soft opacity (low-contrast, subtle: 0.25 to 0.55)
+      properties[i * 4 + 2] = 0.25 + Math.random() * 0.3;
       // w: random phase
       properties[i * 4 + 3] = Math.random();
     }
@@ -69,7 +69,7 @@ export default function Clovifi3DVisualizer() {
     geometry.setAttribute("aVelocity", new THREE.BufferAttribute(velocities, 3));
     geometry.setAttribute("aProps", new THREE.BufferAttribute(properties, 4));
 
-    // --- Vertex Shader: Continuous 3D Rainfall & Interactive Wind ---
+    // --- Vertex Shader: Slow Serene 3D Rainfall ---
     const vertexShader = `
       attribute vec3 aVelocity;
       attribute vec4 aProps;
@@ -88,15 +88,16 @@ export default function Clovifi3DVisualizer() {
 
         // Total vertical rainfall span: 26 units (-13 to +13)
         float spanY = 26.0;
+        // Slow downward drift
         float fallDistance = position.y - uTime * aVelocity.y;
         
         // Wrap smoothly from top (+13) to bottom (-13)
         float curY = mod(fallDistance + 13.0, spanY) - 13.0;
 
-        // Gentle horizontal sway + interactive wind gust from mouse
-        float windSway = sin(uTime * 1.5 + curY * 0.25 + aProps.w * 6.28) * 0.35;
-        float mouseWind = uMouse.x * 1.2;
-        float curX = position.x + windSway + mouseWind * (0.5 + curY * 0.04);
+        // Slow, gentle horizontal ambient sway
+        float windSway = sin(uTime * 0.6 + curY * 0.2 + aProps.w * 6.28) * 0.25;
+        float mouseWind = uMouse.x * 0.6;
+        float curX = position.x + windSway + mouseWind * (0.4 + curY * 0.03);
         float curZ = position.z;
 
         vec3 p = vec3(curX, curY, curZ);
@@ -104,54 +105,55 @@ export default function Clovifi3DVisualizer() {
         vec4 mvPos = modelViewMatrix * vec4(p, 1.0);
         vDist = -mvPos.z;
 
-        // Increased particle size with distance attenuation
-        float size = aProps.x * (1.0 + 0.15 * sin(uTime * 3.5 + aProps.w * 12.0));
-        gl_PointSize = (size * uDPR * 26.0) / max(vDist, 1.2);
+        // Soft particle sizing with gentle breathing
+        float size = aProps.x * (1.0 + 0.08 * sin(uTime * 1.5 + aProps.w * 10.0));
+        gl_PointSize = (size * uDPR * 24.0) / max(vDist, 1.2);
         gl_Position = projectionMatrix * mvPos;
       }
     `;
 
-    // --- Fragment Shader: Luminous Cascading Raindroplet Streaks ---
+    // --- Fragment Shader: Muted, Low-Contrast Droplet Streaks ---
     const fragmentShader = `
       precision highp float;
 
-      uniform vec3 uColorHead; // Bright emerald leading bead
-      uniform vec3 uColorTail; // Sky cyan mist tail
-      uniform vec3 uColorGlow; // Golden starlight core
+      uniform vec3 uColorHead; // Muted soft emerald
+      uniform vec3 uColorTail; // Soft dark teal mist
+      uniform vec3 uColorGlow; // Faint gentle green glow
 
       varying vec4 vProps;
       varying float vDist;
       varying float vSeed;
 
       void main() {
-        // PointCoord (0..1, 0..1): y=0 is top (tail), y=1 is bottom (leading droplet head)
         vec2 p = gl_PointCoord;
 
         // Horizontal distance from center axis
         float dx = abs(p.x - 0.5) * 2.0;
 
-        // Raindrop teardrop width profile: narrow at top, round bead at bottom
-        float widthProfile = mix(0.12, 0.95, smoothstep(0.05, 0.85, p.y));
+        // Soft teardrop width profile: narrow at top, round bead at bottom
+        float widthProfile = mix(0.14, 0.94, smoothstep(0.05, 0.88, p.y));
         float normDistX = dx / max(widthProfile, 0.05);
 
         // Rounded droplet head at the bottom
-        float beadDist = length(vec2(dx * 0.85, max(0.0, p.y - 0.82) * 5.2));
-        if (normDistX > 1.0 || beadDist > 1.0 || p.y < 0.02) discard;
+        float beadDist = length(vec2(dx * 0.85, max(0.0, p.y - 0.85) * 5.0));
+        if (normDistX > 1.0 || beadDist > 1.0 || p.y < 0.03) discard;
 
-        // Glowing core along the center
-        float core = max(0.0, 1.0 - normDistX * 2.6);
-        // Vertical gradient: intense bright bead at the bottom, soft glowing tail above
-        float intensity = pow(p.y, 1.35);
+        // Soft core along center without harsh burning highlights
+        float core = max(0.0, 1.0 - normDistX * 2.0);
+        // Linear soft vertical gradient (low contrast, no harsh exponential cutoff)
+        float intensity = mix(0.15, 0.85, p.y);
 
-        // Chromatic color blend: Cyan tail -> Emerald droplet -> Golden luminous highlight
+        // Low-contrast, muted chromatic blend
         vec3 col = mix(uColorTail, uColorHead, intensity);
-        col += uColorGlow * core * intensity * 1.4;
+        col += uColorGlow * core * 0.35; // gentle subtle glow, no blinding flare
 
-        float alpha = (1.0 - normDistX) * intensity * vProps.z;
+        // Low-contrast, soft translucent alpha
+        float alpha = (1.0 - normDistX) * intensity * vProps.z * 0.65;
         gl_FragColor = vec4(col * alpha, alpha);
       }
     `;
 
+    // Muted, low-contrast, low-brightness colors
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -159,9 +161,9 @@ export default function Clovifi3DVisualizer() {
         uTime: { value: 0 },
         uDPR: { value: getDPR() },
         uMouse: { value: new THREE.Vector2(0, 0) },
-        uColorHead: { value: new THREE.Vector3(0.12, 0.95, 0.52) }, // Emerald Neon
-        uColorTail: { value: new THREE.Vector3(0.18, 0.78, 0.98) }, // Sky Cyan
-        uColorGlow: { value: new THREE.Vector3(0.98, 0.95, 0.75) }, // Golden sunlight core
+        uColorHead: { value: new THREE.Vector3(0.18, 0.55, 0.36) }, // Soft muted moss green
+        uColorTail: { value: new THREE.Vector3(0.10, 0.30, 0.35) }, // Dark subtle aqua-teal
+        uColorGlow: { value: new THREE.Vector3(0.28, 0.62, 0.46) }, // Gentle pastel green glow
       },
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -193,14 +195,14 @@ export default function Clovifi3DVisualizer() {
       const elapsed = clock.getElapsedTime();
 
       // Smooth mouse lerping
-      mouse.x += (mouse.targetX - mouse.x) * 0.05;
-      mouse.y += (mouse.targetY - mouse.y) * 0.05;
+      mouse.x += (mouse.targetX - mouse.x) * 0.03;
+      mouse.y += (mouse.targetY - mouse.y) * 0.03;
       material.uniforms.uMouse.value.set(mouse.x, mouse.y);
       material.uniforms.uTime.value = elapsed;
 
-      // Slight perspective camera sway with wind
-      camera.position.x = mouse.x * 0.6;
-      camera.position.y = mouse.y * 0.4;
+      // Subtle, gentle camera drift
+      camera.position.x = mouse.x * 0.4;
+      camera.position.y = mouse.y * 0.3;
       camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
@@ -229,7 +231,7 @@ export default function Clovifi3DVisualizer() {
         height: "100%",
         pointerEvents: "none",
         zIndex: 1,
-        opacity: 0.92,
+        opacity: 0.48, // Reduced overall opacity for calm, subtle background presence
         transition: "opacity 0.6s ease",
       }}
     />

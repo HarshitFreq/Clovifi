@@ -598,8 +598,11 @@ export default function FirebaseAuthModal({ open, onClose, initialMode = "signin
               onClick={() => {
                 playSuccess();
                 onClose();
-                setLocation("/dashboard");
-                if (onSuccess) onSuccess();
+                if (onSuccess) {
+                  onSuccess();
+                } else {
+                  setLocation("/dashboard");
+                }
               }}
               style={{
                 background: "rgba(255, 255, 255, 0.06)",

@@ -778,6 +778,23 @@ export function setupLocalLedgerInterceptor(): void {
     if (url.includes("/api/")) {
       const method = (init?.method || "GET").toUpperCase();
 
+      // On Firebase Hosting or static hosting domains, serve immediately from client ledger with 0ms latency!
+      const isStaticHosting =
+        typeof window !== "undefined" &&
+        (window.location.hostname.includes("web.app") ||
+         window.location.hostname.includes("firebaseapp.com") ||
+         window.location.hostname.includes("github.io"));
+
+      if (isStaticHosting) {
+        const fallbackData = localLedger.handleRequest(method, url, init?.body);
+        if (fallbackData !== undefined) {
+          return new Response(JSON.stringify(fallbackData), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+
       try {
         const res = await originalFetch(input, init);
         const contentType = res.headers.get("content-type") || "";

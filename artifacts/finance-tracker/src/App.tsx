@@ -23,60 +23,60 @@ const queryClient = new QueryClient({
   },
 });
 
+const DashboardPage = () => (
+  <Layout>
+    <Dashboard />
+  </Layout>
+);
+
+const TransactionsPage = () => (
+  <Layout>
+    <Transactions />
+  </Layout>
+);
+
+const AccountsPage = () => (
+  <Layout>
+    <Accounts />
+  </Layout>
+);
+
+const CategoriesPage = () => (
+  <Layout>
+    <Categories />
+  </Layout>
+);
+
+const SubscriptionsPage = () => (
+  <Layout>
+    <Subscriptions />
+  </Layout>
+);
+
+const SettingsPage = () => (
+  <Layout>
+    <Settings />
+  </Layout>
+);
+
+const NotFoundPage = () => (
+  <Layout>
+    <NotFound />
+  </Layout>
+);
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/landing" component={Landing} />
-      <Route path="/dashboard">
-        {() => (
-          <Layout>
-            <Dashboard />
-          </Layout>
-        )}
-      </Route>
-      <Route path="/transactions">
-        {() => (
-          <Layout>
-            <Transactions />
-          </Layout>
-        )}
-      </Route>
-      <Route path="/accounts">
-        {() => (
-          <Layout>
-            <Accounts />
-          </Layout>
-        )}
-      </Route>
-      <Route path="/categories">
-        {() => (
-          <Layout>
-            <Categories />
-          </Layout>
-        )}
-      </Route>
-      <Route path="/subscriptions">
-        {() => (
-          <Layout>
-            <Subscriptions />
-          </Layout>
-        )}
-      </Route>
-      <Route path="/settings">
-        {() => (
-          <Layout>
-            <Settings />
-          </Layout>
-        )}
-      </Route>
-      <Route>
-        {() => (
-          <Layout>
-            <NotFound />
-          </Layout>
-        )}
-      </Route>
+      <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/transactions" component={TransactionsPage} />
+      <Route path="/accounts" component={AccountsPage} />
+      <Route path="/categories" component={CategoriesPage} />
+      <Route path="/subscriptions" component={SubscriptionsPage} />
+      <Route path="/settings" component={SettingsPage} />
+      <Route path="/:rest*" component={NotFoundPage} />
     </Switch>
   );
 }

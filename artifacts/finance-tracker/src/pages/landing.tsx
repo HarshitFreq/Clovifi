@@ -25,6 +25,11 @@ export default function Landing() {
   const { data: user } = useGetMe();
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
 
+  const goToDashboard = () => {
+    playSuccess();
+    setLocation("/dashboard");
+  };
+
   const handleLogout = async () => {
     playClick();
     await performLogout();
@@ -302,28 +307,29 @@ export default function Landing() {
                 <span>Personal Account: <strong>{activeName}</strong></span>
               </div>
 
-              <Link href="/dashboard" onClick={playSuccess} style={{ textDecoration: "none", width: "100%", maxWidth: "260px" }}>
-                <button
-                  className="glass-button"
-                  style={{
-                    width: "100%",
-                    minHeight: "44px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                    padding: "11px 24px",
-                    borderRadius: "6px",
-                    fontSize: "0.92rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    letterSpacing: "0.01em",
-                  }}
-                >
-                  <span>Open Dashboard</span>
-                  <ArrowRight size={15} />
-                </button>
-              </Link>
+              <button
+                type="button"
+                onClick={goToDashboard}
+                className="glass-button"
+                style={{
+                  width: "100%",
+                  maxWidth: "260px",
+                  minHeight: "44px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  padding: "11px 24px",
+                  borderRadius: "6px",
+                  fontSize: "0.92rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                <span>Open Dashboard</span>
+                <ArrowRight size={15} />
+              </button>
 
               <button
                 onClick={handleLogout}
@@ -406,10 +412,7 @@ export default function Landing() {
 
               <button
                 type="button"
-                onClick={() => {
-                  playSuccess();
-                  setLocation("/dashboard");
-                }}
+                onClick={goToDashboard}
                 className="toolbar-btn"
                 style={{
                   width: "100%",

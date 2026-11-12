@@ -18,7 +18,7 @@ import { format, parseISO, differenceInDays, subDays, addDays, startOfWeek } fro
 import { useState, useMemo } from "react";
 import {
   Plus, Clock, Check, ExternalLink, ChevronDown, ChevronUp,
-  Flame, RefreshCw, FileSpreadsheet, Printer, WalletCards,
+  Flame, FileSpreadsheet, Printer, WalletCards,
   TrendingUp, TrendingDown, Search, Landmark, Receipt,
   PieChart as PieIcon, ArrowUpRight, ArrowDownLeft, LogOut, Home
 } from "lucide-react";
@@ -327,15 +327,6 @@ export default function Dashboard() {
           >
             <Printer size={13} style={{ color: "#60a5fa" }} />
             <span>Print Report</span>
-          </button>
-
-          <button
-            onClick={handleRefresh}
-            className="toolbar-btn"
-            title="Refresh Ledger and Recalculate Balances"
-          >
-            <RefreshCw size={12} style={{ color: "rgba(255,255,255,0.7)" }} />
-            <span>Refresh</span>
           </button>
 
           <Link
